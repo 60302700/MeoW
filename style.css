@@ -1,0 +1,337 @@
+/* Base Layout Reset & Body */
+body {
+    margin: 0;
+    padding: 1rem;
+    box-sizing: border-box;
+    background-color: #f1f5f9;
+    /* bg-slate-100 */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* font-sans */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Reusable Utility Configurations */
+.w-full {
+    width: 100%;
+}
+
+.max-w-md {
+    max-width: 28rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+/* Main Application Card Frame */
+#appCard {
+    background-color: #ffffff;
+    /* bg-white */
+    border-radius: 1rem;
+    /* rounded-2xl */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    /* shadow-xl */
+    overflow: hidden;
+    border: 4px solid transparent;
+    /* border-4 border-transparent */
+    transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* transition-all duration-500 */
+}
+
+/* Header Component States */
+#headerBar {
+    padding: 1.25rem;
+    /* p-5 */
+    color: #ffffff;
+    /* text-white */
+    font-weight: 700;
+    /* font-bold */
+    letter-spacing: 0.05em;
+    /* tracking-wide */
+    transition: color 500ms, background-color 500ms;
+    /* transition-colors duration-500 */
+}
+
+.bg-slate-800 {
+    background-color: #1e293b;
+}
+
+.bg-red-600 {
+    background-color: #dc2626;
+}
+
+.bg-orange-600 {
+    background-color: #ea580c;
+}
+
+/* Core Layout Padding */
+.p-6 {
+    padding: 1.5rem;
+}
+
+/* View 1: Portal ID Input Elements */
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.space-y-4>*+* {
+    margin-top: 1rem;
+}
+
+.text-slate-600 {
+    color: #475569;
+}
+
+.text-slate-800 {
+    color: #1e293b;
+}
+
+.text-slate-900 {
+    color: #0f172a;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+#idInput {
+    box-sizing: border-box;
+    text-align: center;
+    /* text-center */
+    font-size: 1.5rem;
+    /* text-2xl */
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    /* font-mono */
+    letter-spacing: 0.1em;
+    /* tracking-widest */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    /* py-3 */
+    border: 2px solid #cbd5e1;
+    /* border-2 border-slate-300 */
+    border-radius: 0.75rem;
+    /* rounded-xl */
+    transition: border-color 0.15s ease-in-out;
+    /* transition-colors */
+}
+
+#idInput:focus {
+    outline: 2px solid transparent;
+    /* focus:outline-none */
+    border-color: #0d9488;
+    /* focus:border-teal-600 */
+}
+
+/* Form Action Buttons */
+button {
+    cursor: pointer;
+    border: none;
+    box-sizing: border-box;
+}
+
+.bg-teal-600 {
+    background-color: #0d9488;
+}
+
+.bg-teal-600:hover {
+    background-color: #0f766e;
+}
+
+/* hover:bg-teal-700 */
+.bg-red-600:hover {
+    background-color: #b91c1c;
+}
+
+/* hover:bg-red-700 */
+
+button.w-full {
+    font-weight: 700;
+    /* font-bold */
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    /* py-4 */
+    border-radius: 0.75rem;
+    /* rounded-xl */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* shadow-md */
+    letter-spacing: 0.05em;
+    /* tracking-wider */
+    transition: all 0.2s;
+}
+
+button:active {
+    transform: scale(0.95);
+    /* active:scale-95 */
+}
+
+#claimBtn {
+    font-weight: 900;
+    /* font-black */
+    font-size: 1.125rem;
+    /* text-lg */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    /* shadow-lg */
+}
+
+#errorMsg {
+    color: #dc2626;
+    /* text-red-600 */
+    font-weight: 700;
+    /* font-bold */
+}
+
+/* View 2: Active Emergency Panel Layout */
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.space-x-4>*+* {
+    margin-left: 1rem;
+}
+
+/* Profile Avatar Frame */
+.w-16 {
+    width: 4rem;
+}
+
+.h-16 {
+    height: 4rem;
+}
+
+.bg-red-100 {
+    background-color: #fee2e2;
+}
+
+.border-red-500 {
+    border: 2px solid #ef4444;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.text-3xl {
+    font-size: 1.875rem;
+}
+
+/* Target Readout Texts */
+.text-3xl.font-black {
+    font-size: 1.875rem;
+    font-weight: 900;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.text-red-600 {
+    color: #dc2626;
+}
+
+/* Alert Boxes & Status Enclosures */
+.bg-amber-50 {
+    background-color: #fffbeb;
+}
+
+.border-l-4 {
+    border-left: 4px solid #d97706;
+}
+
+/* border-amber-500 */
+.p-4 {
+    padding: 1rem;
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.text-amber-800 {
+    color: #92400e;
+}
+
+.font-extrabold {
+    font-weight: 800;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.bg-slate-50 {
+    background-color: #f8fafc;
+}
+
+.border-slate-200 {
+    border: 1px solid #e2e8f0;
+}
+
+.space-y-2>*+* {
+    margin-top: 0.5rem;
+}
+
+/* Special Animations CSS */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-border {
+
+    0%,
+    100% {
+        border-color: rgba(220, 38, 38, 1);
+    }
+
+    50% {
+        border-color: rgba(220, 38, 38, 0.4);
+    }
+}
+
+.emergency-pulse {
+    animation: pulse-border 2s infinite;
+}
