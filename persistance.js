@@ -1,36 +1,174 @@
-import { MongoClient } from 'mongodb';
+import 'dotenv/config';
+import { MongoClient, ObjectId } from 'mongodb';
 
-let client = null;
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB_NAME || 'Meow';
+
+if (!uri) {
+    throw new Error('MONGODB_URI is not set. Add it to your .env file.');
+}
+
+const client = new MongoClient(uri);
 let db = null;
-let Cats = null;
-let Users = null;
-let EEvent = null;
-let Gurdian = null;
 
 async function connectDB() {
-    if (!client) {
-        const uri = "mongodb+srv://abdullah123bin_db_user:wNH8rIzb034KqXxN@cluster0.g2cako5.mongodb.net";
-        client = new MongoClient(uri);
+    if (!db) {
         await client.connect();
-        db = client.db("MeoW");
-        console.log("Connected to MongoDB");
-        Cats = db.collection("Cats");
-        Users = db.collection("Users");
-        EEvent = db.collection("Emegency Event");
-        Gurdian = db.collection("Gurdian");
+        db = client.db(dbName);
+        console.log('Connected to MongoDB');
     }
+    return db;
 }
 
-async function Login(username, password) {
-    await connectDB();
-    console.log({ Username: username, password: password });
-    const user = await Users.findOne({ Username: username, password: password });
-    console.log(user);
-    return user;
+async function closeDB() {
+    await client.close();
+    db = null;
 }
 
-async function testLogin() {
-    await Login("Jane", "123456789");
+function collections() {
+    return {
+        Users: db.collection('Users'),
+        Cats: db.collection('Cats'),
+        Guardians: db.collection('Guardians'),
+        EmergencyEvents: db.collection('EmergencyEvents'),
+    };
 }
 
-testLogin();
+// ---- Users ----
+
+async function createUser({ name, email, passwordHash, phone }) {
+    const { Users } = collections();
+    const result = await Users.insertOne({ name, email, passwordHash, phone, createdAt: new Date() });
+    return result.insertedId;
+}
+
+async function findUserByEmail(email) {
+    const { Users } = collections();
+    return Users.findOne({ email });
+}
+
+async function findUserById(userId) {
+    const { Users } = collections();
+    return Users.findOne({ _id: new ObjectId(userId) });
+}
+
+// ---- Cats ----
+
+async function createCat({ ownerId, name, breed, age, photoUrl, careInstructions, qrCodeId }) {
+    const { Cats } = collections();
+    const result = await Cats.insertOne({
+        ownerId: new ObjectId(ownerId),
+        name,
+        breed,
+        age,
+        photoUrl,
+        careInstructions,
+        qrCodeId,
+        isActiveBackupProtocol: false,
+    });
+    return result.insertedId;
+}
+
+async function getCatByQrCode(qrCodeId) {
+    const { Cats } = collections();
+    return Cats.findOne({ qrCodeId });
+}
+
+async function getCatById(catId) {
+    const { Cats } = collections();
+    return Cats.findOne({ _id: new ObjectId(catId) });
+}
+
+async function getCatsByOwner(ownerId) {
+    const { Cats } = collections();
+    return Cats.find({ ownerId: new ObjectId(ownerId) }).toArray();
+}
+
+async function setActiveBackupProtocol(catId, isActive) {
+    const { Cats } = collections();
+    await Cats.updateOne({ _id: new ObjectId(catId) }, { $set: { isActiveBackupProtocol: isActive } });
+}
+
+// ---- Guardians ----
+
+async function addGuardian({ ownerId, name, phone, email, priorityOrder }) {
+    const { Guardians } = collections();
+    const result = await Guardians.insertOne({
+        ownerId: new ObjectId(ownerId),
+        name,
+        phone,
+        email,
+        priorityOrder,
+        hasAccepted: false,
+    });
+    return result.insertedId;
+}
+
+async function getGuardiansByOwner(ownerId) {
+    const { Guardians } = collections();
+    return Guardians.find({ ownerId: new ObjectId(ownerId) }).sort({ priorityOrder: 1 }).toArray();
+}
+
+async function setGuardianAccepted(guardianId, hasAccepted) {
+    const { Guardians } = collections();
+    await Guardians.updateOne({ _id: new ObjectId(guardianId) }, { $set: { hasAccepted } });
+}
+
+// ---- Emergency Events ----
+
+async function createEmergencyEvent({ qrCodeId, catId, responderGeo }) {
+    const { EmergencyEvents } = collections();
+    const result = await EmergencyEvents.insertOne({
+        qrCodeId,
+        catId: new ObjectId(catId),
+        triggeredAt: new Date(),
+        responderGeo: responderGeo || null,
+        status: 'ALERTED',
+        assignedGuardianId: null,
+    });
+    return result.insertedId;
+}
+
+async function getEmergencyEventById(eventId) {
+    const { EmergencyEvents } = collections();
+    return EmergencyEvents.findOne({ _id: new ObjectId(eventId) });
+}
+
+async function getEmergencyEventsByCat(catId) {
+    const { EmergencyEvents } = collections();
+    return EmergencyEvents.find({ catId: new ObjectId(catId) }).sort({ triggeredAt: -1 }).toArray();
+}
+
+async function assignGuardianToEvent(eventId, guardianId) {
+    const { EmergencyEvents } = collections();
+    await EmergencyEvents.updateOne(
+        { _id: new ObjectId(eventId) },
+        { $set: { assignedGuardianId: new ObjectId(guardianId), status: 'GUARDIAN_RESPONDED' } }
+    );
+}
+
+async function updateEmergencyEventStatus(eventId, status) {
+    const { EmergencyEvents } = collections();
+    await EmergencyEvents.updateOne({ _id: new ObjectId(eventId) }, { $set: { status } });
+}
+
+export {
+    connectDB,
+    closeDB,
+    createUser,
+    findUserByEmail,
+    findUserById,
+    createCat,
+    getCatByQrCode,
+    getCatById,
+    getCatsByOwner,
+    setActiveBackupProtocol,
+    addGuardian,
+    getGuardiansByOwner,
+    setGuardianAccepted,
+    createEmergencyEvent,
+    getEmergencyEventById,
+    getEmergencyEventsByCat,
+    assignGuardianToEvent,
+    updateEmergencyEventStatus,
+};

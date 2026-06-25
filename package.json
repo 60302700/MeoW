@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/60302700/Kitty#readme",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "mongodb": "^7.3.0"
   }
 }
