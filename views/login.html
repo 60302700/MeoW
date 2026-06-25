@@ -1,21 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Login</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' href="../public/style.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Login - MeoW Safety Net</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../public/style.css">
 </head>
 
 <body>
-    <nav>
-        <ul>
-            <li><a href="#">Register</a></li>
-            <li><a href="#">Emergency</a></li>
-        </ul>
-    </nav>
+
+    <!-- 1. Global Navbar: Sitting completely separate at the top of the body screen -->
+    <header class="global-navbar">
+        <div class="navbar-brand">
+            <h3>MeoW</h3>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/register">Register</a></li>
+                <li><a href="/emergency">🚨 Emergency</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- 2. Main Content Wrapper Area -->
+    <main class="main-content">
+
+        <!-- Independent Login Card Container -->
+        <div class="card max-w-md">
+            <div class="card-body">
+
+                <form action="/login" method="POST" class="space-y-4">
+
+                    <div class="text-center mb-6">
+                        <h1 class="title-xl">Sign In</h1>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" name="username" placeholder="Username" class="input-field" required>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" class="input-field" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal">
+                        Login
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </main>
+
 </body>
 
 </html>
