@@ -52,6 +52,11 @@ async function findUserById(userId) {
     return Users.findOne({ _id: new ObjectId(userId) });
 }
 
+
+async function Authenticate(email, password) {
+    const { Users } = collections();
+    return Users.findOne({ email, password: password });
+}
 // ---- Cats ----
 
 async function createCat({ ownerId, name, breed, age, photoUrl, careInstructions, qrCodeId }) {
