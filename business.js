@@ -1,9 +1,6 @@
-import { Login } from "./persistance.js";
+import { Authenticate } from "./persistance.js";
 
-async function Login(username, password) {
-    return await Login(username, password);
+export async function AuthenticateUser(email, password) {
+    // Business logic could go here (e.g., password hashing check, logging, etc.)
+    return await Authenticate(email, password);
 }
-
-module.exports = {
-    Login
-};
