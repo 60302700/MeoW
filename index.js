@@ -12,25 +12,54 @@ app.set("views", "./views");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+// ── Session middleware ──────────────────────────────────────────────────────
+// Manually parse the session cookie from the Cookie header.
+function getSessionCookie(req) {
+    const cookieHeader = req.headers.cookie || "";
+    const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
 
-app.get("/register", (req, res) => {
-    res.render("register", { title: "Regsister" });
+async function Loggedin(req) {
+    const isLoggedIn = getSessionCookie(req)
+    if (!isLoggedIn) {
+        return false;
+    }
+    const valid = await checkSessionMiddleware(isLoggedIn);
+    if (!valid) {
+        return false;
+    }
+    return true;
+}
+
+async function requireAuth(req, res, next) {
+    const sessionId = getSessionCookie(req);
+    if (!sessionId) {
+        return res.redirect("/");
+    }
+    const valid = await checkSessionMiddleware(sessionId);
+    if (!valid) {
+        res.clearCookie("session");
+        return res.redirect("/");
+    }
+    next();
+}
+// ───────────────────────────────────────────────────────────────────────────
+
+app.get("/register", requireAuth, (req, res) => {
+    res.render("register", { title: "Register", isLoggedIn: Loggedin(req) });
 });
 
-app.get("/login", (req, res) => {
-    res.redirect("/");
+app.get("/login", async (req, res) => {
+    const isLoggedIn = await Loggedin(req);
+    res.render("login", { title: "Login", isLoggedIn: isLoggedIn });
 });
 
 app.get("/emergency", (req, res) => {
     res.redirect("/scan");
 });
 
-app.get("/logout", (req, res) => {
-    res.clearCookie("session");
-    res.redirect("/");
-});
-
-app.post("/register", async (req, res) => {
+app.post("/register", requireAuth, async (req, res) => {
     const { name, email, phone, password } = req.body;
     try {
         await registerUser({ name, email, phone, password });
@@ -44,8 +73,9 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.get("/", (req, res) => {
-    res.render("login.hbs", { title: "Login" });
+app.get("/", async (req, res) => {
+    const isLoggedIn = await Loggedin(req);
+    res.render("login", { title: "Login", isLoggedIn: isLoggedIn });
 });
 
 app.post("/login", async (req, res) => {
@@ -56,7 +86,7 @@ app.post("/login", async (req, res) => {
             res.render("login.handlebars", { layout: false, title: "Login", error: "Invalid email or password", values: { email: email } });
             return;
         } else {
-            res.cookie("session", session, { httpOnly: true });
+            res.cookie("session", session, { maxAge: 5 * 60 * 60 * 1000, httpOnly: true });
             res.redirect("/scan");
         }
     } catch (err) {
@@ -64,11 +94,11 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.get("/scan", (req, res) => {
+app.get("/scan", requireAuth, (req, res) => {
     res.render("scan", { title: "MeoW Safety Gateway" });
 });
 
-app.post("/scan", async (req, res) => {
+app.post("/scan", requireAuth, async (req, res) => {
     const { qrCodeId } = req.body;
     try {
         const { eventId } = await handleScan(qrCodeId);
@@ -78,7 +108,7 @@ app.post("/scan", async (req, res) => {
     }
 });
 
-app.get("/scan/:eventId", async (req, res) => {
+app.get("/scan/:eventId", requireAuth, async (req, res) => {
     try {
         const { event, cat, guardians } = await getEmergencyView(req.params.eventId);
         res.render("scan", {
@@ -94,7 +124,7 @@ app.get("/scan/:eventId", async (req, res) => {
     }
 });
 
-app.post("/scan/:eventId/claim", async (req, res) => {
+app.post("/scan/:eventId/claim", requireAuth, async (req, res) => {
     const { guardianId } = req.body;
     try {
         await claimGuardian(req.params.eventId, guardianId);
@@ -102,6 +132,13 @@ app.post("/scan/:eventId/claim", async (req, res) => {
         res.redirect(`/scan/${req.params.eventId}`);
     }
 });
+
+// ── Logout ─────────────────────────────────────────────────────────────────
+app.get("/logout", (req, res) => {
+    res.clearCookie("session");
+    res.redirect("/");
+});
+// ───────────────────────────────────────────────────────────────────────────
 
 const port = process.env.PORT || 3000;
 connectDB().then(() => {
