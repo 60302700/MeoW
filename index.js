@@ -1,19 +1,48 @@
-import express from "express";
-import { engine } from "express-handlebars";
-import { registerUser, authenticateUser, handleScan, getEmergencyView, claimGuardian } from "./presentation.js";
+import express, { Router } from "express";
+import { registerUser, authenticateUser, handleScan, getEmergencyView, claimGuardian, engine, checkSessionMiddleware } from "./presentation.js";
 import { connectDB } from "./persistance.js";
 
 const app = express();
 
 app.engine("hbs", engine({ extname: ".hbs" }));
+app.engine("handlebars", engine({ extname: ".handlebars" }));
 app.set("view engine", "hbs");
 app.set("views", "./views");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
+app.use(async (req, res, next) => {
+    const pages = ["/", "/register", "/login", "/scan", "/scan/:eventId"];
+    if (pages.includes(req.url)) {
+        next();
+    }
+    const session = false;
+    if (true) {
+        const c = req.headers.cookie.session
+        console.log(c.split("="));
+    }
+    if (session) {
+        const valid = await checkSessionMiddleware(session);
+        if (valid) {
+            next();
+        } else {
+            res.redirect("/");
+        }
+    }
+});
+
+
 app.get("/register", (req, res) => {
     res.render("register", { title: "Register" });
+});
+
+app.get("/login", (req, res) => {
+    res.redirect("/");
+});
+
+app.get("/emergency", (req, res) => {
+    res.redirect("/scan");
 });
 
 app.post("/register", async (req, res) => {
@@ -30,21 +59,23 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.get("/login", (req, res) => {
-    res.render("login", { title: "Login" });
+app.get("/", (req, res) => {
+    res.render("login.hbs", { title: "Login" });
 });
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await authenticateUser(email, password);
-        if (!user) {
-            res.render("login", { title: "Login", error: "Invalid email or password", values: { email } });
+        const session = await authenticateUser(email, password);
+        if (!session) {
+            res.render("login.handlebars", { layout: false, title: "Login", error: "Invalid email or password", values: { email: email } });
             return;
+        } else {
+            res.cookie("session", session, { httpOnly: true });
+            res.redirect("/scan");
         }
-        res.redirect("/scan");
     } catch (err) {
-        res.render("login", { title: "Login", error: err.message, values: { email } });
+        res.render("login.handlebars", { layout: false, title: "Login", error: err.message, values: { email: email } });
     }
 });
 

@@ -1,7 +1,12 @@
-import { login, registerUser, handleScan, getEmergencyView, claimGuardian } from "./business.js";
+import { login, registerUser, handleScan, getEmergencyView, claimGuardian, checkSession } from "./business.js";
+import { engine } from "express-handlebars";
 
 async function authenticateUser(email, password) {
     return await login(email, password);
 }
 
-export { authenticateUser, registerUser, handleScan, getEmergencyView, claimGuardian };
+async function checkSessionMiddleware(sessionId) {
+    return await checkSession(sessionId);
+}
+
+export { engine, authenticateUser, registerUser, handleScan, getEmergencyView, claimGuardian, checkSessionMiddleware };

@@ -37,8 +37,13 @@
                         <h1 class="title-xl">Sign In</h1>
                     </div>
 
+                    {{#if error}}
+                    <p class="alert-box alert-warning text-center">{{error}}</p>
+                    {{/if}}
+
                     <div class="form-group">
-                        <input type="text" name="username" placeholder="Username" class="input-field" required>
+                        <input type="text" name="email" placeholder="Email" class="input-field" required
+                            value="{{values.email}}">
                     </div>
 
                     <div class="form-group">

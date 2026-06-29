@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { MongoClient, ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || 'Meow';
@@ -32,6 +33,7 @@ function collections() {
         Cats: db.collection('Cats'),
         Guardians: db.collection('Guardians'),
         EmergencyEvents: db.collection('EmergencyEvents'),
+        Sessions: db.collection('Sessions'),
     };
 }
 
@@ -56,11 +58,12 @@ async function findUserById(userId) {
 
 async function Authenticate(email, password) {
     const { Users } = collections();
-    const user = await Users.findOne({ email });
+    const user = await Users.findOne({ email: email });
+    console.log(user)
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-        return null;
+        return false;
     }
-    return user;
+    return true;
 }
 // ---- Cats ----
 
@@ -162,6 +165,28 @@ async function updateEmergencyEventStatus(eventId, status) {
     await EmergencyEvents.updateOne({ _id: new ObjectId(eventId) }, { $set: { status } });
 }
 
+async function createSession(email) {
+    const { Sessions } = collections();
+    const sessionValue = uuidv4();
+    const result = await Sessions.insertOne({ email: email, sessionId: sessionValue });
+    return sessionValue;
+}
+
+async function getSession(email) {
+    const { Sessions } = collections();
+    return Sessions.findOne({ email: email });
+}
+
+async function getSessionBySessionId(sessionId) {
+    const { Sessions } = collections();
+    return Sessions.findOne({ sessionId: sessionId });
+}
+
+async function deleteSession(email) {
+    const { Sessions } = collections();
+    await Sessions.deleteOne({ email: email });
+}
+
 export {
     connectDB,
     closeDB,
@@ -181,5 +206,9 @@ export {
     getEmergencyEventsByCat,
     assignGuardianToEvent,
     updateEmergencyEventStatus,
-    Authenticate
+    Authenticate,
+    createSession,
+    getSession,
+    deleteSession,
+    getSessionBySessionId
 };

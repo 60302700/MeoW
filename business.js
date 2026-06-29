@@ -8,11 +8,21 @@ import {
     getEmergencyEventById,
     getGuardiansByOwner,
     assignGuardianToEvent,
+    createSession,
+    getSession,
+    deleteSession,
+    getSessionBySessionId
 } from "./persistance.js";
 import bcrypt from "bcryptjs";
 
 async function login(email, password) {
-    return await Authenticate(email, password);
+    const result = await Authenticate(email, password);
+    console.log(`result: ${result}`);
+    if (result) {
+        return await createSession(email);
+    } else {
+        return null;
+    }
 }
 
 async function registerUser({ name, email, password, phone }) {
@@ -47,4 +57,12 @@ async function claimGuardian(eventId, guardianId) {
     return assignGuardianToEvent(eventId, guardianId);
 }
 
-export { login, registerUser, handleScan, getEmergencyView, claimGuardian };
+async function checkSession(sessionId) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) {
+        return false;
+    }
+    return true;
+}
+
+export { login, registerUser, handleScan, getEmergencyView, claimGuardian, getSession, checkSession };

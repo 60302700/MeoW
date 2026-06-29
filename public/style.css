@@ -309,22 +309,40 @@ body {
 /* Global Navigation Header Bar (Spans full window width) */
 .global-navbar {
     width: 100%;
-    background-color: #1e293b;
-    /* bg-slate-dark */
-    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 2px solid #0d9488;
+    padding: 0.85rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Pushes brand to left, links to right */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px -2px rgba(13, 148, 136, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 /* Brand Logo Layout Styles */
 .navbar-brand h3 {
-    color: #ffffff;
-    font-size: 1.25rem;
+    margin: 0;
+    font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: 0.05em;
+}
+
+.navbar-brand h3 a {
+    text-decoration: none;
+    background: linear-gradient(to right, #38bdf8, #2dd4bf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand h3 a:hover {
+    transform: scale(1.05);
 }
 
 /* Navigation Links Container Alignment */
@@ -338,17 +356,59 @@ body {
 }
 
 .navbar-links a {
-    color: #ffffff;
+    color: #94a3b8;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: opacity 0.2s;
+    transition: color 0.3s ease;
+    position: relative;
+    padding: 0.25rem 0;
 }
 
 .navbar-links a:hover {
-    opacity: 0.8;
+    color: #38bdf8;
+}
+
+/* Nav link hover slide underline effect */
+.navbar-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: #2dd4bf;
+    transition: width 0.3s ease;
+}
+
+.navbar-links a:hover::after {
+    width: 100%;
+}
+
+/* Special style for Emergency link to add dynamic alert coloring */
+.navbar-links a.nav-emergency {
+    color: #f87171;
+    padding: 0.4rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    background-color: rgba(239, 68, 68, 0.08);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.navbar-links a.nav-emergency::after {
+    display: none;
+}
+
+.navbar-links a.nav-emergency:hover {
+    color: #ffffff;
+    background-color: #dc2626;
+    border-color: #dc2626;
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.4);
 }
 
 /* ==========================================
