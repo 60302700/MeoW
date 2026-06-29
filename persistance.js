@@ -182,9 +182,9 @@ async function getSessionBySessionId(sessionId) {
     return Sessions.findOne({ sessionId: sessionId });
 }
 
-async function deleteSession(email) {
+async function deleteSession(sessionId) {
     const { Sessions } = collections();
-    await Sessions.deleteOne({ email: email });
+    await Sessions.deleteOne({ sessionId: sessionId });
 }
 
 export {

@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { registerUser, authenticateUser, handleScan, getEmergencyView, claimGuardian, engine, checkSessionMiddleware } from "./presentation.js";
+import { logoutUser, registerUser, authenticateUser, handleScan, getEmergencyView, claimGuardian, engine, checkSessionMiddleware } from "./presentation.js";
 import { connectDB } from "./persistance.js";
 
 const app = express();
@@ -59,7 +59,7 @@ app.get("/emergency", (req, res) => {
     res.redirect("/scan");
 });
 
-app.post("/register", requireAuth, async (req, res) => {
+app.post("/register", async (req, res) => {
     const { name, email, phone, password } = req.body;
     try {
         await registerUser({ name, email, phone, password });
@@ -87,7 +87,7 @@ app.post("/login", async (req, res) => {
             return;
         } else {
             res.cookie("session", session, { maxAge: 5 * 60 * 60 * 1000, httpOnly: true });
-            res.redirect("/scan");
+            res.redirect("/homepage");
         }
     } catch (err) {
         res.render("login.handlebars", { layout: false, title: "Login", error: err.message, values: { email: email } });
@@ -133,9 +133,15 @@ app.post("/scan/:eventId/claim", requireAuth, async (req, res) => {
     }
 });
 
+
+app.get("/homepage", requireAuth, async (req, res) => {
+    const isLoggedIn = await Loggedin(req);
+    res.render("t", { title: "MeoW Safety Gateway", isLoggedIn: isLoggedIn });
+});
 // ── Logout ─────────────────────────────────────────────────────────────────
-app.get("/logout", (req, res) => {
+app.get("/logout", async (req, res) => {
     res.clearCookie("session");
+    console.log(await logoutUser(getSessionCookie(req)))
     res.redirect("/");
 });
 // ───────────────────────────────────────────────────────────────────────────

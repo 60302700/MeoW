@@ -65,4 +65,8 @@ async function checkSession(sessionId) {
     return true;
 }
 
-export { login, registerUser, handleScan, getEmergencyView, claimGuardian, getSession, checkSession };
+async function logout(sessionId) {
+    return await deleteSession(sessionId);
+}
+
+export { logout, login, registerUser, handleScan, getEmergencyView, claimGuardian, getSession, checkSession };
