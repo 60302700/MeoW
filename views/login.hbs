@@ -1,25 +1,28 @@
-<div class="card max-w-md">
-    <div class="header-bar bg-slate-dark">
+<div class="glass-card max-w-md" style="width:100%;max-width:420px;">
+    <div class="header-bar bg-slate-dark" style="border-radius:1rem 1rem 0 0;margin:-2rem -2rem 2rem;">
         Login
     </div>
-    <div class="card-body">
-        {{#if error}}
-            <p class="alert-box alert-warning text-center">{{error}}</p>
-        {{/if}}
 
-        <form method="POST" action="/login" class="space-y-4">
-            <div class="form-group">
-                <label for="email" class="mb-2 text-sm">Email</label>
-                <input type="email" id="email" name="email" class="input-field" required value="{{values.email}}">
-            </div>
-            <div class="form-group">
-                <label for="password" class="mb-2 text-sm">Password</label>
-                <input type="password" id="password" name="password" class="input-field" required>
-            </div>
+    {{#if error}}
+        <div class="inline-error">{{error}}</div>
+    {{/if}}
 
-            <button type="submit" class="btn btn-teal">
-                Login
-            </button>
-        </form>
-    </div>
+    <form method="POST" action="/login">
+        <div class="floating-field">
+            <input type="email" id="email" name="email" class="fancy-input" placeholder=" " required value="{{values.email}}">
+            <label for="email">Email address</label>
+        </div>
+        <div class="floating-field">
+            <input type="password" id="password" name="password" class="fancy-input" placeholder=" " required>
+            <label for="password">Password</label>
+        </div>
+
+        <button type="submit" class="btn-step-next" style="margin-top:0.5rem;">
+            Sign in <span class="btn-arrow">→</span>
+        </button>
+    </form>
+
+    <p class="login-link" style="margin-top:1.5rem;">
+        Don't have an account? <a href="/register">Register</a>
+    </p>
 </div>
