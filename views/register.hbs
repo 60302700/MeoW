@@ -1,33 +1,196 @@
-<div class="card max-w-md">
-    <div class="header-bar bg-slate-dark">
-        Create Account
+<div class="register-wrapper">
+
+    {{!-- Floating decorative background elements --}}
+    <div class="bg-floats" aria-hidden="true">
+        <span class="float-el" style="left:4%;top:18%;animation-delay:0s;font-size:1.8rem">🐾</span>
+        <span class="float-el" style="left:14%;top:65%;animation-delay:1.8s;font-size:1.2rem">❤️</span>
+        <span class="float-el" style="left:82%;top:12%;animation-delay:0.6s;font-size:1.5rem">🐾</span>
+        <span class="float-el" style="left:88%;top:70%;animation-delay:2.4s;font-size:1.1rem">🧶</span>
+        <span class="float-el" style="left:50%;top:8%;animation-delay:1.2s;font-size:1.3rem">🐾</span>
+        <span class="float-el" style="left:92%;top:45%;animation-delay:3.2s;font-size:1rem">❤️</span>
+        <span class="float-el" style="left:22%;top:88%;animation-delay:0.4s;font-size:1.4rem">🐾</span>
+        <span class="float-el" style="left:68%;top:82%;animation-delay:2s;font-size:1rem">✨</span>
     </div>
-    <div class="card-body">
-        {{#if error}}
-            <p class="alert-box alert-warning text-center">{{error}}</p>
-        {{/if}}
 
-        <form method="POST" action="/register" class="space-y-4">
-            <div class="form-group">
-                <label for="name" class="mb-2 text-sm">Name</label>
-                <input type="text" id="name" name="name" class="input-field" required value="{{values.name}}">
+    <div class="register-layout">
+
+        {{!-- ── Left panel: multi-step form ── --}}
+        <div class="register-form-panel">
+            <div class="glass-card">
+
+                {{#if error}}
+                <div class="inline-error">⚠️ {{error}}</div>
+                {{/if}}
+
+                {{!-- Paw-print progress indicator --}}
+                <div class="paw-progress">
+                    <div class="paw-step-dot active" data-step="1" title="Your Info">
+                        <svg viewBox="0 0 64 64"><g fill="currentColor"><ellipse cx="32" cy="42" rx="17" ry="14"/><ellipse cx="13" cy="24" rx="8" ry="10" transform="rotate(-20 13 24)"/><ellipse cx="26" cy="13" rx="8" ry="10" transform="rotate(-5 26 13)"/><ellipse cx="41" cy="13" rx="8" ry="10" transform="rotate(8 41 13)"/><ellipse cx="53" cy="25" rx="8" ry="10" transform="rotate(22 53 25)"/></g></svg>
+                    </div>
+                    <div class="paw-progress-line"></div>
+                    <div class="paw-step-dot" data-step="2" title="Security">
+                        <svg viewBox="0 0 64 64"><g fill="currentColor"><ellipse cx="32" cy="42" rx="17" ry="14"/><ellipse cx="13" cy="24" rx="8" ry="10" transform="rotate(-20 13 24)"/><ellipse cx="26" cy="13" rx="8" ry="10" transform="rotate(-5 26 13)"/><ellipse cx="41" cy="13" rx="8" ry="10" transform="rotate(8 41 13)"/><ellipse cx="53" cy="25" rx="8" ry="10" transform="rotate(22 53 25)"/></g></svg>
+                    </div>
+                    <div class="paw-progress-line"></div>
+                    <div class="paw-step-dot" data-step="3" title="Confirm">
+                        <svg viewBox="0 0 64 64"><g fill="currentColor"><ellipse cx="32" cy="42" rx="17" ry="14"/><ellipse cx="13" cy="24" rx="8" ry="10" transform="rotate(-20 13 24)"/><ellipse cx="26" cy="13" rx="8" ry="10" transform="rotate(-5 26 13)"/><ellipse cx="41" cy="13" rx="8" ry="10" transform="rotate(8 41 13)"/><ellipse cx="53" cy="25" rx="8" ry="10" transform="rotate(22 53 25)"/></g></svg>
+                    </div>
+                </div>
+
+                <form id="register-form" method="POST" action="/register" novalidate>
+
+                    {{!-- Step 1: Owner Info --}}
+                    <div class="form-step active" id="step-1">
+                        <div class="step-header">
+                            <h2 class="step-title">Who are you?</h2>
+                            <p class="step-sub">Create your MeoW owner profile</p>
+                        </div>
+                        <div class="field-group">
+                            <div class="floating-field">
+                                <input type="text" id="name" name="name" class="fancy-input" placeholder=" " autocomplete="name" value="{{values.name}}">
+                                <label for="name">Full Name</label>
+                            </div>
+                            <div class="floating-field">
+                                <input type="email" id="email" name="email" class="fancy-input" placeholder=" " autocomplete="email" value="{{values.email}}">
+                                <label for="email">Email Address</label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-step-next" id="next-1">
+                            Continue <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+
+                    {{!-- Step 2: Security --}}
+                    <div class="form-step" id="step-2">
+                        <div class="step-header">
+                            <h2 class="step-title">Secure your account</h2>
+                            <p class="step-sub">We'll use these details to reach you in emergencies</p>
+                        </div>
+                        <div class="field-group">
+                            <div class="floating-field">
+                                <input type="tel" id="phone" name="phone" class="fancy-input" placeholder=" " autocomplete="tel" value="{{values.phone}}">
+                                <label for="phone">Phone Number</label>
+                            </div>
+                            <div class="floating-field">
+                                <input type="password" id="password" name="password" class="fancy-input" placeholder=" " minlength="8">
+                                <label for="password">Password (min 8 characters)</label>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn-step-back" id="back-2">← Back</button>
+                            <button type="button" class="btn-step-next" id="next-2">Review <span class="btn-arrow">→</span></button>
+                        </div>
+                    </div>
+
+                    {{!-- Step 3: Review & Submit --}}
+                    <div class="form-step" id="step-3">
+                        <div class="step-header">
+                            <h2 class="step-title">Ready to launch 🚀</h2>
+                            <p class="step-sub">Your cat's emergency plan is one click away</p>
+                        </div>
+                        <div class="review-list">
+                            <div class="review-row">
+                                <span class="review-key">Name</span>
+                                <span class="review-val" id="rv-name">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-key">Email</span>
+                                <span class="review-val" id="rv-email">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-key">Phone</span>
+                                <span class="review-val" id="rv-phone">—</span>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn-step-back" id="back-3">← Back</button>
+                            <button type="submit" class="btn-activate">Activate MeoW 🐾</button>
+                        </div>
+                    </div>
+
+                </form>
+
+                <p class="login-link">Already have an account? <a href="/login">Sign in</a></p>
             </div>
-            <div class="form-group">
-                <label for="email" class="mb-2 text-sm">Email</label>
-                <input type="email" id="email" name="email" class="input-field" required value="{{values.email}}">
-            </div>
-            <div class="form-group">
-                <label for="phone" class="mb-2 text-sm">Phone</label>
-                <input type="tel" id="phone" name="phone" class="input-field" required value="{{values.phone}}">
-            </div>
-            <div class="form-group">
-                <label for="password" class="mb-2 text-sm">Password</label>
-                <input type="password" id="password" name="password" class="input-field" required minlength="8">
+        </div>
+
+        {{!-- ── Right panel: live Emergency Card preview ── --}}
+        <div class="register-preview-panel">
+            <p class="preview-label">Your Emergency Card · Live Preview</p>
+
+            <div class="ec-card">
+                <div class="ec-card-header">
+                    <span class="ec-logo-text">
+                        Me<svg class="ec-paw" viewBox="0 0 64 64">
+                            <g fill="white">
+                                <ellipse cx="32" cy="42" rx="17" ry="14"/>
+                                <ellipse cx="13" cy="24" rx="8" ry="10" transform="rotate(-20 13 24)"/>
+                                <ellipse cx="26" cy="13" rx="8" ry="10" transform="rotate(-5 26 13)"/>
+                                <ellipse cx="41" cy="13" rx="8" ry="10" transform="rotate(8 41 13)"/>
+                                <ellipse cx="53" cy="25" rx="8" ry="10" transform="rotate(22 53 25)"/>
+                            </g>
+                        </svg>W
+                    </span>
+                    <span class="ec-badge">EMERGENCY CARD</span>
+                </div>
+                <div class="ec-card-body">
+                    <div class="ec-qr-col">
+                        <div class="ec-qr-box">
+                            <svg viewBox="0 0 9 9" width="90" height="90" shape-rendering="crispEdges">
+                                <rect width="9" height="9" fill="white"/>
+                                <rect x="0" y="0" width="3" height="3" fill="#1e293b"/>
+                                <rect x="1" y="1" width="1" height="1" fill="white"/>
+                                <rect x="6" y="0" width="3" height="3" fill="#1e293b"/>
+                                <rect x="7" y="1" width="1" height="1" fill="white"/>
+                                <rect x="0" y="6" width="3" height="3" fill="#1e293b"/>
+                                <rect x="1" y="7" width="1" height="1" fill="white"/>
+                                <rect x="4" y="0" width="1" height="1" fill="#1e293b"/>
+                                <rect x="3" y="2" width="1" height="1" fill="#1e293b"/>
+                                <rect x="5" y="1" width="1" height="1" fill="#1e293b"/>
+                                <rect x="3" y="4" width="1" height="1" fill="#1e293b"/>
+                                <rect x="5" y="3" width="1" height="1" fill="#1e293b"/>
+                                <rect x="4" y="5" width="1" height="1" fill="#1e293b"/>
+                                <rect x="6" y="4" width="1" height="1" fill="#1e293b"/>
+                                <rect x="8" y="5" width="1" height="1" fill="#1e293b"/>
+                                <rect x="7" y="6" width="1" height="1" fill="#1e293b"/>
+                                <rect x="6" y="8" width="1" height="1" fill="#1e293b"/>
+                                <rect x="8" y="7" width="1" height="1" fill="#1e293b"/>
+                                <rect x="3" y="6" width="1" height="1" fill="#1e293b"/>
+                                <rect x="5" y="7" width="1" height="1" fill="#1e293b"/>
+                                <rect x="4" y="8" width="1" height="1" fill="#1e293b"/>
+                            </svg>
+                        </div>
+                        <span class="qr-label">Scan in Emergency</span>
+                    </div>
+                    <div class="ec-info-col">
+                        <div class="ec-cat-emoji">🐱</div>
+                        <div class="ec-cat-name">Your Cat</div>
+                        <div class="ec-field" id="ec-name">Owner: —</div>
+                        <div class="ec-field" id="ec-phone">📞 —</div>
+                        <div class="ec-field" id="ec-email">✉️ —</div>
+                    </div>
+                </div>
+                <div class="ec-card-footer">
+                    MeoW Emergency Network &nbsp;·&nbsp; Protected ✓
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-teal">
-                Register
-            </button>
-        </form>
+            <p class="preview-note">Updates live as you type · Real card generated after registration</p>
+        </div>
+
     </div>
 </div>
+
+{{!-- Success overlay shown when ?success=1 --}}
+<div class="success-overlay" id="success-overlay">
+    <div class="success-box">
+        <div class="success-cat-emoji">🐱</div>
+        <div class="success-check">✓</div>
+        <h2>Welcome to MeoW!</h2>
+        <p>Your cat now has an emergency backup plan.</p>
+        <div class="paw-confetti" id="confetti-container"></div>
+        <a href="/login" class="btn-go-login">Sign In to Continue →</a>
+    </div>
+</div>
+
+<script src="/js/register.js"></script>
