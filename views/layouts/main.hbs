@@ -153,7 +153,7 @@
 
         /* Header Variations */
         .bg-slate-dark {
-            background-color: #1e293b;
+            background: linear-gradient(135deg, #9d174d 0%, #ec4899 60%, #f472b6 100%);
         }
 
         .bg-emergency-red {
@@ -194,9 +194,9 @@
 
         .input-field:focus {
             outline: none;
-            border-color: #0d9488;
+            border-color: #ec4899;
             /* Calm teal color boundary on focus */
-            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
         }
 
         /* Special styling wrapper for numeric codes/tokens */
@@ -233,11 +233,11 @@
 
         /* Button Variations */
         .btn-teal {
-            background-color: #0d9488;
+            background-color: #ec4899;
         }
 
         .btn-teal:hover {
-            background-color: #0f766e;
+            background-color: #be185d;
         }
 
         .btn-red {
@@ -317,13 +317,13 @@
         /* Global Navigation Header Bar (Spans full window width) */
         .global-navbar {
             width: 100%;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            border-bottom: 2px solid #0d9488;
+            background: linear-gradient(135deg, #9d174d 0%, #ec4899 60%, #f472b6 100%);
+            border-bottom: 2px solid #ec4899;
             padding: 0.85rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 20px -2px rgba(13, 148, 136, 0.2);
+            box-shadow: 0 4px 20px -2px rgba(236, 72, 153, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -339,7 +339,7 @@
 
         .navbar-brand h3 a {
             text-decoration: none;
-            background: linear-gradient(to right, #38bdf8, #2dd4bf);
+            background: linear-gradient(to right, #ffffff, #fce7f3);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -370,7 +370,7 @@
         }
 
         .navbar-links a {
-            color: #94a3b8;
+            color: #fce7f3;
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 700;
@@ -382,7 +382,7 @@
         }
 
         .navbar-links a:hover {
-            color: #38bdf8;
+            color: #ffffff;
         }
 
         /* Nav link hover slide underline effect */
@@ -393,7 +393,7 @@
             height: 2px;
             bottom: -2px;
             left: 0;
-            background-color: #2dd4bf;
+            background-color: #ec4899;
             transition: width 0.3s ease;
         }
 
@@ -505,8 +505,9 @@
             <h3><a href="/">Me<svg class="logo-paw" viewBox="0 0 64 64" aria-hidden="true">
                         <defs>
                             <linearGradient id="pawGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#38bdf8" />
-                                <stop offset="100%" stop-color="#2dd4bf" />
+                                <stop offset="0%" stop-color="#f472b6" />
+                                <stop offset="50%" stop-color="#ec4899" />
+                                <stop offset="100%" stop-color="#a855f7" />
                             </linearGradient>
                         </defs>
                         <g fill="url(#pawGradient)">
