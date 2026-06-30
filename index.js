@@ -46,7 +46,7 @@ async function requireAuth(req, res, next) {
 }
 // ───────────────────────────────────────────────────────────────────────────
 
-app.get("/register", requireAuth, (req, res) => {
+app.get("/register", (req, res) => {
     res.render("register", { title: "Register", isLoggedIn: Loggedin(req) });
 });
 
@@ -94,11 +94,11 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.get("/scan", requireAuth, (req, res) => {
+app.get("/scan", (req, res) => {
     res.render("scan", { title: "MeoW Safety Gateway" });
 });
 
-app.post("/scan", requireAuth, async (req, res) => {
+app.post("/scan", async (req, res) => {
     const { qrCodeId } = req.body;
     try {
         const { eventId } = await handleScan(qrCodeId);
@@ -108,7 +108,7 @@ app.post("/scan", requireAuth, async (req, res) => {
     }
 });
 
-app.get("/scan/:eventId", requireAuth, async (req, res) => {
+app.get("/scan/:eventId", async (req, res) => {
     try {
         const { event, cat, guardians } = await getEmergencyView(req.params.eventId);
         res.render("scan", {
@@ -124,7 +124,7 @@ app.get("/scan/:eventId", requireAuth, async (req, res) => {
     }
 });
 
-app.post("/scan/:eventId/claim", requireAuth, async (req, res) => {
+app.post("/scan/:eventId/claim", async (req, res) => {
     const { guardianId } = req.body;
     try {
         await claimGuardian(req.params.eventId, guardianId);
