@@ -146,6 +146,10 @@ app.get("/logout", async (req, res) => {
 });
 // ───────────────────────────────────────────────────────────────────────────
 
+app.use((req, res) => {
+    res.status(404).render("404", { layout: false });
+});
+
 const port = process.env.PORT || 3000;
 connectDB().then(() => {
     app.listen(port, () => {
