@@ -84,14 +84,14 @@ app.post("/login", async (req, res) => {
     try {
         const session = await authenticateUser(email, password);
         if (!session) {
-            res.render("login.handlebars", { layout: false, title: "Login", error: "Invalid email or password", values: { email: email } });
+            res.render("login", { title: "Login", error: "Invalid email or password", values: { email: email } });
             return;
         } else {
             res.cookie("session", session, { maxAge: 5 * 60 * 60 * 1000, httpOnly: true });
             res.redirect("/homepage");
         }
     } catch (err) {
-        res.render("login.handlebars", { layout: false, title: "Login", error: err.message, values: { email: email } });
+        res.render("login", { title: "Login", error: err.message, values: { email: email } });
     }
 });
 
