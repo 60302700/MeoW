@@ -1,5 +1,19 @@
 import express from "express";
-import { connectDB, logoutUser, registerUser, authenticateUser, handleScan, getEmergencyView, claimGuardian, engine, checkSessionMiddleware, getUserHomepage } from "./presentation.js";
+import {
+    connectDB,
+    logoutUser,
+    registerUser,
+    authenticateUser,
+    handleScan,
+    getEmergencyView,
+    claimGuardian,
+    engine,
+    checkSessionMiddleware,
+    getUserHomepage,
+    addNewCat,
+    addNewGuardian,
+    toggleCatBackupProtocol
+} from "./presentation.js";
 
 const app = express();
 
@@ -153,9 +167,44 @@ app.get("/homepage", async (req, res) => {
         guardians,
         hasCats: cats && cats.length > 0,
         hasGuardians: guardians && guardians.length > 0,
-        layout: "hp"
+        error: req.query.error,
+        layout: "hp",
     });
 });
+
+app.post("/cats", requireAuth, async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { name, breed, age, qrid, care, photo } = req.body;
+    try {
+        await addNewCat(sessionId, { name, breed, age, photoUrl: photo, care, qrCodeId: qrid });
+        res.redirect("/homepage");
+    } catch (err) {
+        res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+});
+
+app.post("/guardians", requireAuth, async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { name, email, phone, priorityOrder } = req.body;
+    try {
+        await addNewGuardian(sessionId, { name, email, phone, priorityOrder });
+        res.redirect("/homepage");
+    } catch (err) {
+        res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+});
+
+app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { catId } = req.body;
+    try {
+        await toggleCatBackupProtocol(sessionId, catId);
+        res.redirect("/homepage");
+    } catch (err) {
+        res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+});
+
 // ── Logout ─────────────────────────────────────────────────────────────────
 app.get("/logout", async (req, res) => {
     res.clearCookie("session");

@@ -573,6 +573,80 @@
         border-top: 1px solid #e2e8f0;
         margin: 1rem 0 1.5rem;
     }
+
+    .container {
+        width: 600px;
+        background: white;
+        padding: 35px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+        margin-bottom: 2rem;
+    }
+
+    .container h1 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        color: #0f172a;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .container label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #334155;
+    }
+
+    .container input,
+    .container textarea,
+    .container select {
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        width: 100%;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: #0f172a;
+        box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .container input:focus,
+    .container textarea:focus,
+    .container select:focus {
+        outline: none;
+        border-color: #ec4899;
+        box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    }
+
+    .container textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .container button[type="submit"] {
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+        background-color: #ec4899;
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.2);
+    }
+
+    .container button[type="submit"]:hover {
+        background-color: #be185d;
+    }
 </style>
 
 <div class="gh-profile">
@@ -664,6 +738,13 @@
                 Emergencies
             </span>
         </div>
+
+        {{#if error}}
+        <div
+            style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 0.88rem;">
+            ⚠️ <strong>Error:</strong> {{error}}
+        </div>
+        {{/if}}
 
         <!-- ── Registered Cats ── -->
         <div id="Overview">
@@ -785,65 +866,209 @@
             </div>
         </div>
         <div id="Cats" style="display:none">
-            <p>Cats</p>
+            <div class="container">
+
+                <h1>🐱 Cats Registration</h1>
+
+                <form method="POST" action="/cats">
+
+                    <div class="form-group">
+                        <label for="name">Name (Cat's Name)</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Luna" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="breed">Breed</label>
+                        <input type="text" id="breed" name="breed" placeholder="e.g. British Shorthair" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" min="0" placeholder="Age in years" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qrid">QR Code ID (Emergency ID)</label>
+                        <input type="text" id="qrid" name="qrid" placeholder="e.g. CAT-000123" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="care">
+                            Care Instructions
+                            <small>(Diet, medical conditions, medications, vet details & contact info)</small>
+                        </label>
+
+                        <textarea id="care" name="care" placeholder="Example:
+
+• Diet:
+- Dry food twice daily
+- No dairy
+
+• Medical:
+- Allergic to chicken
+- Daily medication at 8 PM
+
+• Vet:
+Happy Paws Veterinary Clinic
+Dr. Sarah Johnson
++974 5555 1234"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo">Photo URL</label>
+                        <input type="url" id="photo" name="photo" placeholder="https://example.com/cat.jpg">
+                    </div>
+
+                    <button type="submit">
+                        Register Cat Passport
+                    </button>
+
+                </form>
+            </div>
         </div>
+
         <div id="Guardians" style="display:none">
-            <p>Guardians</p>
+            <div class="container">
+                <h1>🛡️ Guardian Registration</h1>
+
+                <form method="POST" action="/guardians">
+                    <div class="form-group">
+                        <label for="g-name">Full Name</label>
+                        <input type="text" id="g-name" name="name" placeholder="e.g. John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="g-email">Email Address</label>
+                        <input type="email" id="g-email" name="email" placeholder="e.g. john@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="g-phone">Phone Number</label>
+                        <input type="tel" id="g-phone" name="phone" placeholder="e.g. +974 5555 1234" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="g-priority">Priority Order</label>
+                        <select id="g-priority" name="priorityOrder" required>
+                            <option value="1">Priority #1 (Immediate responder)</option>
+                            <option value="2">Priority #2 (Backup responder)</option>
+                            <option value="3">Priority #3</option>
+                            <option value="4">Priority #4</option>
+                        </select>
+                    </div>
+
+                    <button type="submit">
+                        Register Guardian Plan
+                    </button>
+                </form>
+            </div>
         </div>
+
         <div id="Emergency" style="display:none">
-            <p>Emergency</p>
+            <div class="container">
+                <h1>🚨 Emergencies &amp; System Simulator</h1>
+
+                <div
+                    style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                    <h3 style="color: #991b1b; margin-top: 0; font-size: 0.95rem;">👮 Scanner Portal Simulation</h3>
+                    <p style="font-size: 0.82rem; color: #7f1d1d; line-height: 1.4; margin-bottom: 15px;">
+                        Test your setup! Choose one of your registered cats below to simulate scanning their QR Code.
+                        This will redirect you to the dispatcher console where you can claim care and dispatch alert
+                        notifications.
+                    </p>
+                    <form method="POST" action="/scan" target="_blank">
+                        <div class="form-group">
+                            <label for="sim-qr" style="color: #7f1d1d;">Select Pet to Simulate Scan</label>
+                            <select id="sim-qr" name="qrCodeId" required
+                                style="border-color: #fca5a5; background: #fff5f5;">
+                                <option value="" disabled selected>Choose a cat...</option>
+                                {{#each cats}}
+                                <option value="{{this.qrCodeId}}">🐈 {{this.name}} (ID: {{this.qrCodeId}})</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <button type="submit"
+                            style="background-color: #dc2626; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+                            Dispatch Simulated QR Scan ⚡
+                        </button>
+                    </form>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+                    <h3 style="color: #334155; margin-top: 0; font-size: 0.95rem;">⚙️ Arm / Disarm Backup Protocol</h3>
+                    <p style="font-size: 0.82rem; color: #475569; line-height: 1.4; margin-bottom: 15px;">
+                        Arm the safety protocol for individual pets. When armed, scanning their tags will activate
+                        notification alerts for their guardians.
+                    </p>
+                    <form method="POST" action="/cats/toggle-protocol">
+                        <div class="form-group">
+                            <label for="toggle-cat-id">Select Pet</label>
+                            <select id="toggle-cat-id" name="catId" required>
+                                <option value="" disabled selected>Choose a cat...</option>
+                                {{#each cats}}
+                                <option value="{{this._id}}">🐈 {{this.name}} (Currently: {{#if
+                                    this.isActiveBackupProtocol}}Armed 🟢{{else}}Disarmed 🔴{{/if}})</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <button type="submit"
+                            style="background-color: #0f172a; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+                            Toggle Armed Status
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <script>
-        // Generate the GitHub-style activity grid with random paw-print activity
-        (function () {
-            const grid = document.getElementById('activityGrid');
-            if (!grid) return;
+        <script>
+            // Generate the GitHub-style activity grid with random paw-print activity
+            (function () {
+                const grid = document.getElementById('activityGrid');
+                if (!grid) return;
 
-            const weeks = 52;
-            for (let w = 0; w < weeks; w++) {
-                const col = document.createElement('div');
-                col.className = 'contrib-col';
-                for (let d = 0; d < 3; d++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'contrib-cell';
-                    const r = Math.random();
-                    if (r > 0.82) cell.classList.add('l4');
-                    else if (r > 0.7) cell.classList.add('l3');
-                    else if (r > 0.55) cell.classList.add('l2');
-                    else if (r > 0.35) cell.classList.add('l1');
-                    col.appendChild(cell);
+                const weeks = 52;
+                for (let w = 0; w < weeks; w++) {
+                    const col = document.createElement('div');
+                    col.className = 'contrib-col';
+                    for (let d = 0; d < 3; d++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'contrib-cell';
+                        const r = Math.random();
+                        if (r > 0.82) cell.classList.add('l4');
+                        else if (r > 0.7) cell.classList.add('l3');
+                        else if (r > 0.55) cell.classList.add('l2');
+                        else if (r > 0.35) cell.classList.add('l1');
+                        col.appendChild(cell);
+                    }
+                    grid.appendChild(col);
                 }
-                grid.appendChild(col);
+            })();
+
+            function showOverview() {
+                document.getElementById('Overview').style.display = 'block';
+                document.getElementById('Cats').style.display = 'none';
+                document.getElementById('Guardians').style.display = 'none';
+                document.getElementById('Emergency').style.display = 'none';
             }
-        })();
 
-        function showOverview() {
-            document.getElementById('Overview').style.display = 'block';
-            document.getElementById('Cats').style.display = 'none';
-            document.getElementById('Guardians').style.display = 'none';
-            document.getElementById('Emergency').style.display = 'none';
-        }
+            function showCats() {
+                document.getElementById('Overview').style.display = 'none';
+                document.getElementById('Cats').style.display = 'block';
+                document.getElementById('Guardians').style.display = 'none';
+                document.getElementById('Emergency').style.display = 'none';
+            }
 
-        function showCats() {
-            document.getElementById('Overview').style.display = 'none';
-            document.getElementById('Cats').style.display = 'block';
-            document.getElementById('Guardians').style.display = 'none';
-            document.getElementById('Emergency').style.display = 'none';
-        }
+            function showGuardians() {
+                document.getElementById('Overview').style.display = 'none';
+                document.getElementById('Guardians').style.display = 'block';
+                document.getElementById('Cats').style.display = 'none';
+                document.getElementById('Emergency').style.display = 'none';
+            }
 
-        function showGuardians() {
-            document.getElementById('Overview').style.display = 'none';
-            document.getElementById('Guardians').style.display = 'block';
-            document.getElementById('Cats').style.display = 'none';
-            document.getElementById('Emergency').style.display = 'none';
-        }
-
-        function showEmergency() {
-            document.getElementById('Overview').style.display = 'none';
-            document.getElementById('Emergency').style.display = 'block';
-            document.getElementById('Cats').style.display = 'none';
-            document.getElementById('Guardians').style.display = 'none';
-        }
-    </script>
+            function showEmergency() {
+                document.getElementById('Overview').style.display = 'none';
+                document.getElementById('Emergency').style.display = 'block';
+                document.getElementById('Cats').style.display = 'none';
+                document.getElementById('Guardians').style.display = 'none';
+            }
+        </script>

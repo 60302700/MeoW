@@ -1,4 +1,17 @@
-import { connectDB, logout, login, registerUser, handleScan, getEmergencyView, claimGuardian, checkSession, getUserHomepage } from "./business.js";
+import {
+    connectDB,
+    logout,
+    login,
+    registerUser,
+    handleScan,
+    getEmergencyView,
+    claimGuardian,
+    checkSession,
+    getUserHomepage,
+    addNewCat,
+    addNewGuardian,
+    toggleCatBackupProtocol
+} from "./business.js";
 import { engine } from "express-handlebars";
 
 async function authenticateUser(email, password) {
@@ -13,4 +26,18 @@ async function logoutUser(sessionId) {
     return await logout(sessionId);
 }
 
-export { connectDB, engine, authenticateUser, registerUser, handleScan, getEmergencyView, claimGuardian, checkSessionMiddleware, logoutUser, getUserHomepage };
+export {
+    connectDB,
+    engine,
+    authenticateUser,
+    registerUser,
+    handleScan,
+    getEmergencyView,
+    claimGuardian,
+    checkSessionMiddleware,
+    logoutUser,
+    getUserHomepage,
+    addNewCat,
+    addNewGuardian,
+    toggleCatBackupProtocol
+};

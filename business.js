@@ -12,7 +12,10 @@ import {
     assignGuardianToEvent,
     createSession,
     deleteSession,
-    getSessionBySessionId
+    getSessionBySessionId,
+    createCat,
+    addGuardian,
+    setActiveBackupProtocol
 } from "./persistance.js";
 import bcrypt from "bcryptjs";
 
@@ -79,4 +82,88 @@ async function getUserHomepage(sessionId) {
     return { user, cats, guardians };
 }
 
-export { connectDB, logout, login, registerUser, handleScan, getEmergencyView, claimGuardian, checkSession, getUserHomepage };
+async function addNewCat(sessionId, { name, breed, age, photoUrl, care, qrCodeId }) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const user = await findUserByEmail(session.email);
+    if (!user) throw new Error("User not found");
+
+    const careInstructions = {
+        diet: care || "Standard diet",
+        medical: "No known conditions",
+        vetDetails: "No vet specified"
+    };
+
+    if (care) {
+        const lines = care.split('\n');
+        let currentSection = 'diet';
+        let sections = { diet: [], medical: [], vetDetails: [] };
+        for (let line of lines) {
+            const cleaned = line.trim();
+            if (!cleaned) continue;
+            if (cleaned.toLowerCase().includes('diet:')) {
+                currentSection = 'diet';
+            } else if (cleaned.toLowerCase().includes('medical:')) {
+                currentSection = 'medical';
+            } else if (cleaned.toLowerCase().includes('vet:')) {
+                currentSection = 'vetDetails';
+            } else {
+                sections[currentSection].push(cleaned);
+            }
+        }
+        careInstructions.diet = sections.diet.join('\n') || "Standard diet";
+        careInstructions.medical = sections.medical.join('\n') || "No known conditions";
+        careInstructions.vetDetails = sections.vetDetails.join('\n') || "No vet specified";
+    }
+
+    return await createCat({
+        ownerId: user._id,
+        name,
+        breed,
+        age: parseInt(age, 10) || 0,
+        photoUrl: photoUrl || "",
+        careInstructions,
+        qrCodeId
+    });
+}
+
+async function addNewGuardian(sessionId, { name, email, phone, priorityOrder }) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const user = await findUserByEmail(session.email);
+    if (!user) throw new Error("User not found");
+
+    return await addGuardian({
+        ownerId: user._id,
+        name,
+        phone,
+        email,
+        priorityOrder: parseInt(priorityOrder, 10) || 1
+    });
+}
+
+async function toggleCatBackupProtocol(sessionId, catId) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const cat = await getCatById(catId);
+    if (!cat) throw new Error("Cat not found");
+
+    const newStatus = !cat.isActiveBackupProtocol;
+    await setActiveBackupProtocol(catId, newStatus);
+    return newStatus;
+}
+
+export {
+    connectDB,
+    logout,
+    login,
+    registerUser,
+    handleScan,
+    getEmergencyView,
+    claimGuardian,
+    checkSession,
+    getUserHomepage,
+    addNewCat,
+    addNewGuardian,
+    toggleCatBackupProtocol
+};
