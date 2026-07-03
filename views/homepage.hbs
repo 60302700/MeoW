@@ -870,57 +870,46 @@
 
                 <h1>🐱 Cats Registration</h1>
 
-                <form method="POST" action="/cats">
+                <form id="catForm">
 
                     <div class="form-group">
-                        <label for="name">Name (Cat's Name)</label>
-                        <input type="text" id="name" name="name" placeholder="e.g. Luna" required>
+                        <label>Owner ID</label>
+                        <input type="text" id="ownerId" placeholder="MongoDB ObjectId" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="breed">Breed</label>
-                        <input type="text" id="breed" name="breed" placeholder="e.g. British Shorthair" required>
+                        <label>Cat Name</label>
+                        <input type="text" id="name" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="age">Age</label>
-                        <input type="number" id="age" name="age" min="0" placeholder="Age in years" required>
+                        <label>Breed</label>
+                        <input type="text" id="breed" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="qrid">QR Code ID (Emergency ID)</label>
-                        <input type="text" id="qrid" name="qrid" placeholder="e.g. CAT-000123" required>
+                        <label>Age</label>
+                        <input type="number" id="age" min="0" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="care">
-                            Care Instructions
-                            <small>(Diet, medical conditions, medications, vet details & contact info)</small>
-                        </label>
-
-                        <textarea id="care" name="care" placeholder="Example:
-
-• Diet:
-- Dry food twice daily
-- No dairy
-
-• Medical:
-- Allergic to chicken
-- Daily medication at 8 PM
-
-• Vet:
-Happy Paws Veterinary Clinic
-Dr. Sarah Johnson
-+974 5555 1234"></textarea>
+                        <label>Photo URL</label>
+                        <input type="url" id="photoUrl">
                     </div>
 
                     <div class="form-group">
-                        <label for="photo">Photo URL</label>
-                        <input type="url" id="photo" name="photo" placeholder="https://example.com/cat.jpg">
+                        <label>Care Instructions</label>
+                        <textarea id="careInstructions"
+                            placeholder="Diet, medication, vet details, emergency contacts..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>QR Code ID</label>
+                        <input type="text" id="qrCodeId" required>
                     </div>
 
                     <button type="submit">
-                        Register Cat Passport
+                        Create Cat
                     </button>
 
                 </form>
