@@ -25,6 +25,7 @@
     "express-handlebars": "^8.0.4",
     "file-uri-to-path": "^2.0.0",
     "mongodb": "^7.3.0",
+    "multer": "^2.2.0",
     "uuid": "^14.0.1"
   }
 }

@@ -1,0 +1,30 @@
+nohup: ignoring input
+Connected to MongoDB
+Server listening on http://localhost:3000
+{ name: 'Tom', breed: 'blue', age: '67', photo: '', care: 'none' }
+{
+  name: 'Rex',
+  breed: 'Persian',
+  age: '3',
+  photo: '',
+  care: 'Diet: Eats tuna'
+}
+{
+  name: 'Rex Base64',
+  breed: 'Siamese',
+  age: '4',
+  photo: '',
+  care: 'None'
+}
+{
+  name: 'Test User',
+  breed: 'Persian',
+  age: '19',
+  photo: '',
+  care: 'nm'
+}
+{ name: 'tom', breed: 'perisan', age: '5', photo: '', care: 'ds' }
+{ name: '5678', breed: '678', age: '678', photo: '', care: 'bnm,' }
+{ name: 'tom', breed: 'yui', age: '789', photo: '', care: '34ew' }
+{ name: 'tom', breed: 'perisan', age: '4', photo: '', care: 'nm,' }
+{ name: 'hjk', breed: 'uyi', age: '7', photo: '', care: 'mn,' }

@@ -5,55 +5,61 @@
 
     <div class="card-body">
         {{#unless emergency}}
-            <div class="text-center mb-6">
-                <p class="text-sm text-slate-600 mb-2">First Responder / Dispatcher Portal</p>
-                <h2 class="title-lg">Enter Emergency ID From Card</h2>
-            </div>
+        <div class="text-center mb-6">
+            <p class="text-sm text-slate-600 mb-2">First Responder / Dispatcher Portal</p>
+            <h2 class="title-lg">Enter Emergency ID From Card</h2>
+        </div>
 
-            <form method="POST" action="/scan" class="space-y-4">
-                <input type="text" name="qrCodeId" placeholder="e.g., QR-WHISK-9921" class="input-field input-code" required>
-                <button type="submit" class="btn btn-teal">Verify ID &amp; Alert Guardians</button>
-            </form>
+        <form method="POST" action="/scan" class="space-y-4">
+            <input type="text" name="qrCodeId" placeholder="e.g., QR-WHISK-9921" class="input-field input-code"
+                required>
+            <button type="submit" class="btn btn-teal">Verify ID &amp; Alert Guardians</button>
+        </form>
 
-            {{#if error}}
-                <p class="alert-box alert-warning text-center">❌ {{error}}</p>
-            {{/if}}
+        {{#if error}}
+        <p class="alert-box alert-warning text-center">❌ {{error}}</p>
+        {{/if}}
         {{/unless}}
 
         {{#if emergency}}
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="avatar avatar-emergency">🐈</div>
-                <div>
-                    <h2 class="title-xl">{{cat.name}}</h2>
-                    <p class="text-xs text-red-600 uppercase animate-pulse">🚨 Animal Home Alone</p>
-                </div>
-            </div>
-
-            <div class="alert-box alert-warning mb-6">
-                <h3 class="text-xs uppercase mb-2">⚠️ Urgent Care Instructions</h3>
-                <p class="text-sm mb-2">{{cat.careInstructions.diet}}</p>
-                <p class="text-sm">⚠️ {{cat.careInstructions.medical}}</p>
-            </div>
-
-            <div class="alert-box alert-info mb-6 space-y-2">
-                <p><strong>Owner:</strong> Contact unavailable (Incapacitated)</p>
-                <p>🏥 Vet: {{cat.careInstructions.vetDetails}}</p>
-                <p><strong>Status:</strong> {{#if claimed}}Guardian responding{{else}}Automated Guardian Alerts Dispatched{{/if}}</p>
-            </div>
-
-            {{#if claimed}}
-                <button class="btn btn-orange" disabled>✅ Guardian Responding (En Route)</button>
+        <div class="flex items-center space-x-4 mb-6">
+            {{#if cat.photoUrl}}
+            <img src="{{cat.photoUrl}}" class="avatar avatar-emergency" style="object-fit: cover;" alt="{{cat.name}}">
             {{else}}
-                <form method="POST" action="/scan/{{event._id}}/claim" class="space-y-4">
-                    <select name="guardianId" class="input-field" required>
-                        <option value="" disabled selected>Select your name</option>
-                        {{#each guardians}}
-                            <option value="{{this._id}}">{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                    <button type="submit" class="btn btn-red">🙋‍♂️ I am on my way</button>
-                </form>
+            <div class="avatar avatar-emergency">🐈</div>
             {{/if}}
+            <div>
+                <h2 class="title-xl">{{cat.name}}</h2>
+                <p class="text-xs text-red-600 uppercase animate-pulse">🚨 Animal Home Alone</p>
+            </div>
+        </div>
+
+        <div class="alert-box alert-warning mb-6">
+            <h3 class="text-xs uppercase mb-2">⚠️ Urgent Care Instructions</h3>
+            <p class="text-sm mb-2">{{cat.careInstructions.diet}}</p>
+            <p class="text-sm">⚠️ {{cat.careInstructions.medical}}</p>
+        </div>
+
+        <div class="alert-box alert-info mb-6 space-y-2">
+            <p><strong>Owner:</strong> Contact unavailable (Incapacitated)</p>
+            <p>🏥 Vet: {{cat.careInstructions.vetDetails}}</p>
+            <p><strong>Status:</strong> {{#if claimed}}Guardian responding{{else}}Automated Guardian Alerts
+                Dispatched{{/if}}</p>
+        </div>
+
+        {{#if claimed}}
+        <button class="btn btn-orange" disabled>✅ Guardian Responding (En Route)</button>
+        {{else}}
+        <form method="POST" action="/scan/{{event._id}}/claim" class="space-y-4">
+            <select name="guardianId" class="input-field" required>
+                <option value="" disabled selected>Select your name</option>
+                {{#each guardians}}
+                <option value="{{this._id}}">{{this.name}}</option>
+                {{/each}}
+            </select>
+            <button type="submit" class="btn btn-red">🙋‍♂️ I am on my way</button>
+        </form>
+        {{/if}}
         {{/if}}
     </div>
 </div>
