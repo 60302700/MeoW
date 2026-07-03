@@ -15,7 +15,9 @@ import {
     getSessionBySessionId,
     createCat,
     addGuardian,
-    setActiveBackupProtocol
+    setActiveBackupProtocol,
+    updateUserPassword,
+    updateUserProfile
 } from "./persistance.js";
 import bcrypt from "bcryptjs";
 
@@ -153,6 +155,34 @@ async function toggleCatBackupProtocol(sessionId, catId) {
     return newStatus;
 }
 
+async function resetPassword(email, newPassword) {
+    const user = await findUserByEmail(email);
+    if (!user) throw new Error("No account found with that email.");
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await updateUserPassword(email, passwordHash);
+}
+
+async function updateProfile(sessionId, { name, phone, currentPassword, newPassword }) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const user = await findUserByEmail(session.email);
+    if (!user) throw new Error("User not found");
+
+    if (newPassword) {
+        const valid = await bcrypt.compare(currentPassword || '', user.passwordHash);
+        if (!valid) throw new Error("Current password is incorrect.");
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await updateUserPassword(session.email, passwordHash);
+    }
+
+    const updates = {};
+    if (name && name.trim()) updates.name = name.trim();
+    if (phone !== undefined) updates.phone = phone.trim();
+    if (Object.keys(updates).length > 0) {
+        await updateUserProfile(user._id, updates);
+    }
+}
+
 export {
     connectDB,
     logout,
@@ -165,5 +195,7 @@ export {
     getUserHomepage,
     addNewCat,
     addNewGuardian,
-    toggleCatBackupProtocol
+    toggleCatBackupProtocol,
+    resetPassword,
+    updateProfile
 };

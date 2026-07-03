@@ -12,7 +12,9 @@ import {
     getUserHomepage,
     addNewCat,
     addNewGuardian,
-    toggleCatBackupProtocol
+    toggleCatBackupProtocol,
+    resetPassword,
+    updateProfile
 } from "./presentation.js";
 
 const app = express();
@@ -202,6 +204,41 @@ app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
         res.redirect("/homepage");
     } catch (err) {
         res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+});
+
+app.get("/forgot-password", async (req, res) => {
+    const isLoggedIn = await Loggedin(req);
+    res.render("forgot-password", { title: "Reset Password", isLoggedIn, success: req.query.success });
+});
+
+app.post("/forgot-password", async (req, res) => {
+    const { email, newPassword, confirmPassword } = req.body;
+    if (newPassword !== confirmPassword) {
+        return res.render("forgot-password", { title: "Reset Password", error: "Passwords do not match." });
+    }
+    if (newPassword.length < 6) {
+        return res.render("forgot-password", { title: "Reset Password", error: "Password must be at least 6 characters.", values: { email } });
+    }
+    try {
+        await resetPassword(email, newPassword);
+        res.redirect("/forgot-password?success=1");
+    } catch (err) {
+        res.render("forgot-password", { title: "Reset Password", error: err.message, values: { email } });
+    }
+});
+
+app.post("/profile/edit", requireAuth, async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { name, phone, currentPassword, newPassword, confirmNewPassword } = req.body;
+    if (newPassword && newPassword !== confirmNewPassword) {
+        return res.redirect("/homepage?error=" + encodeURIComponent("New passwords do not match."));
+    }
+    try {
+        await updateProfile(sessionId, { name, phone, currentPassword, newPassword: newPassword || null });
+        res.redirect("/homepage?success=profile");
+    } catch (err) {
+        res.redirect("/homepage?error=" + encodeURIComponent(err.message));
     }
 });
 
