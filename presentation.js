@@ -10,7 +10,9 @@ import {
     getUserHomepage,
     addNewCat,
     addNewGuardian,
-    toggleCatBackupProtocol
+    toggleCatBackupProtocol,
+    resetPassword,
+    updateProfile
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -39,5 +41,7 @@ export {
     getUserHomepage,
     addNewCat,
     addNewGuardian,
-    toggleCatBackupProtocol
+    toggleCatBackupProtocol,
+    resetPassword,
+    updateProfile
 };

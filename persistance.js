@@ -55,6 +55,16 @@ async function findUserById(userId) {
     return Users.findOne({ _id: new ObjectId(userId) });
 }
 
+async function updateUserPassword(email, passwordHash) {
+    const { Users } = collections();
+    await Users.updateOne({ email }, { $set: { passwordHash } });
+}
+
+async function updateUserProfile(userId, updates) {
+    const { Users } = collections();
+    await Users.updateOne({ _id: new ObjectId(userId) }, { $set: updates });
+}
+
 
 async function Authenticate(email, password) {
     const { Users } = collections();
@@ -209,5 +219,7 @@ export {
     createSession,
     getSession,
     deleteSession,
-    getSessionBySessionId
+    getSessionBySessionId,
+    updateUserPassword,
+    updateUserProfile
 };

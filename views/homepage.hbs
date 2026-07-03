@@ -668,7 +668,7 @@
         <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol. Every cat deserves a safety net.
             🐱</p>
 
-        <button class="gh-edit-btn">Edit profile</button>
+        <button class="gh-edit-btn" onclick="openEditProfile()">Edit profile</button>
 
         <div class="gh-stats">
             <a href="#">
@@ -1049,4 +1049,90 @@
                 document.getElementById('Cats').style.display = 'none';
                 document.getElementById('Guardians').style.display = 'none';
             }
+
+            function openEditProfile() {
+                document.getElementById('editProfileModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+            function closeEditProfile() {
+                document.getElementById('editProfileModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            document.getElementById('editProfileModal').addEventListener('click', function(e) {
+                if (e.target === this) closeEditProfile();
+            });
+
+            // Show success toast if ?success=profile in URL
+            (function() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('success') === 'profile') {
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:white;border-radius:0.85rem;padding:0.9rem 1.5rem;box-shadow:0 8px 30px rgba(0,0,0,0.1);font-size:0.9rem;font-weight:600;color:#166534;z-index:9999;border-left:4px solid #22c55e;white-space:nowrap;';
+                    toast.textContent = '✅ Profile updated successfully!';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3500);
+                    window.history.replaceState({}, '', '/homepage');
+                }
+            })();
         </script>
+
+<!-- ── Edit Profile Modal ─────────────────────────────────────────── -->
+<div id="editProfileModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:440px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
+        <button onclick="closeEditProfile()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">✕</button>
+
+        <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 0.25rem;">Edit Profile</h2>
+        <p style="font-size:0.8rem;color:#64748b;margin:0 0 1.5rem;">Leave password fields blank to keep your current password.</p>
+
+        <form method="POST" action="/profile/edit">
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Full Name</label>
+                <input type="text" name="name" value="{{user.name}}" required
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Phone</label>
+                <input type="tel" name="phone" value="{{user.phone}}"
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:1.25rem 0;">
+            <p style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 0.75rem;">Change Password (optional)</p>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Current Password</label>
+                <input type="password" name="currentPassword"
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">New Password</label>
+                <input type="password" name="newPassword" minlength="6"
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Confirm New Password</label>
+                <input type="password" name="confirmNewPassword" minlength="6"
+                    style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
+            <div style="display:flex;gap:0.75rem;">
+                <button type="button" onclick="closeEditProfile()"
+                    style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
+                    Cancel
+                </button>
+                <button type="submit"
+                    style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
