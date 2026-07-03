@@ -179,13 +179,13 @@ app.post("/scan/:eventId/claim", async (req, res) => {
 });
 
 app.get("/homepage", async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const isLoggedIn = await Loggedin(req);
+  sessionId = getSessionCookie(req);
+  isLoggedIn = await Loggedin(req);
   if (!isLoggedIn) {
     if (sessionId) res.clearCookie("session");
     return res.redirect(sessionId ? "/?expired=1" : "/");
   }
-  const sessionId = getSessionCookie(req);
+  sessionId = getSessionCookie(req);
   const data = await getUserHomepage(sessionId);
   if (!data) {
     return res.redirect("/");
