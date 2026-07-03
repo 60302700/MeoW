@@ -14,6 +14,8 @@ import {
     addNewGuardian,
     toggleCatBackupProtocol
 } from "./presentation.js";
+import { v4 as uuidv4 } from 'uuid';
+
 
 const app = express();
 
@@ -174,9 +176,10 @@ app.get("/homepage", async (req, res) => {
 
 app.post("/cats", requireAuth, async (req, res) => {
     const sessionId = getSessionCookie(req);
-    const { name, breed, age, qrid, care, photo } = req.body;
+    console.log(req.body);
+    const { name, breed, age, care, photo } = req.body;
     try {
-        await addNewCat(sessionId, { name, breed, age, photoUrl: photo, care, qrCodeId: qrid });
+        await addNewCat(sessionId, { name, breed, age, photoUrl: photo, care, qrCodeId: uuidv4() });
         res.redirect("/homepage");
     } catch (err) {
         res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);

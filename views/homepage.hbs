@@ -870,44 +870,33 @@
 
                 <h1>🐱 Cats Registration</h1>
 
-                <form id="catForm">
-
-                    <div class="form-group">
-                        <label>Owner ID</label>
-                        <input type="text" id="ownerId" placeholder="MongoDB ObjectId" required>
-                    </div>
+                <form id="catForm" method="POST" action="/cats">
 
                     <div class="form-group">
                         <label>Cat Name</label>
-                        <input type="text" id="name" required>
+                        <input type="text" id="name" name="name" required>
                     </div>
 
                     <div class="form-group">
                         <label>Breed</label>
-                        <input type="text" id="breed" required>
+                        <input type="text" id="breed" name="breed" required>
                     </div>
 
                     <div class="form-group">
                         <label>Age</label>
-                        <input type="number" id="age" min="0" required>
+                        <input type="number" id="age" name="age" min="0" required>
                     </div>
 
                     <div class="form-group">
                         <label>Photo URL</label>
-                        <input type="url" id="photoUrl">
+                        <input type="file" id="photo" name="photo">
                     </div>
 
                     <div class="form-group">
                         <label>Care Instructions</label>
-                        <textarea id="careInstructions"
+                        <textarea id="careInstructions" name="care"
                             placeholder="Diet, medication, vet details, emergency contacts..."></textarea>
                     </div>
-
-                    <div class="form-group">
-                        <label>QR Code ID</label>
-                        <input type="text" id="qrCodeId" required>
-                    </div>
-
                     <button type="submit">
                         Create Cat
                     </button>
