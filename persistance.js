@@ -17,6 +17,11 @@ async function connectDB() {
     if (!db) {
         await client.connect();
         db = client.db(dbName);
+        // Auto-expire sessions after 30 minutes of inactivity
+        await db.collection('Sessions').createIndex(
+            { lastActivity: 1 },
+            { expireAfterSeconds: 30 * 60 }
+        );
         console.log('Connected to MongoDB');
     }
     return db;
@@ -177,8 +182,13 @@ async function updateEmergencyEventStatus(eventId, status) {
 async function createSession(email) {
     const { Sessions } = collections();
     const sessionValue = uuidv4();
-    const result = await Sessions.insertOne({ email: email, sessionId: sessionValue });
+    await Sessions.insertOne({ email, sessionId: sessionValue, createdAt: new Date(), lastActivity: new Date() });
     return sessionValue;
+}
+
+async function touchSession(sessionId) {
+    const { Sessions } = collections();
+    await Sessions.updateOne({ sessionId }, { $set: { lastActivity: new Date() } });
 }
 
 async function getSession(email) {
@@ -217,6 +227,7 @@ export {
     updateEmergencyEventStatus,
     Authenticate,
     createSession,
+    touchSession,
     getSession,
     deleteSession,
     getSessionBySessionId,

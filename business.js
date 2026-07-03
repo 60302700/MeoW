@@ -17,7 +17,8 @@ import {
     addGuardian,
     setActiveBackupProtocol,
     updateUserPassword,
-    updateUserProfile
+    updateUserProfile,
+    touchSession
 } from "./persistance.js";
 import bcrypt from "bcryptjs";
 
@@ -64,9 +65,8 @@ async function claimGuardian(eventId, guardianId) {
 
 async function checkSession(sessionId) {
     const session = await getSessionBySessionId(sessionId);
-    if (!session) {
-        return false;
-    }
+    if (!session) return false;
+    await touchSession(sessionId);
     return true;
 }
 

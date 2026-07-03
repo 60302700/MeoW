@@ -3,6 +3,12 @@
         Login
     </div>
 
+    {{#if expired}}
+    <div style="background:#fff7ed;border-left:4px solid #f97316;color:#9a3412;padding:0.75rem 1rem;border-radius:0.5rem;font-size:0.875rem;font-weight:600;margin-bottom:1.25rem;">
+        ⏱️ Your session expired. Please sign in again.
+    </div>
+    {{/if}}
+
     {{#if error}}
         <div class="inline-error">{{error}}</div>
     {{/if}}
