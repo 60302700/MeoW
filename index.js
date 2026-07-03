@@ -55,7 +55,7 @@ async function requireAuth(req, res, next) {
     const valid = await checkSessionMiddleware(sessionId);
     if (!valid) {
         res.clearCookie("session");
-        return res.redirect("/");
+        return res.redirect("/?expired=1");
     }
     next();
 }
@@ -68,7 +68,7 @@ app.get("/register", async (req, res) => {
 
 app.get("/login", async (req, res) => {
     const isLoggedIn = await Loggedin(req);
-    res.render("login", { title: "Login", isLoggedIn: isLoggedIn });
+    res.render("login", { title: "Login", isLoggedIn, expired: req.query.expired === "1" });
 });
 
 app.get("/emergency", (req, res) => {
@@ -91,7 +91,7 @@ app.post("/register", async (req, res) => {
 
 app.get("/", async (req, res) => {
     const isLoggedIn = await Loggedin(req);
-    res.render("login", { title: "Login", isLoggedIn: isLoggedIn });
+    res.render("login", { title: "Login", isLoggedIn, expired: req.query.expired === "1" });
 });
 
 app.post("/login", async (req, res) => {
@@ -151,9 +151,11 @@ app.post("/scan/:eventId/claim", async (req, res) => {
 
 
 app.get("/homepage", async (req, res) => {
+    const sessionId = getSessionCookie(req);
     const isLoggedIn = await Loggedin(req);
     if (!isLoggedIn) {
-        return res.redirect("/");
+        if (sessionId) res.clearCookie("session");
+        return res.redirect(sessionId ? "/?expired=1" : "/");
     }
     const sessionId = getSessionCookie(req);
     const data = await getUserHomepage(sessionId);
