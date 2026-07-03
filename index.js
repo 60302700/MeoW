@@ -1,4 +1,5 @@
 import express from "express";
+import { startEscalationWorkflow } from "./temporal/client.js";
 import {
   connectDB,
   logoutUser,
@@ -27,7 +28,13 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // Optional: Limits files to 5MB to protect RAM
 });
 
-app.engine("hbs", engine({ extname: ".hbs" }));
+const hbsEngine = engine({
+  extname: ".hbs",
+  helpers: {
+    eq: (a, b) => a === b,
+  },
+});
+app.engine("hbs", hbsEngine);
 app.engine("handlebars", engine({ extname: ".handlebars" }));
 app.set("view engine", "hbs");
 app.set("views", "./views");
@@ -144,7 +151,11 @@ app.get("/scan", (req, res) => {
 app.post("/scan", async (req, res) => {
   const { qrCodeId } = req.body;
   try {
-    const { eventId } = await handleScan(qrCodeId);
+    const { eventId, guardianCount } = await handleScan(qrCodeId);
+    console.log(`[Scan] eventId=${eventId} guardianCount=${guardianCount}`);
+    startEscalationWorkflow(eventId.toString(), guardianCount)
+      .then(() => console.log("[Temporal] Workflow started successfully"))
+      .catch((err) => console.error("[Temporal] Failed:", err.message));
     res.redirect(`/scan/${eventId}`);
   } catch (err) {
     res.render("scan", { title: "MeoW Safety Gateway", error: err.message });
@@ -179,13 +190,12 @@ app.post("/scan/:eventId/claim", async (req, res) => {
 });
 
 app.get("/homepage", async (req, res) => {
-  sessionId = getSessionCookie(req);
-  isLoggedIn = await Loggedin(req);
+  const sessionId = getSessionCookie(req);
+  const isLoggedIn = await Loggedin(req);
   if (!isLoggedIn) {
     if (sessionId) res.clearCookie("session");
     return res.redirect(sessionId ? "/?expired=1" : "/");
   }
-  sessionId = getSessionCookie(req);
   const data = await getUserHomepage(sessionId);
   if (!data) {
     return res.redirect("/");

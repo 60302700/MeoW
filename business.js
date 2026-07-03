@@ -46,7 +46,8 @@ async function handleScan(qrCodeId) {
         throw new Error("Invalid Emergency ID. Please try again.");
     }
     const eventId = await createEmergencyEvent({ qrCodeId, catId: cat._id });
-    return { cat, eventId };
+    const guardians = await getGuardiansByOwner(cat.ownerId);
+    return { cat, eventId, guardianCount: guardians.length };
 }
 
 async function getEmergencyView(eventId) {
