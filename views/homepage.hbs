@@ -733,11 +733,6 @@
         <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol. Every cat deserves a safety net.
             🐱</p>
 
-<<<<<<< HEAD
-        <button class="gh-edit-btn" onclick="window.open('/profile/edit', '_blank')">Edit profile</button>
-
-=======
->>>>>>> 85e49f94d74d149e1fce9479c142af88726ae945
         <div class="gh-stats">
             <a href="#">
                 <span class="stat-count">{{cats.length}}</span> cats
@@ -926,9 +921,12 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">New Photo</label>
-                                <input type="file" name="photo" accept="image/*"
-                                    style="width:100%;padding:0.5rem 0;font-size:0.82rem;color:#64748b;box-sizing:border-box;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Replace Photo</label>
+                                <label style="display:block;padding:0.6rem 0.85rem;border:2px dashed #e2e8f0;border-radius:0.65rem;font-size:0.82rem;color:#94a3b8;cursor:pointer;text-align:center;transition:border-color 0.2s;"
+                                    onmouseover="this.style.borderColor='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0'">
+                                    Choose file
+                                    <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.parentElement.textContent=this.files[0]?this.files[0].name:'Choose file'">
+                                </label>
                             </div>
                         </div>
 
@@ -1063,11 +1061,16 @@
                     <div class="gh-repo-card">
                         <div class="repo-top-row">
                             <span class="repo-name">{{this.name}}</span>
-                            {{#if this.hasAccepted}}
-                            <span class="repo-visibility">🟢 Accepted</span>
-                            {{else}}
-                            <span class="repo-visibility">Pending</span>
-                            {{/if}}
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                {{#if this.hasAccepted}}
+                                <span class="repo-visibility">Accepted</span>
+                                {{else}}
+                                <span class="repo-visibility">Pending</span>
+                                {{/if}}
+                                <button onclick="openEditGuardian('{{this._id}}')"
+                                    style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
+                                    onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
+                            </div>
                         </div>
 
                         <p class="repo-desc">
@@ -1099,6 +1102,52 @@
                     </div>
                     {{/each}}
                 </div>
+
+                <!-- ── Per-guardian edit modals ────────────────────────── -->
+                {{#each guardians}}
+                <div id="editGuardianModal-{{this._id}}"
+                    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;"
+                    onclick="if(event.target===this)closeEditGuardian('{{this._id}}')">
+                    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
+                        <button onclick="closeEditGuardian('{{this._id}}')"
+                            style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
+                        <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
+                        <form method="POST" action="/guardians/{{this._id}}/edit">
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
+                                <input type="text" name="name" value="{{this.name}}" required
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Email</label>
+                                <input type="email" name="email" value="{{this.email}}"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Phone</label>
+                                <input type="tel" name="phone" value="{{this.phone}}"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:1.5rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Priority Order</label>
+                                <input type="number" name="priorityOrder" value="{{this.priorityOrder}}" min="1"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="display:flex;gap:0.75rem;">
+                                <button type="button" onclick="closeEditGuardian('{{this._id}}')"
+                                    style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
+                                <button type="submit"
+                                    style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {{/each}}
+
                 {{else}}
                 <div class="gh-empty">
                     <div class="empty-icon">🤝</div>
@@ -1599,6 +1648,15 @@
                 if (e.target === this) closeChangePassword();
             });
 
+            function openEditGuardian(id) {
+                const m = document.getElementById('editGuardianModal-' + id);
+                if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+            }
+            function closeEditGuardian(id) {
+                const m = document.getElementById('editGuardianModal-' + id);
+                if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+            }
+
             function openEditCat(catId) {
                 const m = document.getElementById('editCatModal-' + catId);
                 if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
@@ -1652,6 +1710,9 @@
                     window.history.replaceState({}, '', '/homepage');
                 } else if (params.get('success') === 'cat') {
                     showToast('Cat profile updated.', '#166534', '#22c55e');
+                    window.history.replaceState({}, '', '/homepage');
+                } else if (params.get('success') === 'guardian') {
+                    showToast('Guardian updated.', '#166534', '#22c55e');
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();

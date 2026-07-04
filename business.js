@@ -18,6 +18,7 @@ import {
   createCat,
   addGuardian,
   updateCatById,
+  updateGuardianByObjectId,
   setActiveBackupProtocol,
   updateUserPassword,
   updateUserProfile,
@@ -186,6 +187,19 @@ async function addNewGuardian(
     email,
     priorityOrder: parseInt(priorityOrder, 10) || 1,
     Id: Id || null,
+  });
+}
+
+async function editGuardian(sessionId, guardianId, { name, email, phone, priorityOrder }) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  await updateGuardianByObjectId(guardianId, {
+    name,
+    email,
+    phone,
+    priorityOrder: parseInt(priorityOrder, 10) || 1,
   });
 }
 
@@ -382,6 +396,7 @@ export {
   addNewCat,
   addNewGuardian,
   editCat,
+  editGuardian,
   toggleCatBackupProtocol,
   requestPasswordReset,
   resetPasswordWithToken,

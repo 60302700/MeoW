@@ -401,8 +401,12 @@ async function searchGuardianById(Id) {
 
 async function updateGuardianById(Id, updates) {
   const { Guardians } = collections();
-  // Only set fields provided in updates
   await Guardians.updateOne({ Id: Id }, { $set: updates });
+}
+
+async function updateGuardianByObjectId(guardianId, updates) {
+  const { Guardians } = collections();
+  await Guardians.updateOne({ _id: new ObjectId(guardianId) }, { $set: updates });
 }
 
 export {
@@ -420,6 +424,7 @@ export {
   setActiveBackupProtocol,
   addGuardian,
   getGuardiansByOwner,
+  updateGuardianByObjectId,
   setGuardianAccepted,
   createEmergencyEvent,
   getEmergencyEventById,
