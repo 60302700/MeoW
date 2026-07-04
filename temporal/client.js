@@ -38,3 +38,36 @@ export async function startEscalationWorkflow(eventId, totalGuardians) {
 
     console.log(`[Temporal] Started escalation workflow for event ${eventId}`);
 }
+
+export async function startOwnerUnavailableWorkflow(unavailabilityId, ownerId, ownerName, guardians, catNames) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    await client.workflow.start('ownerUnavailableWorkflow', {
+        taskQueue: 'meow-escalation',
+        workflowId: `unavailable-${unavailabilityId}`,
+        args: [{ unavailabilityId, ownerId, ownerName, guardians, catNames }],
+    });
+    console.log(`[Temporal] Started owner-unavailable workflow for unavailability ${unavailabilityId}`);
+}
+
+export async function signalOwnerAvailable(unavailabilityId) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    try {
+        const handle = client.workflow.getHandle(`unavailable-${unavailabilityId}`);
+        await handle.signal('ownerAvailable');
+    } catch (err) {
+        console.warn('[Temporal] signalOwnerAvailable — workflow may have already completed:', err.message);
+    }
+}
+
+export async function signalGuardianAcknowledged(unavailabilityId) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    try {
+        const handle = client.workflow.getHandle(`unavailable-${unavailabilityId}`);
+        await handle.signal('guardianAcknowledged');
+    } catch (err) {
+        console.warn('[Temporal] signalGuardianAcknowledged — workflow may have already completed:', err.message);
+    }
+}

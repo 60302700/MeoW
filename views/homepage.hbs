@@ -136,6 +136,36 @@
         border-color: #cbd5e1;
     }
 
+    .gh-unavail-btn {
+        width: 100%;
+        padding: 0.45rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        margin-bottom: 1rem;
+        border: 1px solid #fca5a5;
+        background: #fff5f5;
+        color: #b91c1c;
+    }
+
+    .gh-unavail-btn:hover {
+        background: #fee2e2;
+        border-color: #f87171;
+    }
+
+    .gh-unavail-btn.is-unavailable {
+        border-color: #86efac;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .gh-unavail-btn.is-unavailable:hover {
+        background: #dcfce7;
+        border-color: #4ade80;
+    }
+
     /* Stats row */
     .gh-stats {
         display: flex;
@@ -704,6 +734,16 @@
             🐱</p>
 
         <button class="gh-edit-btn" onclick="openEditProfile()">Edit profile</button>
+
+        {{#if isUnavailable}}
+        <form method="POST" action="/owner/available">
+            <button type="submit" class="gh-unavail-btn is-unavailable">✅ I'm back — mark available</button>
+        </form>
+        {{else}}
+        <form method="POST" action="/owner/unavailable">
+            <button type="submit" class="gh-unavail-btn">😴 Mark me as unavailable</button>
+        </form>
+        {{/if}}
 
         <div class="gh-stats">
             <a href="#">

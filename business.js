@@ -1,9 +1,9 @@
 import {
-<<<<<<< HEAD
   connectDB,
   Authenticate,
   createUser,
   findUserByEmail,
+  findUserById,
   getCatByQrCode,
   getCatById,
   getCatsByOwner,
@@ -22,37 +22,25 @@ import {
   touchSession,
   getCatByName,
   searchUsersByName,
-=======
-    connectDB,
-    Authenticate,
-    createUser,
-    findUserByEmail,
-    getCatByQrCode,
-    getCatById,
-    getCatsByOwner,
-    createEmergencyEvent,
-    getEmergencyEventById,
-    getGuardiansByOwner,
-    assignGuardianToEvent,
-    createSession,
-    deleteSession,
-    getSessionBySessionId,
-    createCat,
-    addGuardian,
-    setActiveBackupProtocol,
-    updateUserPassword,
-    updateUserProfile,
-    touchSession,
-    createPasswordResetToken,
-    getPasswordResetToken,
-    deletePasswordResetToken,
->>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
+  createPasswordResetToken,
+  getPasswordResetToken,
+  deletePasswordResetToken,
+  createOwnerUnavailability,
+  getActiveUnavailability,
+  resolveUnavailability,
+  getGuardianAccessToken,
+  acknowledgeGuardianToken,
 } from "./persistance.js";
 import { sendPasswordResetEmail } from "./mailer.js";
+import { startOwnerUnavailableWorkflow, signalOwnerAvailable, signalGuardianAcknowledged } from "./temporal/client.js";
 import bcrypt from "bcryptjs";
 
 async function getCatByNameBusinessLayer(catName) {
   return getCatByName(catName);
+}
+
+async function searchGurdian(name) {
+  return await searchUsersByName(name);
 }
 
 async function login(email, password) {
@@ -62,10 +50,6 @@ async function login(email, password) {
   } else {
     return null;
   }
-}
-
-async function searchGurdian(name) {
-  return await searchUsersByName(name);
 }
 
 async function registerUser({ name, email, password, phone }) {
@@ -119,13 +103,11 @@ async function getUserHomepage(sessionId) {
   if (!user) return null;
   const cats = await getCatsByOwner(user._id);
   const guardians = await getGuardiansByOwner(user._id);
-  return { user, cats, guardians };
+  const unavailability = await getActiveUnavailability(user._id.toString());
+  return { user, cats, guardians, isUnavailable: !!unavailability };
 }
 
-async function addNewCat(
-  sessionId,
-  { name, breed, age, photoUrl, care, qrCodeId },
-) {
+async function addNewCat(sessionId, { name, breed, age, photoUrl, care, qrCodeId }) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
@@ -155,10 +137,8 @@ async function addNewCat(
       }
     }
     careInstructions.diet = sections.diet.join("\n") || "Standard diet";
-    careInstructions.medical =
-      sections.medical.join("\n") || "No known conditions";
-    careInstructions.vetDetails =
-      sections.vetDetails.join("\n") || "No vet specified";
+    careInstructions.medical = sections.medical.join("\n") || "No known conditions";
+    careInstructions.vetDetails = sections.vetDetails.join("\n") || "No vet specified";
   }
 
   return await createCat({
@@ -172,10 +152,7 @@ async function addNewCat(
   });
 }
 
-async function addNewGuardian(
-  sessionId,
-  { name, email, phone, priorityOrder },
-) {
+async function addNewGuardian(sessionId, { name, email, phone, priorityOrder }) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
@@ -201,51 +178,37 @@ async function toggleCatBackupProtocol(sessionId, catId) {
   return newStatus;
 }
 
-<<<<<<< HEAD
-async function resetPassword(email, newPassword) {
-  const user = await findUserByEmail(email);
-  if (!user) throw new Error("No account found with that email.");
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-  await updateUserPassword(email, passwordHash);
-=======
 async function updateUserPhoto(sessionId, photoUrl) {
-    const session = await getSessionBySessionId(sessionId);
-    if (!session) throw new Error("Unauthorized");
-    const user = await findUserByEmail(session.email);
-    if (!user) throw new Error("User not found");
-    await updateUserProfile(user._id, { photoUrl });
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  await updateUserProfile(user._id, { photoUrl });
 }
 
 async function requestPasswordReset(email) {
-    const user = await findUserByEmail(email);
-    if (!user) throw new Error("No account found with that email.");
-    const token = await createPasswordResetToken(email);
-    await sendPasswordResetEmail(email, token);
+  const user = await findUserByEmail(email);
+  if (!user) throw new Error("No account found with that email.");
+  const token = await createPasswordResetToken(email);
+  await sendPasswordResetEmail(email, token);
 }
 
 async function resetPasswordWithToken(token, newPassword) {
-    const record = await getPasswordResetToken(token);
-    if (!record) throw new Error("This reset link is invalid or has expired.");
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(record.email, passwordHash);
-    await deletePasswordResetToken(token);
->>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
+  const record = await getPasswordResetToken(token);
+  if (!record) throw new Error("This reset link is invalid or has expired.");
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await updateUserPassword(record.email, passwordHash);
+  await deletePasswordResetToken(token);
 }
 
-async function updateProfile(
-  sessionId,
-  { name, phone, currentPassword, newPassword },
-) {
+async function updateProfile(sessionId, { name, phone, currentPassword, newPassword }) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
   if (!user) throw new Error("User not found");
 
   if (newPassword) {
-    const valid = await bcrypt.compare(
-      currentPassword || "",
-      user.passwordHash,
-    );
+    const valid = await bcrypt.compare(currentPassword || "", user.passwordHash);
     if (!valid) throw new Error("Current password is incorrect.");
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await updateUserPassword(session.email, passwordHash);
@@ -259,8 +222,62 @@ async function updateProfile(
   }
 }
 
+async function setOwnerUnavailable(sessionId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+
+  const existing = await getActiveUnavailability(user._id.toString());
+  if (existing) throw new Error("You are already marked as unavailable.");
+
+  const guardians = await getGuardiansByOwner(user._id);
+  if (!guardians.length) throw new Error("You need at least one guardian before using this feature.");
+
+  const cats = await getCatsByOwner(user._id);
+  const catNames = cats.map(c => c.name);
+  const unavailabilityId = await createOwnerUnavailability(user._id.toString());
+  const guardianArgs = guardians.map(g => ({ id: g._id.toString(), email: g.email, name: g.name }));
+
+  await startOwnerUnavailableWorkflow(
+    unavailabilityId.toString(),
+    user._id.toString(),
+    user.name,
+    guardianArgs,
+    catNames
+  );
+}
+
+async function setOwnerAvailable(sessionId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+
+  const record = await getActiveUnavailability(user._id.toString());
+  if (!record) return;
+
+  await resolveUnavailability(record._id.toString());
+  await signalOwnerAvailable(record._id.toString());
+}
+
+async function getGuardianAccess(token) {
+  const record = await getGuardianAccessToken(token);
+  if (!record) throw new Error("This link is invalid or has expired.");
+  const cats = await getCatsByOwner(record.ownerId.toString());
+  const owner = await findUserById(record.ownerId.toString());
+  return { record, cats, ownerName: owner?.name || "Unknown", alreadyAcknowledged: record.acknowledged };
+}
+
+async function acknowledgeGuardianAccess(token) {
+  const record = await getGuardianAccessToken(token);
+  if (!record) throw new Error("This link is invalid or has expired.");
+  if (record.acknowledged) return;
+  await acknowledgeGuardianToken(token);
+  await signalGuardianAcknowledged(record.unavailabilityId.toString());
+}
+
 export {
-<<<<<<< HEAD
   connectDB,
   logout,
   login,
@@ -273,26 +290,14 @@ export {
   addNewCat,
   addNewGuardian,
   toggleCatBackupProtocol,
-  resetPassword,
+  requestPasswordReset,
+  resetPasswordWithToken,
   updateProfile,
+  updateUserPhoto,
   getCatByNameBusinessLayer,
   searchGurdian,
-=======
-    connectDB,
-    logout,
-    login,
-    registerUser,
-    handleScan,
-    getEmergencyView,
-    claimGuardian,
-    checkSession,
-    getUserHomepage,
-    addNewCat,
-    addNewGuardian,
-    toggleCatBackupProtocol,
-    requestPasswordReset,
-    resetPasswordWithToken,
-    updateProfile,
-    updateUserPhoto,
->>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
 };

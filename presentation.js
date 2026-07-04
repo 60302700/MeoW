@@ -15,6 +15,12 @@ import {
   resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
+  getCatByNameBusinessLayer,
+  searchGurdian,
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -37,6 +43,7 @@ async function logoutUser(sessionId) {
 async function searchUsersByName(name) {
   return await searchGurdian(name);
 }
+
 export {
   connectDB,
   engine,
@@ -55,4 +62,10 @@ export {
   resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
+  getCatByNamePresentationLayer,
+  searchUsersByName,
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
 };

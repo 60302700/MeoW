@@ -17,12 +17,13 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
   updateProfile,
-<<<<<<< HEAD
+  updateUserPhoto,
   getCatByNamePresentationLayer,
   searchUsersByName,
-=======
-  updateUserPhoto,
->>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -32,7 +33,7 @@ const app = express();
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Optional: Limits files to 5MB to protect RAM
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const hbsEngine = engine({
@@ -50,7 +51,6 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 // ── Session middleware ──────────────────────────────────────────────────────
-// Manually parse the session cookie from the Cookie header.
 function getSessionCookie(req) {
   const cookieHeader = req.headers.cookie || "";
   const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
@@ -59,21 +59,15 @@ function getSessionCookie(req) {
 
 async function Loggedin(req) {
   const isLoggedIn = getSessionCookie(req);
-  if (!isLoggedIn) {
-    return false;
-  }
+  if (!isLoggedIn) return false;
   const valid = await checkSessionMiddleware(isLoggedIn);
-  if (!valid) {
-    return false;
-  }
+  if (!valid) return false;
   return true;
 }
 
 async function requireAuth(req, res, next) {
   const sessionId = getSessionCookie(req);
-  if (!sessionId) {
-    return res.redirect("/");
-  }
+  if (!sessionId) return res.redirect("/");
   const valid = await checkSessionMiddleware(sessionId);
   if (!valid) {
     res.clearCookie("session");
@@ -173,9 +167,7 @@ app.post("/scan", async (req, res) => {
 
 app.get("/scan/:eventId", async (req, res) => {
   try {
-    const { event, cat, guardians } = await getEmergencyView(
-      req.params.eventId,
-    );
+    const { event, cat, guardians } = await getEmergencyView(req.params.eventId);
     res.render("scan", {
       title: "MeoW Safety Gateway",
       emergency: true,
@@ -206,10 +198,8 @@ app.get("/homepage", async (req, res) => {
     return res.redirect(sessionId ? "/?expired=1" : "/");
   }
   const data = await getUserHomepage(sessionId);
-  if (!data) {
-    return res.redirect("/");
-  }
-  const { user, cats, guardians } = data;
+  if (!data) return res.redirect("/");
+  const { user, cats, guardians, isUnavailable } = data;
   res.render("homepage", {
     title: `${user.name}'s Homepage`,
     isLoggedIn,
@@ -218,6 +208,7 @@ app.get("/homepage", async (req, res) => {
     guardians,
     hasCats: cats && cats.length > 0,
     hasGuardians: guardians && guardians.length > 0,
+    isUnavailable,
     error: req.query.error,
     layout: "hp",
   });
@@ -225,7 +216,6 @@ app.get("/homepage", async (req, res) => {
 
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
-
   const { name, breed, age, care, photo } = req.body;
   let photoString = "";
 
@@ -238,7 +228,6 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
     } else if (photo) {
       photoString = photo.startsWith("data:") ? photo : `data:image/png;base64,${photo}`;
     }
-    // 4. Send the data to your database function
     await addNewCat(sessionId, {
       name,
       breed,
@@ -247,8 +236,6 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
       care,
       qrCodeId: uuidv4(),
     });
-
-    // 5. Always remember to redirect the user after a successful POST request
     res.redirect("/homepage");
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
@@ -267,7 +254,6 @@ app.post("/guardians", requireAuth, async (req, res) => {
 });
 
 app.post("/cats/:catId", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
   res.redirect("/homepage");
 });
 
@@ -314,28 +300,16 @@ app.get("/reset-password", async (req, res) => {
 app.post("/reset-password", async (req, res) => {
   const { token, newPassword, confirmPassword } = req.body;
   if (newPassword !== confirmPassword) {
-    return res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: "Passwords do not match.",
-    });
+    return res.render("reset-password", { title: "Set New Password", token, error: "Passwords do not match." });
   }
   if (newPassword.length < 6) {
-    return res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: "Password must be at least 6 characters.",
-    });
+    return res.render("reset-password", { title: "Set New Password", token, error: "Password must be at least 6 characters." });
   }
   try {
     await resetPasswordWithToken(token, newPassword);
     res.redirect("/login?reset=1");
   } catch (err) {
-    res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: err.message,
-    });
+    res.render("reset-password", { title: "Set New Password", token, error: err.message });
   }
 });
 
@@ -353,12 +327,9 @@ app.post("/profile/photo", requireAuth, upload.single("photo"), async (req, res)
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { name, phone, currentPassword, newPassword, confirmNewPassword } =
-    req.body;
+  const { name, phone, currentPassword, newPassword, confirmNewPassword } = req.body;
   if (newPassword && newPassword !== confirmNewPassword) {
-    return res.redirect(
-      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
-    );
+    return res.redirect("/homepage?error=" + encodeURIComponent("New passwords do not match."));
   }
   try {
     await updateProfile(sessionId, {
@@ -382,6 +353,59 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     layout: "hp",
   });
 });
+
+// ── Owner availability ─────────────────────────────────────────────────────
+app.post("/owner/unavailable", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  try {
+    await setOwnerUnavailable(sessionId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+
+app.post("/owner/available", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  try {
+    await setOwnerAvailable(sessionId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+
+// ── Guardian magic link ────────────────────────────────────────────────────
+app.get("/guardian-access", async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect("/");
+  try {
+    const { record, cats, ownerName, alreadyAcknowledged } = await getGuardianAccess(token);
+    res.render("guardian-access", {
+      title: "Guardian Access",
+      token,
+      cats,
+      ownerName,
+      alreadyAcknowledged,
+      acked: req.query.acked === "1",
+      layout: false,
+    });
+  } catch (err) {
+    res.render("guardian-access", { title: "Guardian Access", error: err.message, layout: false });
+  }
+});
+
+app.post("/guardian-access/:token/acknowledge", async (req, res) => {
+  const { token } = req.params;
+  try {
+    await acknowledgeGuardianAccess(token);
+    res.redirect(`/guardian-access?token=${token}&acked=1`);
+  } catch (err) {
+    res.redirect(`/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`);
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
 // ── Logout ─────────────────────────────────────────────────────────────────
 app.get("/logout", async (req, res) => {
   res.clearCookie("session");
