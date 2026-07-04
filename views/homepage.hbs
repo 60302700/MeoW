@@ -832,16 +832,9 @@
                     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
                         <div class="repo-top-row">
                             <span class="repo-name"><a href="/cats/{{this.name}}" target="_blank">{{this.name}}</a></span>
-                            <div style="display:flex;align-items:center;gap:0.5rem;">
-                                {{#if this.isActiveBackupProtocol}}
-                                <span class="repo-visibility">Protected</span>
-                                {{else}}
-                                <span class="repo-visibility">Unprotected</span>
-                                {{/if}}
-                                <button onclick="openEditCat('{{this._id}}')"
-                                    style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                    onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
-                            </div>
+                            {{#if this.isActiveBackupProtocol}}
+                            <span class="repo-visibility">Protected</span>
+                            {{/if}}
                         </div>
 
                         <p class="repo-desc">
@@ -874,11 +867,8 @@
                 {{/each}}
             </div>
 
-            <!-- ── Per-cat edit modals ─────────────────────────────────── -->
             {{#each cats}}
-            <div id="editCatModal-{{this._id}}"
-                style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;"
-                onclick="if(event.target===this)closeEditCat('{{this._id}}')">
+            <div id="editCatModal-{{this._id}}" style="display:none"
                 <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
                     <button onclick="closeEditCat('{{this._id}}')"
                         style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
@@ -1064,8 +1054,6 @@
                             <div style="display:flex;align-items:center;gap:0.5rem;">
                                 {{#if this.hasAccepted}}
                                 <span class="repo-visibility">Accepted</span>
-                                {{else}}
-                                <span class="repo-visibility">Pending</span>
                                 {{/if}}
                                 <button onclick="openEditGuardian('{{this._id}}')"
                                     style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
@@ -1073,30 +1061,18 @@
                             </div>
                         </div>
 
-                        <p class="repo-desc">
-                            Trusted guardian for your cats. {{#if this.phone}}Reachable at {{this.phone}}.{{/if}}
-                            {{#if this.email}} Email: {{this.email}}{{/if}}
-                        </p>
-
                         <div class="repo-footer">
                             {{#if this.priorityOrder}}
                             <span class="repo-lang">
-                                <span class="lang-dot"
-                                    style="background: {{#if (eq this.priorityOrder 1)}}#22c55e{{else}}#3b82f6{{/if}};"></span>
+                                <span class="lang-dot" style="background:#94a3b8;"></span>
                                 Priority #{{this.priorityOrder}}
                             </span>
                             {{/if}}
-
-                            {{#if this.phone}}
-                            <span class="repo-meta-item">
-                                📞 {{this.phone}}
-                            </span>
-                            {{/if}}
-
                             {{#if this.email}}
-                            <span class="repo-meta-item">
-                                ✉️ Contact
-                            </span>
+                            <span class="repo-meta-item">{{this.email}}</span>
+                            {{/if}}
+                            {{#if this.phone}}
+                            <span class="repo-meta-item">{{this.phone}}</span>
                             {{/if}}
                         </div>
                     </div>
@@ -1183,9 +1159,7 @@
                             <div class="repo-top-row">
                                 <span class="repo-name">{{this.name}}</span>
                                 {{#if this.isActiveBackupProtocol}}
-                                <span class="repo-visibility">🟢 Protected</span>
-                                {{else}}
-                                <span class="repo-visibility">Unprotected</span>
+                                <span class="repo-visibility">Protected</span>
                                 {{/if}}
                             </div>
 
@@ -1357,9 +1331,7 @@
                             <div class="repo-top-row">
                                 <span class="repo-name">{{this.name}}</span>
                                 {{#if this.hasAccepted}}
-                                <span class="repo-visibility">🟢 Accepted</span>
-                                {{else}}
-                                <span class="repo-visibility">Pending</span>
+                                <span class="repo-visibility">Accepted</span>
                                 {{/if}}
                             </div>
                             <p class="repo-desc">
@@ -1440,9 +1412,7 @@
                         <div class="repo-top-row">
                             <span class="repo-name">{{this.name}}</span>
                             {{#if this.hasAccepted}}
-                            <span class="repo-visibility">🟢 Accepted</span>
-                            {{else}}
-                            <span class="repo-visibility">Pending</span>
+                            <span class="repo-visibility">Accepted</span>
                             {{/if}}
                         </div>
                         <p class="repo-desc">
