@@ -24,6 +24,7 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  deleteAccount,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -89,6 +90,7 @@ app.get("/login", async (req, res) => {
     isLoggedIn,
     expired: req.query.expired === "1",
     reset: req.query.reset === "1",
+    deleted: req.query.deleted === "1",
   });
 });
 
@@ -117,6 +119,7 @@ app.get("/", async (req, res) => {
     isLoggedIn,
     expired: req.query.expired === "1",
     reset: req.query.reset === "1",
+    deleted: req.query.deleted === "1",
   });
 });
 
@@ -402,6 +405,20 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
     res.redirect(`/guardian-access?token=${token}&acked=1`);
   } catch (err) {
     res.redirect(`/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`);
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── Delete account ─────────────────────────────────────────────────────────
+app.post("/account/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { password } = req.body;
+  try {
+    await deleteAccount(sessionId, password);
+    res.clearCookie("session");
+    res.redirect("/?deleted=1");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
 // ───────────────────────────────────────────────────────────────────────────

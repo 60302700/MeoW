@@ -4,6 +4,7 @@ import {
   createUser,
   findUserByEmail,
   findUserById,
+  deleteUserAccount,
   getCatByQrCode,
   getCatById,
   getCatsByOwner,
@@ -222,6 +223,16 @@ async function updateProfile(sessionId, { name, phone, currentPassword, newPassw
   }
 }
 
+async function deleteAccount(sessionId, password) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) throw new Error("Incorrect password.");
+  await deleteUserAccount(user._id.toString(), user.email);
+}
+
 async function setOwnerUnavailable(sessionId) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -300,4 +311,5 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  deleteAccount,
 };

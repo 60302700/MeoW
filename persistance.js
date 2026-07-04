@@ -267,6 +267,23 @@ async function searchUsersByName(name) {
     .toArray();
 }
 
+async function deleteUserAccount(userId, email) {
+  const { Users, Cats, Guardians, EmergencyEvents, Sessions, PasswordResetTokens, GuardianAccessTokens, OwnerUnavailability } = collections();
+  const oid = new ObjectId(userId);
+  const cats = await Cats.find({ ownerId: oid }, { projection: { _id: 1 } }).toArray();
+  const catIds = cats.map(c => c._id);
+  await Promise.all([
+    Users.deleteOne({ _id: oid }),
+    Cats.deleteMany({ ownerId: oid }),
+    Guardians.deleteMany({ ownerId: oid }),
+    EmergencyEvents.deleteMany({ catId: { $in: catIds } }),
+    Sessions.deleteMany({ email }),
+    PasswordResetTokens.deleteMany({ email }),
+    GuardianAccessTokens.deleteMany({ ownerId: oid }),
+    OwnerUnavailability.deleteMany({ ownerId: oid }),
+  ]);
+}
+
 // ---- Owner Unavailability ----
 
 async function createOwnerUnavailability(ownerId) {
@@ -377,6 +394,7 @@ export {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
+  deleteUserAccount,
   searchUsersByName,
   createOwnerUnavailability,
   getActiveUnavailability,
