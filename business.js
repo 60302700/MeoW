@@ -108,39 +108,11 @@ async function getUserHomepage(sessionId) {
   return { user, cats, guardians, isUnavailable: !!unavailability };
 }
 
-async function addNewCat(sessionId, { name, breed, age, photoUrl, care, qrCodeId }) {
+async function addNewCat(sessionId, { name, breed, age, photoUrl, qrCodeId, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes }) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
   if (!user) throw new Error("User not found");
-
-  const careInstructions = {
-    diet: care || "Standard diet",
-    medical: "No known conditions",
-    vetDetails: "No vet specified",
-  };
-
-  if (care) {
-    const lines = care.split("\n");
-    let currentSection = "diet";
-    let sections = { diet: [], medical: [], vetDetails: [] };
-    for (let line of lines) {
-      const cleaned = line.trim();
-      if (!cleaned) continue;
-      if (cleaned.toLowerCase().includes("diet:")) {
-        currentSection = "diet";
-      } else if (cleaned.toLowerCase().includes("medical:")) {
-        currentSection = "medical";
-      } else if (cleaned.toLowerCase().includes("vet:")) {
-        currentSection = "vetDetails";
-      } else {
-        sections[currentSection].push(cleaned);
-      }
-    }
-    careInstructions.diet = sections.diet.join("\n") || "Standard diet";
-    careInstructions.medical = sections.medical.join("\n") || "No known conditions";
-    careInstructions.vetDetails = sections.vetDetails.join("\n") || "No vet specified";
-  }
 
   return await createCat({
     ownerId: user._id,
@@ -148,8 +120,22 @@ async function addNewCat(sessionId, { name, breed, age, photoUrl, care, qrCodeId
     breed,
     age: parseInt(age, 10) || 0,
     photoUrl: photoUrl || "",
-    careInstructions,
     qrCodeId,
+    careInstructions: {
+      feedingSchedule: feedingSchedule || "",
+      foodBrand: foodBrand || "",
+      allergies: allergies || "",
+      conditions: conditions || "",
+      medications: medications || "",
+      vaccinations: vaccinations || "",
+      neutered: neutered === "yes",
+      vetName: vetName || "",
+      vetPhone: vetPhone || "",
+      microchip: microchip || "",
+      passportNumber: passportNumber || "",
+      personality: personality || "",
+      notes: notes || "",
+    },
   });
 }
 
@@ -221,6 +207,17 @@ async function updateProfile(sessionId, { name, phone, currentPassword, newPassw
   if (Object.keys(updates).length > 0) {
     await updateUserProfile(user._id, updates);
   }
+}
+
+async function changePassword(sessionId, currentPassword, newPassword) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) throw new Error("Current password is incorrect.");
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await updateUserPassword(session.email, passwordHash);
 }
 
 async function deleteAccount(sessionId, password) {
@@ -311,5 +308,6 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  changePassword,
   deleteAccount,
 };

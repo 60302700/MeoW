@@ -222,22 +222,41 @@
                         <h3>{{this.name}}</h3>
                         <div class="cat-meta">{{this.breed}}{{#if this.age}} · {{this.age}} yrs{{/if}}</div>
                         <div class="care-block">
-                            {{#if this.careInstructions.diet}}
+                            {{#if this.careInstructions.feedingSchedule}}
                             <div class="care-section">
-                                <span class="care-label">🍽️ Diet</span>
-                                {{this.careInstructions.diet}}
+                                <span class="care-label">Feeding</span>
+                                {{this.careInstructions.feedingSchedule}}
+                                {{#if this.careInstructions.foodBrand}} — {{this.careInstructions.foodBrand}}{{/if}}
                             </div>
                             {{/if}}
-                            {{#if this.careInstructions.medical}}
+                            {{#if this.careInstructions.allergies}}
                             <div class="care-section">
-                                <span class="care-label">💊 Medical</span>
-                                {{this.careInstructions.medical}}
+                                <span class="care-label">Allergies</span>
+                                {{this.careInstructions.allergies}}
                             </div>
                             {{/if}}
-                            {{#if this.careInstructions.vetDetails}}
+                            {{#if this.careInstructions.conditions}}
                             <div class="care-section">
-                                <span class="care-label">🏥 Vet</span>
-                                {{this.careInstructions.vetDetails}}
+                                <span class="care-label">Conditions</span>
+                                {{this.careInstructions.conditions}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.medications}}
+                            <div class="care-section">
+                                <span class="care-label">Medications</span>
+                                {{this.careInstructions.medications}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.vetName}}
+                            <div class="care-section">
+                                <span class="care-label">Vet</span>
+                                {{this.careInstructions.vetName}}{{#if this.careInstructions.vetPhone}} — {{this.careInstructions.vetPhone}}{{/if}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.notes}}
+                            <div class="care-section" style="background:#fffbeb;border-left-color:#f59e0b;">
+                                <span class="care-label" style="color:#92400e;">Notes</span>
+                                {{this.careInstructions.notes}}
                             </div>
                             {{/if}}
                         </div>

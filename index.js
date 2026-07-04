@@ -24,6 +24,7 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  changePassword,
   deleteAccount,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
@@ -41,6 +42,7 @@ const hbsEngine = engine({
   extname: ".hbs",
   helpers: {
     eq: (a, b) => a === b,
+    initial: (str) => (str && str.length > 0 ? str[0].toUpperCase() : "?"),
   },
 });
 app.engine("hbs", hbsEngine);
@@ -219,7 +221,7 @@ app.get("/homepage", async (req, res) => {
 
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { name, breed, age, care, photo } = req.body;
+  const { name, breed, age, photo, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes } = req.body;
   let photoString = "";
 
   try {
@@ -236,8 +238,20 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
       breed,
       age: Number(age),
       photoUrl: photoString,
-      care,
       qrCodeId: uuidv4(),
+      feedingSchedule,
+      foodBrand,
+      allergies,
+      conditions,
+      medications,
+      vaccinations,
+      neutered,
+      vetName,
+      vetPhone,
+      microchip,
+      passportNumber,
+      personality,
+      notes,
     });
     res.redirect("/homepage");
   } catch (err) {
@@ -405,6 +419,25 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
     res.redirect(`/guardian-access?token=${token}&acked=1`);
   } catch (err) {
     res.redirect(`/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`);
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── Change password ────────────────────────────────────────────────────────
+app.post("/profile/password", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  if (newPassword !== confirmNewPassword) {
+    return res.redirect("/homepage?error=" + encodeURIComponent("New passwords do not match."));
+  }
+  if (newPassword.length < 6) {
+    return res.redirect("/homepage?error=" + encodeURIComponent("Password must be at least 6 characters."));
+  }
+  try {
+    await changePassword(sessionId, currentPassword, newPassword);
+    res.redirect("/homepage?success=password");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
 // ───────────────────────────────────────────────────────────────────────────

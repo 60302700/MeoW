@@ -21,6 +21,7 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  changePassword,
   deleteAccount,
 } from "./business.js";
 import { engine } from "express-handlebars";
@@ -69,5 +70,6 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  changePassword,
   deleteAccount,
 };
