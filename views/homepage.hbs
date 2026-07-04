@@ -30,6 +30,7 @@
     .gh-avatar-wrap {
         position: relative;
         margin-bottom: 1rem;
+        cursor: pointer;
     }
 
     .gh-avatar {
@@ -39,11 +40,41 @@
         object-fit: cover;
         border: 1px solid rgba(236, 72, 153, 0.15);
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-        transition: box-shadow 0.3s ease;
+        transition: box-shadow 0.3s ease, filter 0.25s ease;
+        display: block;
     }
 
-    .gh-avatar:hover {
-        box-shadow: 0 8px 30px rgba(236, 72, 153, 0.2);
+    .gh-avatar-wrap:hover .gh-avatar {
+        box-shadow: 0 8px 30px rgba(236, 72, 153, 0.35);
+        filter: brightness(0.72);
+    }
+
+    .gh-avatar-cam {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.22s ease;
+        pointer-events: none;
+    }
+
+    .gh-avatar-wrap:hover .gh-avatar-cam {
+        opacity: 1;
+    }
+
+    .gh-avatar-cam-icon {
+        background: rgba(255,255,255,0.92);
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.45rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.18);
     }
 
     .gh-emoji-status {
@@ -61,6 +92,7 @@
         font-size: 1.1rem;
         cursor: default;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        pointer-events: none;
     }
 
     .gh-display-name {
@@ -654,12 +686,16 @@
          LEFT SIDEBAR — PROFILE
          ═══════════════════════════════════════════ -->
     <aside class="gh-sidebar">
-        <div class="gh-avatar-wrap">
-            <img class="gh-avatar"
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_ovzWFxZRsy8myw-DrwGzuTM5nM3-ZyQFvQOAHPCvvpB0Za9baiLwej4&s=10"
+        <div class="gh-avatar-wrap" onclick="document.getElementById('profilePhotoInput').click()" title="Change profile photo">
+            <img class="gh-avatar" id="profileAvatar"
+                src="{{#if user.photoUrl}}{{user.photoUrl}}{{else}}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f1f5f9'/%3E%3Ctext x='50' y='62' font-size='48' text-anchor='middle'%3E🐾%3C/text%3E%3C/svg%3E{{/if}}"
                 alt="{{user.name}}'s profile photo">
+            <div class="gh-avatar-cam">
+                <div class="gh-avatar-cam-icon">📷</div>
+            </div>
             <div class="gh-emoji-status" title="MeoW Guardian">🐾</div>
         </div>
+        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none">
 
         <h1 class="gh-display-name">{{user.name}}</h1>
         <p class="gh-username">{{user.email}}</p>
@@ -1136,19 +1172,49 @@
                 document.getElementById('editProfileModal').style.display = 'none';
                 document.body.style.overflow = '';
             }
-            document.getElementById('editProfileModal').addEventListener('click', function (e) {
+            const _modal = document.getElementById('editProfileModal');
+            if (_modal) _modal.addEventListener('click', function (e) {
                 if (e.target === this) closeEditProfile();
             });
+
+            // Profile photo upload
+            document.getElementById('profilePhotoInput').addEventListener('change', async function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                // Instant preview
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('profileAvatar').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                // Upload
+                const formData = new FormData();
+                formData.append('photo', file);
+                try {
+                    const res = await fetch('/profile/photo', { method: 'POST', body: formData });
+                    if (!res.ok) throw new Error('Upload failed');
+                    showToast('✅ Profile photo updated!', '#166534', '#22c55e');
+                } catch (err) {
+                    showToast('❌ Could not save photo. Try again.', '#991b1b', '#ef4444');
+                }
+                this.value = '';
+            });
+
+            function showToast(msg, color, borderColor) {
+                const toast = document.createElement('div');
+                toast.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:white;border-radius:0.85rem;padding:0.9rem 1.5rem;box-shadow:0 8px 30px rgba(0,0,0,0.1);font-size:0.9rem;font-weight:600;color:${color};z-index:9999;border-left:4px solid ${borderColor};white-space:nowrap;`;
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3500);
+            }
 
             // Show success toast if ?success=profile in URL
             (function () {
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('success') === 'profile') {
-                    const toast = document.createElement('div');
-                    toast.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:white;border-radius:0.85rem;padding:0.9rem 1.5rem;box-shadow:0 8px 30px rgba(0,0,0,0.1);font-size:0.9rem;font-weight:600;color:#166534;z-index:9999;border-left:4px solid #22c55e;white-space:nowrap;';
-                    toast.textContent = '✅ Profile updated successfully!';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3500);
+                    showToast('✅ Profile updated successfully!', '#166534', '#22c55e');
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();

@@ -17,6 +17,7 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
   updateProfile,
+  updateUserPhoto,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -358,6 +359,22 @@ app.post("/reset-password", async (req, res) => {
       token,
       error: err.message,
     });
+  }
+});
+
+app.post("/profile/photo", requireAuth, upload.single("photo"), async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  console.log("[photo] route hit, sessionId:", sessionId ? sessionId.slice(0, 8) + "..." : "NONE");
+  console.log("[photo] req.file:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "MISSING");
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    await updateUserPhoto(sessionId, photoUrl);
+    console.log("[photo] saved OK for session", sessionId?.slice(0, 8));
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[photo] error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
