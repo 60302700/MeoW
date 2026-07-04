@@ -1,133 +1,263 @@
 <style>
-    .profile-photo-container{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    margin-bottom:20px;
-}
-
-    .profile-container{
-        display: flex;
-        flex-direction: row;
-        margin: auto;
+    .cat-detail-wrap {
+        max-width: 860px;
+        margin: 2rem auto;
+        padding: 0 1.5rem 4rem;
     }
 
-.profile-photo{
-    width:100%;
-    max-width:250px;
-    aspect-ratio:1/1;
-    object-fit:cover;
-    border-radius:24px;
-    border:5px solid #f2f2f2;
-    box-shadow:0 8px 20px rgba(0,0,0,.12);
-    transition:transform .3s ease;
-}
+    .cat-hero {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+    }
 
-.profile-photo:hover{
-    transform:scale(1.03);
-}
+    .cat-hero-photo {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 1.25rem;
+        flex-shrink: 0;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    }
 
-.profile-photo{
-    width:100%;
-    max-width:280px;
-    height:auto;
-    max-height:350px;
-    object-fit:cover;
-    border-radius:20px;
-    border:5px solid white;
-    box-shadow:
-        0 10px 30px rgba(0,0,0,.15),
-        0 0 0 1px rgba(0,0,0,.05);
-}
-.profile-photo{
-    cursor:pointer;
-    transition:all .3s ease;
-}
+    .cat-hero-photo-placeholder {
+        width: 180px;
+        height: 180px;
+        border-radius: 1.25rem;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        flex-shrink: 0;
+    }
 
-.profile-photo.fullscreen{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    width:80vw;
-    max-width:800px;
-    max-height:80vh;
-    z-index:9999;
-    border-radius:20px;
-}
+    .cat-hero-info {
+        flex: 1;
+        padding-top: 0.5rem;
+    }
 
+    .cat-hero-name {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0 0 0.25rem;
+    }
+
+    .cat-hero-breed {
+        font-size: 1rem;
+        color: #64748b;
+        margin: 0 0 1rem;
+    }
+
+    .cat-hero-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .cat-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .cat-badge.green { background: #dcfce7; color: #166534; }
+    .cat-badge.muted { background: #f1f5f9; color: #94a3b8; }
+
+    .cat-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    @media (max-width: 600px) {
+        .cat-hero { flex-direction: column; }
+        .cat-hero-photo, .cat-hero-photo-placeholder { width: 100%; height: 220px; }
+        .cat-sections { grid-template-columns: 1fr; }
+    }
+
+    .cat-section {
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 1rem;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .cat-section.full-width { grid-column: 1 / -1; }
+    .cat-section.notes-section { background: #fffbeb; border-color: #fde68a; }
+
+    .cat-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin: 0 0 0.85rem;
+    }
+
+    .cat-section.notes-section .cat-section-title { color: #92400e; }
+
+    .cat-field { margin-bottom: 0.85rem; }
+    .cat-field:last-child { margin-bottom: 0; }
+
+    .cat-field-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.2rem;
+    }
+
+    .cat-field-value {
+        font-size: 0.92rem;
+        color: #0f172a;
+        line-height: 1.55;
+        white-space: pre-line;
+    }
+
+    .cat-field-value.empty { color: #cbd5e1; font-style: italic; }
+
+    .mono-id {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.82rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.4rem;
+        padding: 0.2rem 0.55rem;
+        color: #334155;
+        display: inline-block;
+    }
 </style>
-<div class="profile-container">
 
-    <aside class="profile-card">
+<div class="cat-detail-wrap">
 
-        <img src="{{cat.photoUrl}}" alt="{{cat.name}}" class="profile-photo">
+    <div class="cat-hero">
+        {{#if cat.photoUrl}}
+        <img src="{{cat.photoUrl}}" alt="{{cat.name}}" class="cat-hero-photo">
+        {{else}}
+        <div class="cat-hero-photo-placeholder">🐱</div>
+        {{/if}}
 
-        <div class="profile-stats">
-
-        <h1>{{cat.name}}</h1>
-
-        <p class="breed">{{cat.breed}}</p>
-            <div class="stat">
-                <span class="label">Age</span>
-                <span class="value">{{cat.age}} years</span>
-            </div>
-
-            <div class="stat">
-                <span class="label">QR ID</span>
-                <span class="value">{{cat.qrCodeId}}</span>
-            </div>
-
-            <div class="stat">
-                <span class="label">Backup Protocol</span>
-
-                <span class="status {{#if cat.isActiveBackupProtocol}}active{{else}}inactive{{/if}}">
-                    {{#if cat.isActiveBackupProtocol}}
-                        Active
-                    {{else}}
-                        Inactive
-                    {{/if}}
+        <div class="cat-hero-info">
+            <h1 class="cat-hero-name">{{cat.name}}</h1>
+            <p class="cat-hero-breed">{{#if cat.breed}}{{cat.breed}}{{else}}Unknown breed{{/if}}</p>
+            <div class="cat-hero-badges">
+                {{#if cat.age}}<span class="cat-badge">{{cat.age}} yrs</span>{{/if}}
+                {{#if cat.careInstructions.neutered}}<span class="cat-badge green">Neutered</span>{{/if}}
+                <span class="cat-badge {{#if cat.isActiveBackupProtocol}}green{{else}}muted{{/if}}">
+                    Backup {{#if cat.isActiveBackupProtocol}}active{{else}}inactive{{/if}}
                 </span>
+                {{#if cat.careInstructions.microchip}}<span class="cat-badge">Microchipped</span>{{/if}}
             </div>
+        </div>
+    </div>
 
+    <div class="cat-sections">
+
+        <div class="cat-section">
+            <p class="cat-section-title">Identity</p>
+            <div class="cat-field">
+                <div class="cat-field-label">Microchip</div>
+                {{#if cat.careInstructions.microchip}}
+                <span class="mono-id">{{cat.careInstructions.microchip}}</span>
+                {{else}}
+                <div class="cat-field-value empty">Not recorded</div>
+                {{/if}}
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Passport / Travel Document</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.passportNumber}}empty{{/unless}}">
+                    {{#if cat.careInstructions.passportNumber}}{{cat.careInstructions.passportNumber}}{{else}}Not recorded{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">QR Code ID</div>
+                <span class="mono-id">{{cat.qrCodeId}}</span>
+            </div>
         </div>
 
-    </aside>
+        <div class="cat-section">
+            <p class="cat-section-title">Veterinarian</p>
+            <div class="cat-field">
+                <div class="cat-field-label">Clinic / Vet Name</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.vetName}}empty{{/unless}}">
+                    {{#if cat.careInstructions.vetName}}{{cat.careInstructions.vetName}}{{else}}Not specified{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Phone</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.vetPhone}}empty{{/unless}}">
+                    {{#if cat.careInstructions.vetPhone}}{{cat.careInstructions.vetPhone}}{{else}}Not specified{{/if}}
+                </div>
+            </div>
+        </div>
 
-    <main class="profile-content">
+        <div class="cat-section">
+            <p class="cat-section-title">Diet & Feeding</p>
+            <div class="cat-field">
+                <div class="cat-field-label">Feeding Schedule</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.feedingSchedule}}empty{{/unless}}">
+                    {{#if cat.careInstructions.feedingSchedule}}{{cat.careInstructions.feedingSchedule}}{{else}}Not specified{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Food Brand / Type</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.foodBrand}}empty{{/unless}}">
+                    {{#if cat.careInstructions.foodBrand}}{{cat.careInstructions.foodBrand}}{{else}}Not specified{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Allergies / Intolerances</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.allergies}}empty{{/unless}}">
+                    {{#if cat.careInstructions.allergies}}{{cat.careInstructions.allergies}}{{else}}None known{{/if}}
+                </div>
+            </div>
+        </div>
 
-        <section class="profile-section">
+        <div class="cat-section">
+            <p class="cat-section-title">Medical</p>
+            <div class="cat-field">
+                <div class="cat-field-label">Known Conditions</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.conditions}}empty{{/unless}}">
+                    {{#if cat.careInstructions.conditions}}{{cat.careInstructions.conditions}}{{else}}None known{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Current Medications</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.medications}}empty{{/unless}}">
+                    {{#if cat.careInstructions.medications}}{{cat.careInstructions.medications}}{{else}}None{{/if}}
+                </div>
+            </div>
+            <div class="cat-field">
+                <div class="cat-field-label">Vaccinations</div>
+                <div class="cat-field-value {{#unless cat.careInstructions.vaccinations}}empty{{/unless}}">
+                    {{#if cat.careInstructions.vaccinations}}{{cat.careInstructions.vaccinations}}{{else}}Not recorded{{/if}}
+                </div>
+            </div>
+        </div>
 
-            <h2>🍽 Diet</h2>
+        <div class="cat-section full-width">
+            <p class="cat-section-title">Personality & Habits</p>
+            <div class="cat-field-value {{#unless cat.careInstructions.personality}}empty{{/unless}}">
+                {{#if cat.careInstructions.personality}}{{cat.careInstructions.personality}}{{else}}Not described{{/if}}
+            </div>
+        </div>
 
-            <p>{{cat.careInstructions.diet}}</p>
+        {{#if cat.careInstructions.notes}}
+        <div class="cat-section full-width notes-section">
+            <p class="cat-section-title">Caretaker Notes</p>
+            <div class="cat-field-value">{{cat.careInstructions.notes}}</div>
+        </div>
+        {{/if}}
 
-        </section>
-
-        <section class="profile-section">
-
-            <h2>💊 Medical Information</h2>
-
-            <p>{{cat.careInstructions.medical}}</p>
-
-        </section>
-
-        <section class="profile-section">
-
-            <h2>😺 Habits & Personality</h2>
-
-            <p>{{cat.careInstructions.habits}}</p>
-
-        </section>
-
-        <section class="profile-section">
-
-            <h2>🏥 Veterinarian</h2>
-
-            <p>{{cat.careInstructions.vetDetails}}</p>
-
-        </section>
-
-    </main>
-
+    </div>
 </div>

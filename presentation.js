@@ -15,9 +15,14 @@ import {
   resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
-  GuardianSearch,
-  updateGuardianById,
   getCatByNameBusinessLayer,
+  searchGurdian,
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
+  changePassword,
+  deleteAccount,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -41,10 +46,6 @@ async function searchGuardianByName(name) {
   return await GuardianSearch(name);
 }
 
-async function updateGuardianPresentation(sessionId, Id, updates) {
-  return await updateGuardianById(sessionId, Id, updates);
-}
-
 export {
   connectDB,
   engine,
@@ -64,6 +65,11 @@ export {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
-  searchGuardianByName,
-  updateGuardianPresentation,
+  searchUsersByName,
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
+  changePassword,
+  deleteAccount,
 };

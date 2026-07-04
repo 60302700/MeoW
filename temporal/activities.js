@@ -1,6 +1,8 @@
 import 'dotenv/config';
-import { connectDB, getEmergencyEventById, getCatById, getGuardiansByOwner } from '../persistance.js';
-import { MongoClient, ObjectId } from 'mongodb';
+import { connectDB } from '../persistance.js';
+import { ObjectId } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
+import { sendGuardianMagicLinkEmail } from '../mailer.js';
 
 async function getDB() {
     return await connectDB();
@@ -41,4 +43,30 @@ export async function escalateToNextGuardian(eventId, priority) {
     );
 
     console.log(`[Temporal] Escalated event ${eventId} to guardian priority #${priority}: ${guardian?.name}`);
+}
+
+export async function sendGuardianMagicLink(unavailabilityId, ownerId, guardian, ownerName, catNames) {
+    const db = await getDB();
+    const token = uuidv4();
+    await db.collection('GuardianAccessTokens').insertOne({
+        token,
+        unavailabilityId: new ObjectId(unavailabilityId),
+        guardianId: new ObjectId(guardian.id),
+        ownerId: new ObjectId(ownerId),
+        acknowledged: false,
+        createdAt: new Date(),
+    });
+    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    const magicLink = `${baseUrl}/guardian-access?token=${token}`;
+    await sendGuardianMagicLinkEmail(guardian.email, guardian.name, ownerName, catNames, magicLink);
+    console.log(`[Temporal] Sent guardian magic link to ${guardian.email} for unavailability ${unavailabilityId}`);
+}
+
+export async function checkUnavailabilityAcknowledged(unavailabilityId) {
+    const db = await getDB();
+    const acked = await db.collection('GuardianAccessTokens').findOne({
+        unavailabilityId: new ObjectId(unavailabilityId),
+        acknowledged: true,
+    });
+    return !!acked;
 }

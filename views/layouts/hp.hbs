@@ -440,6 +440,145 @@
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 6px 20px rgba(220, 38, 38, 0.55);
         }
 
+        /* ── Profile dropdown ─────────────────────────────────────────── */
+        .profile-menu-wrap {
+            position: relative;
+        }
+
+        .profile-nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.2s, border-color 0.2s;
+            overflow: hidden;
+        }
+
+        .profile-nav-btn:hover {
+            background: rgba(255,255,255,0.28);
+            border-color: rgba(255,255,255,0.55);
+        }
+
+        .profile-nav-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile-nav-initials {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .profile-nav-name {
+            max-width: 100px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .profile-nav-chevron {
+            font-size: 0.6rem;
+            opacity: 0.75;
+            transition: transform 0.2s;
+        }
+
+        .profile-menu-wrap.open .profile-nav-chevron {
+            transform: rotate(180deg);
+        }
+
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.6rem);
+            right: 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.14), 0 4px 16px rgba(236,72,153,0.1);
+            min-width: 220px;
+            overflow: hidden;
+            z-index: 2000;
+            border: 1px solid rgba(236,72,153,0.1);
+        }
+
+        .profile-menu-wrap.open .profile-dropdown {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 1rem 1rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .dropdown-header-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .dropdown-header-email {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.1rem;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #334155;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .dropdown-item:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 0.25rem 0;
+        }
+
+        .dropdown-item-danger {
+            color: #b91c1c;
+        }
+
+        .dropdown-item-danger:hover {
+            background: #fff5f5;
+            color: #991b1b;
+        }
+
+        .dropdown-item form {
+            margin: 0;
+            width: 100%;
+        }
+
         /* ==========================================
    9. EMERGENCY PORTAL COMPONENTS
    ========================================== */
@@ -1545,18 +1684,57 @@
         </div>
         <nav class="navbar-links">
             <ul>
-                <li><a href="/register">Register</a></li>
-                {{#if isLoggedIn}}
-                <li><a href="/logout">LogOut</a></li>
-                {{/if}}
                 {{#unless isLoggedIn}}
+                <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
                 {{/unless}}
                 <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
+                {{#if user}}
+                <li style="list-style:none;">
+                    <div class="profile-menu-wrap" id="profileMenuWrap">
+                        <button class="profile-nav-btn" id="profileMenuBtn" onclick="toggleProfileMenu(event)">
+                            {{#if user.photoUrl}}
+                            <img src="{{user.photoUrl}}" class="profile-nav-avatar" alt="Profile">
+                            {{else}}
+                            <span class="profile-nav-initials">{{initial user.name}}</span>
+                            {{/if}}
+                        </button>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-header-name">{{user.name}}</div>
+                                <div class="dropdown-header-email">{{user.email}}</div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="openEditProfile();closeProfileMenu()">Edit Profile</button>
+                            <button class="dropdown-item" onclick="openChangePassword();closeProfileMenu()">Change Password</button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item dropdown-item-danger" onclick="window.location='/logout'">Logout</button>
+                        </div>
+                    </div>
+                </li>
+                {{/if}}
             </ul>
         </nav>
     </header>
     {{{body}}}
+
+    <script>
+        function toggleProfileMenu(e) {
+            e.stopPropagation();
+            const wrap = document.getElementById('profileMenuWrap');
+            if (wrap) wrap.classList.toggle('open');
+        }
+
+        function closeProfileMenu() {
+            const wrap = document.getElementById('profileMenuWrap');
+            if (wrap) wrap.classList.remove('open');
+        }
+
+        document.addEventListener('click', function (e) {
+            const wrap = document.getElementById('profileMenuWrap');
+            if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+        });
+    </script>
 
 </body>
 

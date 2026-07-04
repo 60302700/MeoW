@@ -17,10 +17,15 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
   updateProfile,
-  getCatByNamePresentationLayer,
   updateUserPhoto,
-  searchGuardianByName,
-  updateGuardianPresentation,
+  getCatByNamePresentationLayer,
+  searchUsersByName,
+  setOwnerUnavailable,
+  setOwnerAvailable,
+  getGuardianAccess,
+  acknowledgeGuardianAccess,
+  changePassword,
+  deleteAccount,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -30,13 +35,14 @@ const app = express();
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Optional: Limits files to 5MB to protect RAM
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const hbsEngine = engine({
   extname: ".hbs",
   helpers: {
     eq: (a, b) => a === b,
+    initial: (str) => (str && str.length > 0 ? str[0].toUpperCase() : "?"),
   },
 });
 app.engine("hbs", hbsEngine);
@@ -48,7 +54,6 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 // ── Session middleware ──────────────────────────────────────────────────────
-// Manually parse the session cookie from the Cookie header.
 function getSessionCookie(req) {
   const cookieHeader = req.headers.cookie || "";
   const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
@@ -57,21 +62,15 @@ function getSessionCookie(req) {
 
 async function Loggedin(req) {
   const isLoggedIn = getSessionCookie(req);
-  if (!isLoggedIn) {
-    return false;
-  }
+  if (!isLoggedIn) return false;
   const valid = await checkSessionMiddleware(isLoggedIn);
-  if (!valid) {
-    return false;
-  }
+  if (!valid) return false;
   return true;
 }
 
 async function requireAuth(req, res, next) {
   const sessionId = getSessionCookie(req);
-  if (!sessionId) {
-    return res.redirect("/");
-  }
+  if (!sessionId) return res.redirect("/");
   const valid = await checkSessionMiddleware(sessionId);
   if (!valid) {
     res.clearCookie("session");
@@ -93,6 +92,7 @@ app.get("/login", async (req, res) => {
     isLoggedIn,
     expired: req.query.expired === "1",
     reset: req.query.reset === "1",
+    deleted: req.query.deleted === "1",
   });
 });
 
@@ -121,6 +121,7 @@ app.get("/", async (req, res) => {
     isLoggedIn,
     expired: req.query.expired === "1",
     reset: req.query.reset === "1",
+    deleted: req.query.deleted === "1",
   });
 });
 
@@ -204,10 +205,8 @@ app.get("/homepage", async (req, res) => {
     return res.redirect(sessionId ? "/?expired=1" : "/");
   }
   const data = await getUserHomepage(sessionId);
-  if (!data) {
-    return res.redirect("/");
-  }
-  const { user, cats, guardians } = data;
+  if (!data) return res.redirect("/");
+  const { user, cats, guardians, isUnavailable } = data;
   res.render("homepage", {
     title: `${user.name}'s Homepage`,
     isLoggedIn,
@@ -216,6 +215,7 @@ app.get("/homepage", async (req, res) => {
     guardians,
     hasCats: cats && cats.length > 0,
     hasGuardians: guardians && guardians.length > 0,
+    isUnavailable,
     error: req.query.error,
     layout: "hp",
   });
@@ -243,8 +243,25 @@ app.get("/profile/edit", async (req, res) => {
 
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
-
-  const { name, breed, age, care, photo } = req.body;
+  const {
+    name,
+    breed,
+    age,
+    photo,
+    feedingSchedule,
+    foodBrand,
+    allergies,
+    conditions,
+    medications,
+    vaccinations,
+    neutered,
+    vetName,
+    vetPhone,
+    microchip,
+    passportNumber,
+    personality,
+    notes,
+  } = req.body;
   let photoString = "";
 
   try {
@@ -260,17 +277,26 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
         ? photo
         : `data:image/png;base64,${photo}`;
     }
-    // 4. Send the data to your database function
     await addNewCat(sessionId, {
       name,
       breed,
       age: Number(age),
       photoUrl: photoString,
-      care,
       qrCodeId: uuidv4(),
+      feedingSchedule,
+      foodBrand,
+      allergies,
+      conditions,
+      medications,
+      vaccinations,
+      neutered,
+      vetName,
+      vetPhone,
+      microchip,
+      passportNumber,
+      personality,
+      notes,
     });
-
-    // 5. Always remember to redirect the user after a successful POST request
     res.redirect("/homepage");
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
@@ -295,7 +321,6 @@ app.post("/guardians", requireAuth, async (req, res) => {
 });
 
 app.post("/cats/:catId", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
   res.redirect("/homepage");
 });
 
@@ -420,42 +445,103 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
   });
 });
 
-app.get("/guardians/edit/:id", requireAuth, async (req, res) => {
+// ── Owner availability ─────────────────────────────────────────────────────
+app.post("/owner/unavailable", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { id } = req.params;
   try {
-    const guardian = await searchGuardianByName(id);
-    if (!guardian) {
-      return res.redirect(
-        "/homepage?error=" + encodeURIComponent("Guardian not found."),
-      );
-    }
-    res.render("guardian-edit", {
-      isLoggedIn: true,
-      guardian,
-      layout: "hp",
-    });
-  } catch (err) {
-    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
-  }
-});
-
-app.post("/guardians/edit/:id", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { id } = req.params;
-  const { name, phone, email, priorityOrder } = req.body;
-  try {
-    await updateGuardianPresentation(sessionId, id, {
-      name,
-      phone,
-      email,
-      priorityOrder: parseInt(priorityOrder, 10) || 1,
-    });
+    await setOwnerUnavailable(sessionId);
     res.redirect("/homepage");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
+
+app.post("/owner/available", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  try {
+    await setOwnerAvailable(sessionId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+
+// ── Guardian magic link ────────────────────────────────────────────────────
+app.get("/guardian-access", async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect("/");
+  try {
+    const { record, cats, ownerName, alreadyAcknowledged } =
+      await getGuardianAccess(token);
+    res.render("guardian-access", {
+      title: "Guardian Access",
+      token,
+      cats,
+      ownerName,
+      alreadyAcknowledged,
+      acked: req.query.acked === "1",
+      layout: false,
+    });
+  } catch (err) {
+    res.render("guardian-access", {
+      title: "Guardian Access",
+      error: err.message,
+      layout: false,
+    });
+  }
+});
+
+app.post("/guardian-access/:token/acknowledge", async (req, res) => {
+  const { token } = req.params;
+  try {
+    await acknowledgeGuardianAccess(token);
+    res.redirect(`/guardian-access?token=${token}&acked=1`);
+  } catch (err) {
+    res.redirect(
+      `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,
+    );
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── Change password ────────────────────────────────────────────────────────
+app.post("/profile/password", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  if (newPassword !== confirmNewPassword) {
+    return res.redirect(
+      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
+    );
+  }
+  if (newPassword.length < 6) {
+    return res.redirect(
+      "/homepage?error=" +
+        encodeURIComponent("Password must be at least 6 characters."),
+    );
+  }
+  try {
+    await changePassword(sessionId, currentPassword, newPassword);
+    res.redirect("/homepage?success=password");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── Delete account ─────────────────────────────────────────────────────────
+app.post("/account/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { password } = req.body;
+  try {
+    await deleteAccount(sessionId, password);
+    res.clearCookie("session");
+    res.redirect("/?deleted=1");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+// ───────────────────────────────────────────────────────────────────────────
+
 // ── Logout ─────────────────────────────────────────────────────────────────
 app.get("/logout", async (req, res) => {
   res.clearCookie("session");

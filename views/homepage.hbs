@@ -136,6 +136,36 @@
         border-color: #cbd5e1;
     }
 
+    .gh-unavail-btn {
+        width: 100%;
+        padding: 0.45rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+        margin-bottom: 1rem;
+        border: 1px solid #fca5a5;
+        background: #fff5f5;
+        color: #b91c1c;
+    }
+
+    .gh-unavail-btn:hover {
+        background: #fee2e2;
+        border-color: #f87171;
+    }
+
+    .gh-unavail-btn.is-unavailable {
+        border-color: #86efac;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .gh-unavail-btn.is-unavailable:hover {
+        background: #dcfce7;
+        border-color: #4ade80;
+    }
+
     /* Stats row */
     .gh-stats {
         display: flex;
@@ -703,8 +733,11 @@
         <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol. Every cat deserves a safety net.
             🐱</p>
 
+<<<<<<< HEAD
         <button class="gh-edit-btn" onclick="window.open('/profile/edit', '_blank')">Edit profile</button>
 
+=======
+>>>>>>> 85e49f94d74d149e1fce9479c142af88726ae945
         <div class="gh-stats">
             <a href="#">
                 <span class="stat-count">{{cats.length}}</span> cats
@@ -812,8 +845,8 @@
                         </div>
 
                         <p class="repo-desc">
-                            {{#if this.careInstructions.diet}}🍽️ {{this.careInstructions.diet}}{{/if}}
-                            {{#if this.careInstructions.medical}} ⚠️ {{this.careInstructions.medical}}{{/if}}
+                            {{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}
+                            {{#if this.careInstructions.conditions}} · {{this.careInstructions.conditions}}{{/if}}
                         </p>
 
                         <div class="repo-footer">
@@ -825,21 +858,15 @@
                             {{/if}}
 
                             {{#if this.age}}
-                            <span class="repo-meta-item">
-                                🎂 {{this.age}} yrs
-                            </span>
+                            <span class="repo-meta-item">{{this.age}} yrs</span>
                             {{/if}}
 
-                            {{#if this.qrCodeId}}
-                            <span class="repo-meta-item">
-                                🔗 {{this.qrCodeId}}
-                            </span>
+                            {{#if this.careInstructions.vetName}}
+                            <span class="repo-meta-item">Vet on file</span>
                             {{/if}}
 
-                            {{#if this.careInstructions.vetDetails}}
-                            <span class="repo-meta-item">
-                                🏥 Vet on file
-                            </span>
+                            {{#if this.careInstructions.microchip}}
+                            <span class="repo-meta-item">Chipped</span>
                             {{/if}}
                         </div>
                     </div>
@@ -944,8 +971,8 @@
                             </div>
 
                             <p class="repo-desc">
-                                {{#if this.careInstructions.diet}}🍽️ {{this.careInstructions.diet}}{{/if}}
-                                {{#if this.careInstructions.medical}} ⚠️ {{this.careInstructions.medical}}{{/if}}
+                                {{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}
+                                {{#if this.careInstructions.conditions}} · {{this.careInstructions.conditions}}{{/if}}
                             </p>
 
                             <div class="repo-footer">
@@ -957,15 +984,15 @@
                                 {{/if}}
 
                                 {{#if this.age}}
-                                <span class="repo-meta-item">
-                                    🎂 {{this.age}} yrs
-                                </span>
+                                <span class="repo-meta-item">{{this.age}} yrs</span>
                                 {{/if}}
 
-                                {{#if this.qrCodeId}}
-                                <span class="repo-meta-item">
-                                    🔗 {{this.qrCodeId}}
-                                </span>
+                                {{#if this.careInstructions.vetName}}
+                                <span class="repo-meta-item">Vet on file</span>
+                                {{/if}}
+
+                                {{#if this.careInstructions.microchip}}
+                                <span class="repo-meta-item">Chipped</span>
                                 {{/if}}
                             </div>
                         </div>
@@ -986,33 +1013,99 @@
 
                 <form id="catForm" method="POST" action="/cats" enctype="multipart/form-data">
 
+                    <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
+
                     <div class="form-group">
                         <label>Cat Name</label>
                         <input type="text" id="name" name="name" required>
                     </div>
-
                     <div class="form-group">
                         <label>Breed</label>
-                        <input type="text" id="breed" name="breed" required>
+                        <input type="text" id="breed" name="breed">
                     </div>
-
                     <div class="form-group">
-                        <label>Age</label>
-                        <input type="number" id="age" name="age" min="0" required>
+                        <label>Age (years)</label>
+                        <input type="number" id="age" name="age" min="0">
                     </div>
-
                     <div class="form-group">
                         <label>Photo</label>
                         <input type="file" id="photoInput" name="photo" accept="image/*">
                     </div>
+                    <div class="form-group">
+                        <label>Microchip Number</label>
+                        <input type="text" name="microchip" placeholder="15-digit ISO chip number">
+                    </div>
+                    <div class="form-group">
+                        <label>Passport / Travel Document Number</label>
+                        <input type="text" name="passportNumber" placeholder="e.g. EU passport number">
+                    </div>
+                    <div class="form-group">
+                        <label>Neutered / Spayed</label>
+                        <select name="neutered">
+                            <option value="">Not specified</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:1.25rem 0 1rem;">
+                    <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Diet & Feeding</p>
 
                     <div class="form-group">
-                        <label>Care Instructions</label>
-                        <textarea id="careInstructions" name="care"
-                            placeholder="Diet, medication, vet details, emergency contacts..."></textarea>
+                        <label>Feeding Schedule</label>
+                        <input type="text" name="feedingSchedule" placeholder="e.g. Twice daily, 80g dry food at 8am and 6pm">
                     </div>
+                    <div class="form-group">
+                        <label>Food Brand / Type</label>
+                        <input type="text" name="foodBrand" placeholder="e.g. Royal Canin Adult Indoor">
+                    </div>
+                    <div class="form-group">
+                        <label>Food Allergies / Intolerances</label>
+                        <input type="text" name="allergies" placeholder="e.g. Chicken, fish-based foods">
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:1.25rem 0 1rem;">
+                    <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Medical</p>
+
+                    <div class="form-group">
+                        <label>Known Conditions</label>
+                        <textarea name="conditions" rows="2" placeholder="e.g. Asthma, chronic kidney disease"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Medications</label>
+                        <textarea name="medications" rows="2" placeholder="e.g. Prednisolone 5mg once daily with food"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Vaccinations</label>
+                        <textarea name="vaccinations" rows="2" placeholder="e.g. Rabies: Jan 2025 (next Jan 2026), FVRCP: Mar 2025"></textarea>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:1.25rem 0 1rem;">
+                    <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Veterinarian</p>
+
+                    <div class="form-group">
+                        <label>Vet Name / Clinic</label>
+                        <input type="text" name="vetName" placeholder="e.g. Dr. Smith — City Vet Clinic">
+                    </div>
+                    <div class="form-group">
+                        <label>Vet Phone</label>
+                        <input type="tel" name="vetPhone" placeholder="+1 555 000 0000">
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f1f5f9;margin:1.25rem 0 1rem;">
+                    <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Personality & Notes</p>
+
+                    <div class="form-group">
+                        <label>Personality / Habits</label>
+                        <textarea name="personality" rows="2" placeholder="e.g. Shy with strangers, loves being brushed, indoor only"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Caretaker Notes</label>
+                        <textarea name="notes" rows="2" placeholder="Anything important a temporary guardian should know"></textarea>
+                    </div>
+
                     <button type="submit">
-                        Create Cat
+                        Add Cat
                     </button>
 
                 </form>
@@ -1306,13 +1399,34 @@
                 document.getElementById('editProfileModal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
+            function openChangePassword() {
+                document.getElementById('changePasswordModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+            function closeChangePassword() {
+                document.getElementById('changePasswordModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
             function closeEditProfile() {
                 document.getElementById('editProfileModal').style.display = 'none';
                 document.body.style.overflow = '';
+                hideDeleteConfirm();
+            }
+            function showDeleteConfirm() {
+                document.getElementById('deleteAccountTrigger').style.display = 'none';
+                document.getElementById('deleteAccountConfirm').style.display = 'block';
+            }
+            function hideDeleteConfirm() {
+                document.getElementById('deleteAccountTrigger').style.display = 'block';
+                document.getElementById('deleteAccountConfirm').style.display = 'none';
             }
             const _modal = document.getElementById('editProfileModal');
             if (_modal) _modal.addEventListener('click', function (e) {
                 if (e.target === this) closeEditProfile();
+            });
+            const _pwModal = document.getElementById('changePasswordModal');
+            if (_pwModal) _pwModal.addEventListener('click', function (e) {
+                if (e.target === this) closeChangePassword();
             });
 
             // Profile photo upload
@@ -1348,11 +1462,14 @@
                 setTimeout(() => toast.remove(), 3500);
             }
 
-            // Show success toast if ?success=profile in URL
+            // Show success toast on redirect
             (function () {
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('success') === 'profile') {
-                    showToast('✅ Profile updated successfully!', '#166534', '#22c55e');
+                    showToast('Profile updated successfully.', '#166534', '#22c55e');
+                    window.history.replaceState({}, '', '/homepage');
+                } else if (params.get('success') === 'password') {
+                    showToast('Password changed successfully.', '#166534', '#22c55e');
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();
@@ -1366,62 +1483,23 @@
             <div
                 style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:440px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
                 <button onclick="closeEditProfile()"
-                    style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">✕</button>
+                    style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
 
-                <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 0.25rem;">Edit Profile</h2>
-                <p style="font-size:0.8rem;color:#64748b;margin:0 0 1.5rem;">Leave password fields blank to keep your
-                    current password.</p>
+                <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Profile</h2>
 
                 <form method="POST" action="/profile/edit">
                     <div style="margin-bottom:1rem;">
-                        <label
-                            style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Full
-                            Name</label>
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Full Name</label>
                         <input type="text" name="name" value="{{user.name}}" required
                             style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
                             onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
-
-                    <div style="margin-bottom:1rem;">
-                        <label
-                            style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Phone</label>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Phone</label>
                         <input type="tel" name="phone" value="{{user.phone}}"
                             style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
                             onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
-
-                    <hr style="border:none;border-top:1px solid #e2e8f0;margin:1.25rem 0;">
-                    <p
-                        style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 0.75rem;">
-                        Change Password (optional)</p>
-
-                    <div style="margin-bottom:1rem;">
-                        <label
-                            style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Current
-                            Password</label>
-                        <input type="password" name="currentPassword"
-                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                    </div>
-
-                    <div style="margin-bottom:1rem;">
-                        <label
-                            style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">New
-                            Password</label>
-                        <input type="password" name="newPassword" minlength="6"
-                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                    </div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label
-                            style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Confirm
-                            New Password</label>
-                        <input type="password" name="confirmNewPassword" minlength="6"
-                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                    </div>
-
                     <div style="display:flex;gap:0.75rem;">
                         <button type="button" onclick="closeEditProfile()"
                             style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
@@ -1430,6 +1508,82 @@
                         <button type="submit"
                             style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">
                             Save Changes
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Delete Account -->
+                <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid #f1f5f9;">
+                    <p style="font-size:0.78rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.35rem;">Delete Account</p>
+                    <p style="font-size:0.82rem;color:#94a3b8;margin:0 0 1rem;line-height:1.5;">Permanently removes your account, cats, guardians, and all associated data.</p>
+
+                    <div id="deleteAccountTrigger">
+                        <button type="button" onclick="showDeleteConfirm()"
+                            style="padding:0.65rem 1.25rem;background:none;border:1.5px solid #e2e8f0;border-radius:0.65rem;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.2s;"
+                            onmouseover="this.style.borderColor='#fca5a5';this.style.color='#b91c1c'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+                            Delete my account
+                        </button>
+                    </div>
+
+                    <div id="deleteAccountConfirm" style="display:none;">
+                        <p style="font-size:0.82rem;color:#64748b;margin:0 0 0.75rem;">Enter your password to confirm. This cannot be undone.</p>
+                        <form method="POST" action="/account/delete">
+                            <input type="password" name="password" placeholder="Current password" required
+                                style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;margin-bottom:0.75rem;transition:border-color 0.2s;"
+                                onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'">
+                            <div style="display:flex;gap:0.6rem;">
+                                <button type="button" onclick="hideDeleteConfirm()"
+                                    style="flex:1;padding:0.75rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    style="flex:2;padding:0.75rem;background:#dc2626;color:white;border:none;border-radius:0.75rem;font-size:0.85rem;font-weight:700;cursor:pointer;">
+                                    Delete permanently
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Change Password Modal ─────────────────────────────────────── -->
+        <div id="changePasswordModal"
+            style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
+            <div
+                style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
+                <button onclick="closeChangePassword()"
+                    style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
+
+                <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Change Password</h2>
+
+                <form method="POST" action="/profile/password">
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Current Password</label>
+                        <input type="password" name="currentPassword" required
+                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">New Password</label>
+                        <input type="password" name="newPassword" minlength="6" required
+                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Confirm New Password</label>
+                        <input type="password" name="confirmNewPassword" minlength="6" required
+                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div style="display:flex;gap:0.75rem;">
+                        <button type="button" onclick="closeChangePassword()"
+                            style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">
+                            Update Password
                         </button>
                     </div>
                 </form>

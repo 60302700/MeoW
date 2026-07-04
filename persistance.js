@@ -20,10 +20,12 @@ async function connectDB() {
     await db
       .collection("Sessions")
       .createIndex({ lastActivity: 1 }, { expireAfterSeconds: 30 * 60 });
-    // Auto-expire password reset tokens after 1 hour
     await db
       .collection("PasswordResetTokens")
       .createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 });
+    await db
+      .collection("GuardianAccessTokens")
+      .createIndex({ createdAt: 1 }, { expireAfterSeconds: 48 * 60 * 60 });
     console.log("Connected to MongoDB");
   }
   return db;
@@ -42,6 +44,8 @@ function collections() {
     EmergencyEvents: db.collection("EmergencyEvents"),
     Sessions: db.collection("Sessions"),
     PasswordResetTokens: db.collection("PasswordResetTokens"),
+    GuardianAccessTokens: db.collection("GuardianAccessTokens"),
+    OwnerUnavailability: db.collection("OwnerUnavailability"),
   };
 }
 
@@ -270,6 +274,101 @@ async function searchUsersByName(name) {
     .toArray();
 }
 
+async function deleteUserAccount(userId, email) {
+  const {
+    Users,
+    Cats,
+    Guardians,
+    EmergencyEvents,
+    Sessions,
+    PasswordResetTokens,
+    GuardianAccessTokens,
+    OwnerUnavailability,
+  } = collections();
+  const oid = new ObjectId(userId);
+  const cats = await Cats.find(
+    { ownerId: oid },
+    { projection: { _id: 1 } },
+  ).toArray();
+  const catIds = cats.map((c) => c._id);
+  await Promise.all([
+    Users.deleteOne({ _id: oid }),
+    Cats.deleteMany({ ownerId: oid }),
+    Guardians.deleteMany({ ownerId: oid }),
+    EmergencyEvents.deleteMany({ catId: { $in: catIds } }),
+    Sessions.deleteMany({ email }),
+    PasswordResetTokens.deleteMany({ email }),
+    GuardianAccessTokens.deleteMany({ ownerId: oid }),
+    OwnerUnavailability.deleteMany({ ownerId: oid }),
+  ]);
+}
+
+// ---- Owner Unavailability ----
+
+async function createOwnerUnavailability(ownerId) {
+  const { OwnerUnavailability } = collections();
+  await OwnerUnavailability.updateMany(
+    { ownerId: new ObjectId(ownerId), status: "active" },
+    { $set: { status: "resolved" } },
+  );
+  const result = await OwnerUnavailability.insertOne({
+    ownerId: new ObjectId(ownerId),
+    status: "active",
+    createdAt: new Date(),
+  });
+  return result.insertedId;
+}
+
+async function getActiveUnavailability(ownerId) {
+  const { OwnerUnavailability } = collections();
+  return OwnerUnavailability.findOne({
+    ownerId: new ObjectId(ownerId),
+    status: "active",
+  });
+}
+
+async function resolveUnavailability(unavailabilityId) {
+  const { OwnerUnavailability } = collections();
+  await OwnerUnavailability.updateOne(
+    { _id: new ObjectId(unavailabilityId) },
+    { $set: { status: "resolved" } },
+  );
+}
+
+// ---- Guardian Access Tokens ----
+
+async function createGuardianAccessToken(
+  unavailabilityId,
+  guardianId,
+  ownerId,
+) {
+  const { GuardianAccessTokens } = collections();
+  const token = uuidv4();
+  await GuardianAccessTokens.insertOne({
+    token,
+    unavailabilityId: new ObjectId(unavailabilityId),
+    guardianId: new ObjectId(guardianId),
+    ownerId: new ObjectId(ownerId),
+    acknowledged: false,
+    createdAt: new Date(),
+  });
+  return token;
+}
+
+async function getGuardianAccessToken(token) {
+  const { GuardianAccessTokens } = collections();
+  return GuardianAccessTokens.findOne({ token });
+}
+
+async function acknowledgeGuardianToken(token) {
+  const { GuardianAccessTokens } = collections();
+  return GuardianAccessTokens.findOneAndUpdate(
+    { token },
+    { $set: { acknowledged: true, acknowledgedAt: new Date() } },
+    { returnDocument: "after" },
+  );
+}
+
 // ---- Password Reset Tokens ----
 
 async function createPasswordResetToken(email) {
@@ -311,6 +410,7 @@ export {
   getCatByQrCode,
   getCatById,
   getCatsByOwner,
+  getCatByName,
   setActiveBackupProtocol,
   addGuardian,
   getGuardiansByOwner,
@@ -331,8 +431,12 @@ export {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
+  deleteUserAccount,
   searchUsersByName,
-  searchGuardianById,
-  updateGuardianById,
-  getCatByName,
+  createOwnerUnavailability,
+  getActiveUnavailability,
+  resolveUnavailability,
+  createGuardianAccessToken,
+  getGuardianAccessToken,
+  acknowledgeGuardianToken,
 };

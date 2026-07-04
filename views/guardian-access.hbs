@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} — MeoW</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f5f3ff 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand h1 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d946a8, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand p {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .alert {
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .alert-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+        .alert-info { background: #fdf6ff; border-left: 4px solid #d946a8; color: #701a75; }
+
+        .header-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .header-section h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.4rem;
+        }
+
+        .header-section p {
+            color: #475569;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .cat-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .cat-photo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid #f0abfc;
+        }
+
+        .cat-photo-placeholder {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fce7f3, #f5f3ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+            border: 2px solid #f0abfc;
+        }
+
+        .cat-info h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .cat-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.6rem;
+        }
+
+        .care-block {
+            background: #fdf6ff;
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .care-label {
+            font-weight: 700;
+            color: #d946a8;
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+
+        .care-section + .care-section {
+            margin-top: 0.6rem;
+        }
+
+        .ack-section {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .ack-section p {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+
+        .btn-ack {
+            display: inline-block;
+            padding: 0.85rem 2.5rem;
+            background: linear-gradient(135deg, #d946a8, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+
+        .btn-ack:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .already-acked {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .already-acked .big-check {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .already-acked p {
+            color: #166534;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="brand">
+            <h1>🐱 MeoW</h1>
+            <p>Cat Safety Network</p>
+        </div>
+
+        {{#if error}}
+            <div class="alert alert-error">{{error}}</div>
+        {{else}}
+            {{#if acked}}
+                <div class="alert alert-success">✅ You've acknowledged — {{ownerName}}'s cats are in good hands!</div>
+            {{/if}}
+
+            <div class="card">
+                <div class="header-section">
+                    <h2>🐾 {{ownerName}} needs your help</h2>
+                    <p>They've marked themselves as unavailable. Please review the care instructions below and acknowledge that you're looking after their cats.</p>
+                </div>
+
+                {{#each cats}}
+                <div class="cat-card">
+                    {{#if this.photoUrl}}
+                        <img class="cat-photo" src="{{this.photoUrl}}" alt="{{this.name}}">
+                    {{else}}
+                        <div class="cat-photo-placeholder">🐱</div>
+                    {{/if}}
+                    <div class="cat-info">
+                        <h3>{{this.name}}</h3>
+                        <div class="cat-meta">{{this.breed}}{{#if this.age}} · {{this.age}} yrs{{/if}}</div>
+                        <div class="care-block">
+                            {{#if this.careInstructions.feedingSchedule}}
+                            <div class="care-section">
+                                <span class="care-label">Feeding</span>
+                                {{this.careInstructions.feedingSchedule}}
+                                {{#if this.careInstructions.foodBrand}} — {{this.careInstructions.foodBrand}}{{/if}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.allergies}}
+                            <div class="care-section">
+                                <span class="care-label">Allergies</span>
+                                {{this.careInstructions.allergies}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.conditions}}
+                            <div class="care-section">
+                                <span class="care-label">Conditions</span>
+                                {{this.careInstructions.conditions}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.medications}}
+                            <div class="care-section">
+                                <span class="care-label">Medications</span>
+                                {{this.careInstructions.medications}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.vetName}}
+                            <div class="care-section">
+                                <span class="care-label">Vet</span>
+                                {{this.careInstructions.vetName}}{{#if this.careInstructions.vetPhone}} — {{this.careInstructions.vetPhone}}{{/if}}
+                            </div>
+                            {{/if}}
+                            {{#if this.careInstructions.notes}}
+                            <div class="care-section" style="background:#fffbeb;border-left-color:#f59e0b;">
+                                <span class="care-label" style="color:#92400e;">Notes</span>
+                                {{this.careInstructions.notes}}
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+
+                {{#if alreadyAcknowledged}}
+                    <div class="already-acked">
+                        <div class="big-check">✅</div>
+                        <p>You already acknowledged this request.</p>
+                    </div>
+                {{else if acked}}
+                    <div class="already-acked">
+                        <div class="big-check">✅</div>
+                        <p>You're all set! {{ownerName}} has been notified.</p>
+                    </div>
+                {{else}}
+                    <div class="ack-section">
+                        <p>By acknowledging, you confirm you're aware of the situation and will look after these cats.</p>
+                        <form method="POST" action="/guardian-access/{{token}}/acknowledge">
+                            <button type="submit" class="btn-ack">✅ I'm on it — Acknowledge</button>
+                        </form>
+                    </div>
+                {{/if}}
+            </div>
+        {{/if}}
+    </div>
+</body>
+</html>

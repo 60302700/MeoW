@@ -18,54 +18,57 @@
       <form
         method="POST"
         action="/guardians/edit/{{guardian.Id}}"
-        class="space-y-6"
+        class="space-y-6 ge-form"
       >
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-slate-700">Full Name</label>
-            <input
-              name="name"
-              value="{{guardian.name}}"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
-            />
+        <style>
+          .ge-form { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+          .ge-card-header { display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:linear-gradient(90deg,#fff7fb, #fff);box-shadow:0 6px 20px rgba(15,23,42,0.06);margin-bottom:6px }
+          .ge-card-header .icon { font-size:22px; width:46px; height:46px; display:flex;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(180deg,#ec4899,#be185d);color:white;box-shadow:0 6px 18px rgba(236,72,153,0.18)}
+          .ge-hint { color:#64748b;font-size:0.92rem;margin-top:2px }
+          .ge-label { display:block;font-weight:700;color:#0f172a;font-size:0.85rem;margin-bottom:6px }
+          .ge-input, .ge-select { width:100%; padding:12px 14px;border-radius:12px;border:1px solid #e6e9ef;background:white;box-shadow:inset 0 1px 0 rgba(16,24,40,0.02);transition:box-shadow .18s ease, transform .12s ease, border-color .12s ease }
+          .ge-input:focus, .ge-select:focus { outline:none;border-color:#f9c2dd;box-shadow:0 8px 30px rgba(236,72,153,0.10);transform:translateY(-1px) }
+          .ge-grid { display:grid;grid-template-columns:1fr;gap:14px }
+          @media(min-width:720px){ .ge-grid{grid-template-columns:repeat(2,1fr)} }
+          .ge-row { display:flex;gap:12px;align-items:center }
+          .ge-uuid { background:#f8fafc;color:#475569;padding:10px 12px;border-radius:10px;border:1px solid #e6e8ee }
+          .btn-primary { background:linear-gradient(90deg,#ec4899,#be185d);color:white;padding:10px 14px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 20px rgba(236,72,153,0.15);transition:transform .12s ease,box-shadow .12s }
+          .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(236,72,153,0.18) }
+          .btn-ghost { background:transparent;border:1px solid #e6e8ee;padding:10px 12px;border-radius:12px }
+          .ge-copy { min-width:82px }
+        </style>
+
+        <div class="ge-card-header">
+          <div class="icon">🛡️</div>
+          <div>
+            <div style="font-weight:800;color:#0f172a">Guardian Details</div>
+            <div class="ge-hint">Edit contact info and response priority for this guardian.</div>
+          </div>
+        </div>
+        <div class="ge-grid">
+          <div>
+            <label class="ge-label">Full Name</label>
+            <input name="name" value="{{guardian.name}}" required class="ge-input" />
           </div>
 
-          <div class="space-y-2">
-            <label
-              class="block text-sm font-semibold text-slate-700"
-            >Email</label>
-            <input
-              type="email"
-              name="email"
-              value="{{guardian.email}}"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
-            />
+          <div>
+            <label class="ge-label">Email</label>
+            <input type="email" name="email" value="{{guardian.email}}" class="ge-input" />
           </div>
 
-          <div class="space-y-2">
-            <label
-              class="block text-sm font-semibold text-slate-700"
-            >Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              value="{{guardian.phone}}"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
-            />
+          <div>
+            <label class="ge-label">Phone</label>
+            <input type="tel" name="phone" value="{{guardian.phone}}" class="ge-input" />
           </div>
 
-          <div class="space-y-2">
-            <label class="block text-sm font-semibold text-slate-700">Priority
-              Order</label>
-            <input
-              name="priorityOrder"
-              type="number"
-              min="1"
-              step="1"
-              value="{{guardian.priorityOrder}}"
-              class="w-full md:w-36 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
-            />
+          <div>
+            <label class="ge-label">Priority Order</label>
+            <select id="g-priority-edit" name="priorityOrder" required class="ge-select">
+              <option value="1" {{#if (eq guardian.priorityOrder 1)}}selected{{/if}}>Priority #1 (Immediate responder)</option>
+              <option value="2" {{#if (eq guardian.priorityOrder 2)}}selected{{/if}}>Priority #2 (Backup responder)</option>
+              <option value="3" {{#if (eq guardian.priorityOrder 3)}}selected{{/if}}>Priority #3</option>
+              <option value="4" {{#if (eq guardian.priorityOrder 4)}}selected{{/if}}>Priority #4</option>
+            </select>
           </div>
         </div>
 
@@ -73,29 +76,14 @@
           <label class="block text-sm font-semibold text-slate-700">Guardian
             UUID</label>
           <div class="flex gap-3">
-            <input
-              id="guardian-uuid"
-              value="{{guardian.Id}}"
-              readonly
-              class="flex-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-600 outline-none"
-            />
-            <button
-              type="button"
-              onclick="navigator.clipboard?.writeText(document.getElementById('guardian-uuid').value)"
-              class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white"
-            >Copy</button>
+            <input id="guardian-uuid" value="{{guardian.Id}}" readonly class="ge-uuid" />
+            <button type="button" onclick="navigator.clipboard?.writeText(document.getElementById('guardian-uuid').value)" class="btn-ghost ge-copy">Copy</button>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-3 items-center justify-between">
-          <button
-            type="submit"
-            class="rounded-2xl bg-[#0f172a] px-6 py-3 text-sm font-semibold text-white shadow"
-          >Save changes</button>
-          <a
-            href="/homepage"
-            class="text-sm text-slate-600 hover:text-slate-900"
-          >Back to dashboard</a>
+          <button type="submit" class="btn-primary">Save changes</button>
+          <a href="/homepage" class="btn-ghost">Back to dashboard</a>
         </div>
       </form>
     </div>
