@@ -26,6 +26,7 @@ import {
   changePassword,
   deleteAccount,
   updateGuardianById,
+  getGuardianForOwnerBusinessLayer,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -51,6 +52,10 @@ async function searchGuardianByName(name) {
 
 async function updateGuardianPresentation(sessionId, Id, updates) {
   return await updateGuardianById(sessionId, Id, updates);
+}
+
+async function getGuardianForOwnerPresentation(OId, guardianId) {
+  return await getGuardianForOwnerBusinessLayer(OId, guardianId);
 }
 
 export {
@@ -81,4 +86,6 @@ export {
   changePassword,
   deleteAccount,
   updateGuardianPresentation,
+  searchGuardianByName,
+  getGuardianForOwnerPresentation,
 };

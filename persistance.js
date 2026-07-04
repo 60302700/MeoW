@@ -401,7 +401,7 @@ async function searchGuardianById(Id) {
 
 async function updateGuardianById(Id, updates) {
   const { Guardians } = collections();
-<<<<<<< HEAD
+
   // Update and return the updated guardian document
   const result = await Guardians.findOneAndUpdate(
     { Id: Id },
@@ -409,13 +409,20 @@ async function updateGuardianById(Id, updates) {
     { returnDocument: "after" },
   );
   return result.value;
-=======
   await Guardians.updateOne({ Id: Id }, { $set: updates });
 }
 
 async function updateGuardianByObjectId(guardianId, updates) {
   const { Guardians } = collections();
-  await Guardians.updateOne({ _id: new ObjectId(guardianId) }, { $set: updates });
+  await Guardians.updateOne(
+    { _id: new ObjectId(guardianId) },
+    { $set: updates },
+  );
+}
+
+async function getGuardian(OId, guardianId) {
+  const { Guardians } = collections();
+  return Guardians.findOne({ _id: new ObjectId(guardianId), ownerId: OId });
 }
 
 export {
@@ -460,4 +467,6 @@ export {
   getGuardianAccessToken,
   acknowledgeGuardianToken,
   updateGuardianById,
+  searchGuardianById,
+  getGuardian,
 };

@@ -34,6 +34,7 @@ import {
   resolveUnavailability,
   getGuardianAccessToken,
   acknowledgeGuardianToken,
+  getGuardian,
 } from "./persistance.js";
 import { sendPasswordResetEmail } from "./mailer.js";
 import {
@@ -42,6 +43,7 @@ import {
   signalGuardianAcknowledged,
 } from "./temporal/client.js";
 import bcrypt from "bcryptjs";
+import { ReturnDocument } from "mongodb";
 
 async function getCatByNameBusinessLayer(catName) {
   return getCatByName(catName);
@@ -113,6 +115,10 @@ async function getUserHomepage(sessionId) {
   const guardians = await getGuardiansByOwner(user._id);
   const unavailability = await getActiveUnavailability(user._id.toString());
   return { user, cats, guardians, isUnavailable: !!unavailability };
+}
+
+async function getGuardianForOwnerBusinessLayer(OId, guardianId) {
+  return await getGuardian(OId, guardianId);
 }
 
 async function addNewCat(
@@ -187,7 +193,11 @@ async function addNewGuardian(
   });
 }
 
-async function editGuardian(sessionId, guardianId, { name, email, phone, priorityOrder }) {
+async function editGuardian(
+  sessionId,
+  guardianId,
+  { name, email, phone, priorityOrder },
+) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
@@ -200,13 +210,36 @@ async function editGuardian(sessionId, guardianId, { name, email, phone, priorit
   });
 }
 
-async function editCat(sessionId, catId, { name, breed, age, photoUrl, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes }) {
+async function editCat(
+  sessionId,
+  catId,
+  {
+    name,
+    breed,
+    age,
+    photoUrl,
+    feedingSchedule,
+    foodBrand,
+    allergies,
+    conditions,
+    medications,
+    vaccinations,
+    neutered,
+    vetName,
+    vetPhone,
+    microchip,
+    passportNumber,
+    personality,
+    notes,
+  },
+) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
   if (!user) throw new Error("User not found");
   const cat = await getCatById(catId);
-  if (!cat || cat.ownerId.toString() !== user._id.toString()) throw new Error("Cat not found");
+  if (!cat || cat.ownerId.toString() !== user._id.toString())
+    throw new Error("Cat not found");
 
   const updates = {
     name,
@@ -394,6 +427,10 @@ async function updateGuardianById(sessionId, Id, updates) {
   await persistenceUpdateGuardianById(Id, updates);
 }
 
+async function searchGuardian(Id) {
+  return await searchGuardianById(Id);
+}
+
 export {
   connectDB,
   logout,
@@ -422,4 +459,6 @@ export {
   changePassword,
   deleteAccount,
   updateGuardianById,
+  searchGuardian,
+  getGuardianForOwnerBusinessLayer,
 };
