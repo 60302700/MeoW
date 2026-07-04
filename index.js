@@ -221,46 +221,18 @@ app.get("/homepage", async (req, res) => {
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
 
-  // Note: 'photo' will be empty in req.body because it's now sent in req.file
   const { name, breed, age, care, photo } = req.body;
-
-  console.log("/cats form data:", req.body);
-  console.log(
-    "/cats file object:",
-    req.file
-      ? {
-          originalname: req.file.originalname,
-          mimetype: req.file.mimetype,
-          size: req.file.size,
-        }
-      : null,
-  );
-
   let photoString = "";
 
   try {
     if (req.file) {
       if (!req.file.buffer || req.file.buffer.length === 0) {
-        throw new Error(
-          "Uploaded image is empty or was not buffered correctly.",
-        );
+        throw new Error("Uploaded image is empty or was not buffered correctly.");
       }
-
-      console.log("Uploaded image buffer length:", req.file.buffer.length);
-      const base64String = req.file.buffer.toString("base64");
-      console.log("Converted image to Base64 length:", base64String.length);
-
-      // Build the data URI string so the browser can render it directly
-      photoString = `data:${req.file.mimetype};base64,${base64String}`;
+      photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     } else if (photo) {
-      console.log("Fallback photo field provided in body.");
-      if (photo.startsWith("data:")) {
-        photoString = photo;
-      } else {
-        photoString = `data:image/png;base64,${photo}`;
-      }
+      photoString = photo.startsWith("data:") ? photo : `data:image/png;base64,${photo}`;
     }
-    console.log(photoString);
     // 4. Send the data to your database function
     await addNewCat(sessionId, {
       name,
@@ -364,16 +336,12 @@ app.post("/reset-password", async (req, res) => {
 
 app.post("/profile/photo", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
-  console.log("[photo] route hit, sessionId:", sessionId ? sessionId.slice(0, 8) + "..." : "NONE");
-  console.log("[photo] req.file:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "MISSING");
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     await updateUserPhoto(sessionId, photoUrl);
-    console.log("[photo] saved OK for session", sessionId?.slice(0, 8));
     res.json({ ok: true });
   } catch (err) {
-    console.error("[photo] error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
