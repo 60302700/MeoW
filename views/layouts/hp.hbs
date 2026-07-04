@@ -403,7 +403,8 @@
         }
 
         /* Special style for Emergency link to add dynamic alert coloring */
-        .navbar-links a.nav-emergency {
+        .navbar-links a.nav-emergency,
+        .navbar-links button.nav-emergency {
             color: #ffffff;
             padding: 0.5rem 1.1rem;
             border-radius: 0.6rem;
@@ -431,11 +432,13 @@
             }
         }
 
-        .navbar-links a.nav-emergency::after {
+        .navbar-links a.nav-emergency::after,
+        .navbar-links button.nav-emergency::after {
             display: none;
         }
 
-        .navbar-links a.nav-emergency:hover {
+        .navbar-links a.nav-emergency:hover,
+        .navbar-links button.nav-emergency:hover {
             transform: translateY(-2px) scale(1.04);
             background: linear-gradient(135deg, #b91c1c, #dc2626);
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 6px 20px rgba(220, 38, 38, 0.55);
@@ -1689,7 +1692,25 @@
                 <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
                 {{/unless}}
-                <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
+                {{#if user}}
+                <li style="list-style:none;">
+                    {{#if isUnavailable}}
+                    <form method="POST" action="/owner/available" style="margin:0;">
+                        <button type="submit" class="nav-emergency"
+                            onclick="return confirm('Mark yourself as available? This will stop the guardian alert chain.')">
+                            🚨 Cancel Alert
+                        </button>
+                    </form>
+                    {{else}}
+                    <form method="POST" action="/owner/unavailable" style="margin:0;">
+                        <button type="submit" class="nav-emergency"
+                            onclick="return confirm('This will send emergency alerts to your guardians in priority order. Continue?')">
+                            🚨 Emergency
+                        </button>
+                    </form>
+                    {{/if}}
+                </li>
+                {{/if}}
                 {{#if user}}
                 <li style="list-style:none;">
                     <div class="profile-menu-wrap" id="profileMenuWrap">

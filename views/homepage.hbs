@@ -796,10 +796,6 @@
                 <span class="tab-count">{{guardians.length}}</span>
                 {{/if}}
             </span>
-            <span class="gh-tab" onclick="showEmergency()">
-                <span class="tab-icon">🚨</span>
-                Emergencies
-            </span>
         </div>
 
         {{#if error}}
@@ -1435,6 +1431,7 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         <div id="Emergency" style="display:none">
             <div class="container">
                 <h1>🚨 Emergencies &amp; System Simulator</h1>
@@ -1492,6 +1489,8 @@
                 </div>
             </div>
         </div>
+=======
+>>>>>>> 2c3dfb691bd60f5e9dc3952f7ebda351e0071521
 
         <script>
             // Generate the GitHub-style activity grid with random paw-print activity
@@ -1521,28 +1520,18 @@
                 document.getElementById('Overview').style.display = 'block';
                 document.getElementById('Cats').style.display = 'none';
                 document.getElementById('Guardians').style.display = 'none';
-                document.getElementById('Emergency').style.display = 'none';
             }
 
             function showCats() {
                 document.getElementById('Overview').style.display = 'none';
                 document.getElementById('Cats').style.display = 'block';
                 document.getElementById('Guardians').style.display = 'none';
-                document.getElementById('Emergency').style.display = 'none';
             }
 
             function showGuardians() {
                 document.getElementById('Overview').style.display = 'none';
                 document.getElementById('Guardians').style.display = 'block';
                 document.getElementById('Cats').style.display = 'none';
-                document.getElementById('Emergency').style.display = 'none';
-            }
-
-            function showEmergency() {
-                document.getElementById('Overview').style.display = 'none';
-                document.getElementById('Emergency').style.display = 'block';
-                document.getElementById('Cats').style.display = 'none';
-                document.getElementById('Guardians').style.display = 'none';
             }
 
             function initGuardianSearch() {

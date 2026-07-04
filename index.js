@@ -279,48 +279,18 @@ app.get("/profile/edit", async (req, res) => {
   });
 });
 
-app.post("/cats", requireAuth, upload.single("photo"), doubleCsrfProtection, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const {
-    name,
-    breed,
-    age,
-    photo,
-    feedingSchedule,
-    foodBrand,
-    allergies,
-    conditions,
-    medications,
-    vaccinations,
-    neutered,
-    vetName,
-    vetPhone,
-    microchip,
-    passportNumber,
-    personality,
-    notes,
-  } = req.body;
-  let photoString = "";
-
-  try {
-    if (req.file) {
-      if (!req.file.buffer || req.file.buffer.length === 0) {
-        throw new Error(
-          "Uploaded image is empty or was not buffered correctly.",
-        );
-      }
-      photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    } else if (photo) {
-      photoString = photo.startsWith("data:")
-        ? photo
-        : `data:image/png;base64,${photo}`;
-    }
-    await addNewCat(sessionId, {
+app.post(
+  "/cats",
+  requireAuth,
+  upload.single("photo"),
+  doubleCsrfProtection,
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const {
       name,
       breed,
-      age: Number(age),
-      photoUrl: photoString,
-      qrCodeId: uuidv4(),
+      age,
+      photo,
       feedingSchedule,
       foodBrand,
       allergies,
@@ -334,12 +304,48 @@ app.post("/cats", requireAuth, upload.single("photo"), doubleCsrfProtection, asy
       passportNumber,
       personality,
       notes,
-    });
-    res.redirect("/homepage");
-  } catch (err) {
-    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
-  }
-});
+    } = req.body;
+    let photoString = "";
+
+    try {
+      if (req.file) {
+        if (!req.file.buffer || req.file.buffer.length === 0) {
+          throw new Error(
+            "Uploaded image is empty or was not buffered correctly.",
+          );
+        }
+        photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      } else if (photo) {
+        photoString = photo.startsWith("data:")
+          ? photo
+          : `data:image/png;base64,${photo}`;
+      }
+      await addNewCat(sessionId, {
+        name,
+        breed,
+        age: Number(age),
+        photoUrl: photoString,
+        qrCodeId: uuidv4(),
+        feedingSchedule,
+        foodBrand,
+        allergies,
+        conditions,
+        medications,
+        vaccinations,
+        neutered,
+        vetName,
+        vetPhone,
+        microchip,
+        passportNumber,
+        personality,
+        notes,
+      });
+      res.redirect("/homepage");
+    } catch (err) {
+      res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+  },
+);
 
 app.get("/guardians/edit/:guardianId", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
@@ -569,7 +575,11 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
 });
 
 app.get("/cats/:catName", requireAuth, async (req, res) => {
-  const cat = await getCatByNamePresentationLayer(req.params.catName);
+  const sessionId = getSessionCookie(req);
+  const [cat, data] = await Promise.all([
+    getCatByNamePresentationLayer(req.params.catName),
+    getUserHomepage(sessionId),
+  ]);
   res.render("cat-detail", {
     title: cat.name,
     cat,
@@ -577,10 +587,6 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     layout: "hp",
   });
 });
-
-app.get("/gurdian/access/:token", async (req, res) => {
-  const { token } = req.query;
-  if (!token) return res.redirect("/");
 
 // ── Owner availability ─────────────────────────────────────────────────────
 app.post("/owner/unavailable", requireAuth, async (req, res) => {
@@ -696,7 +702,9 @@ app.use((err, req, res, next) => {
   if (err.code === "EBADCSRFTOKEN") {
     return res
       .status(403)
-      .send("Forbidden: invalid or expired form submission. Please go back and try again.");
+      .send(
+        "Forbidden: invalid or expired form submission. Please go back and try again.",
+      );
   }
   throw err;
 });
