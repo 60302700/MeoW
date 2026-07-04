@@ -411,7 +411,6 @@ async function updateGuardianById(Id, updates) {
   return result.value;
 =======
   await Guardians.updateOne({ Id: Id }, { $set: updates });
->>>>>>> d86dd63381f4228077d43371abb3390597f162ae
 }
 
 async function updateGuardianByObjectId(guardianId, updates) {
