@@ -136,6 +136,11 @@ async function getCatByName(catName) {
   return Cats.findOne({ name: catName });
 }
 
+async function updateCatById(catId, updates) {
+  const { Cats } = collections();
+  await Cats.updateOne({ _id: new ObjectId(catId) }, { $set: updates });
+}
+
 async function setActiveBackupProtocol(catId, isActive) {
   const { Cats } = collections();
   await Cats.updateOne(
@@ -396,6 +401,7 @@ async function searchGuardianById(Id) {
 
 async function updateGuardianById(Id, updates) {
   const { Guardians } = collections();
+<<<<<<< HEAD
   // Update and return the updated guardian document
   const result = await Guardians.findOneAndUpdate(
     { Id: Id },
@@ -403,6 +409,14 @@ async function updateGuardianById(Id, updates) {
     { returnDocument: "after" },
   );
   return result.value;
+=======
+  await Guardians.updateOne({ Id: Id }, { $set: updates });
+>>>>>>> d86dd63381f4228077d43371abb3390597f162ae
+}
+
+async function updateGuardianByObjectId(guardianId, updates) {
+  const { Guardians } = collections();
+  await Guardians.updateOne({ _id: new ObjectId(guardianId) }, { $set: updates });
 }
 
 export {
@@ -416,9 +430,11 @@ export {
   getCatById,
   getCatsByOwner,
   getCatByName,
+  updateCatById,
   setActiveBackupProtocol,
   addGuardian,
   getGuardiansByOwner,
+  updateGuardianByObjectId,
   setGuardianAccepted,
   createEmergencyEvent,
   getEmergencyEventById,

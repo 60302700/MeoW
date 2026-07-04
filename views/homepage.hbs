@@ -733,11 +733,6 @@
         <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol. Every cat deserves a safety net.
             🐱</p>
 
-<<<<<<< HEAD
-        <button class="gh-edit-btn" onclick="window.open('/profile/edit', '_blank')">Edit profile</button>
-
-=======
->>>>>>> 85e49f94d74d149e1fce9479c142af88726ae945
         <div class="gh-stats">
             <a href="#">
                 <span class="stat-count">{{cats.length}}</span> cats
@@ -838,9 +833,7 @@
                         <div class="repo-top-row">
                             <span class="repo-name"><a href="/cats/{{this.name}}" target="_blank">{{this.name}}</a></span>
                             {{#if this.isActiveBackupProtocol}}
-                            <span class="repo-visibility">🟢 Protected</span>
-                            {{else}}
-                            <span class="repo-visibility">Unprotected</span>
+                            <span class="repo-visibility">Protected</span>
                             {{/if}}
                         </div>
 
@@ -873,6 +866,171 @@
                 </div>
                 {{/each}}
             </div>
+
+            {{#each cats}}
+            <div id="editCatModal-{{this._id}}" style="display:none"
+                <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
+                    <button onclick="closeEditCat('{{this._id}}')"
+                        style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
+
+                    <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit — {{this.name}}</h2>
+
+                    <form method="POST" action="/cats/{{this._id}}/edit" enctype="multipart/form-data">
+
+                        <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
+                                <input type="text" name="name" value="{{this.name}}" required
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Breed</label>
+                                <input type="text" name="breed" value="{{this.breed}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Age (yrs)</label>
+                                <input type="number" name="age" value="{{this.age}}" min="0"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Neutered</label>
+                                <select name="neutered"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;background:white;">
+                                    <option value="">Unknown</option>
+                                    <option value="yes" {{#if this.careInstructions.neutered}}selected{{/if}}>Yes</option>
+                                    <option value="no" {{#unless this.careInstructions.neutered}}selected{{/unless}}>No</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Replace Photo</label>
+                                <label style="display:block;padding:0.6rem 0.85rem;border:2px dashed #e2e8f0;border-radius:0.65rem;font-size:0.82rem;color:#94a3b8;cursor:pointer;text-align:center;transition:border-color 0.2s;"
+                                    onmouseover="this.style.borderColor='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0'">
+                                    Choose file
+                                    <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.parentElement.textContent=this.files[0]?this.files[0].name:'Choose file'">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Microchip</label>
+                                <input type="text" name="microchip" value="{{this.careInstructions.microchip}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Passport No.</label>
+                                <input type="text" name="passportNumber" value="{{this.careInstructions.passportNumber}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+
+                        <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
+                        <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Diet & Feeding</p>
+
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Feeding Schedule</label>
+                            <input type="text" name="feedingSchedule" value="{{this.careInstructions.feedingSchedule}}"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Food Brand / Type</label>
+                                <input type="text" name="foodBrand" value="{{this.careInstructions.foodBrand}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Allergies</label>
+                                <input type="text" name="allergies" value="{{this.careInstructions.allergies}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+
+                        <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
+                        <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Medical</p>
+
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Known Conditions</label>
+                            <textarea name="conditions" rows="2"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{this.careInstructions.conditions}}</textarea>
+                        </div>
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Current Medications</label>
+                            <textarea name="medications" rows="2"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{this.careInstructions.medications}}</textarea>
+                        </div>
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vaccinations</label>
+                            <textarea name="vaccinations" rows="2"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{this.careInstructions.vaccinations}}</textarea>
+                        </div>
+
+                        <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
+                        <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Veterinarian</p>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vet Name / Clinic</label>
+                                <input type="text" name="vetName" value="{{this.careInstructions.vetName}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vet Phone</label>
+                                <input type="tel" name="vetPhone" value="{{this.careInstructions.vetPhone}}"
+                                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                        </div>
+
+                        <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
+                        <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Personality & Notes</p>
+
+                        <div style="margin-bottom:0.75rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Personality / Habits</label>
+                            <textarea name="personality" rows="2"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{this.careInstructions.personality}}</textarea>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Caretaker Notes</label>
+                            <textarea name="notes" rows="2"
+                                style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;"
+                                onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{this.careInstructions.notes}}</textarea>
+                        </div>
+
+                        <div style="display:flex;gap:0.75rem;">
+                            <button type="button" onclick="closeEditCat('{{this._id}}')"
+                                style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {{/each}}
+            <!-- ──────────────────────────────────────────────────────────── -->
+
             {{else}}
             <div class="gh-empty">
                 <div class="empty-icon">🐱</div>
@@ -893,42 +1051,79 @@
                     <div class="gh-repo-card">
                         <div class="repo-top-row">
                             <span class="repo-name">{{this.name}}</span>
-                            {{#if this.hasAccepted}}
-                            <span class="repo-visibility">🟢 Accepted</span>
-                            {{else}}
-                            <span class="repo-visibility">Pending</span>
-                            {{/if}}
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                {{#if this.hasAccepted}}
+                                <span class="repo-visibility">Accepted</span>
+                                {{/if}}
+                                <button onclick="openEditGuardian('{{this._id}}')"
+                                    style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
+                                    onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
+                            </div>
                         </div>
-
-                        <p class="repo-desc">
-                            Trusted guardian for your cats. {{#if this.phone}}Reachable at {{this.phone}}.{{/if}}
-                            {{#if this.email}} Email: {{this.email}}{{/if}}
-                        </p>
 
                         <div class="repo-footer">
                             {{#if this.priorityOrder}}
                             <span class="repo-lang">
-                                <span class="lang-dot"
-                                    style="background: {{#if (eq this.priorityOrder 1)}}#22c55e{{else}}#3b82f6{{/if}};"></span>
+                                <span class="lang-dot" style="background:#94a3b8;"></span>
                                 Priority #{{this.priorityOrder}}
                             </span>
                             {{/if}}
-
-                            {{#if this.phone}}
-                            <span class="repo-meta-item">
-                                📞 {{this.phone}}
-                            </span>
-                            {{/if}}
-
                             {{#if this.email}}
-                            <span class="repo-meta-item">
-                                ✉️ Contact
-                            </span>
+                            <span class="repo-meta-item">{{this.email}}</span>
+                            {{/if}}
+                            {{#if this.phone}}
+                            <span class="repo-meta-item">{{this.phone}}</span>
                             {{/if}}
                         </div>
                     </div>
                     {{/each}}
                 </div>
+
+                <!-- ── Per-guardian edit modals ────────────────────────── -->
+                {{#each guardians}}
+                <div id="editGuardianModal-{{this._id}}"
+                    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;"
+                    onclick="if(event.target===this)closeEditGuardian('{{this._id}}')">
+                    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
+                        <button onclick="closeEditGuardian('{{this._id}}')"
+                            style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
+                        <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
+                        <form method="POST" action="/guardians/{{this._id}}/edit">
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
+                                <input type="text" name="name" value="{{this.name}}" required
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Email</label>
+                                <input type="email" name="email" value="{{this.email}}"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:0.85rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Phone</label>
+                                <input type="tel" name="phone" value="{{this.phone}}"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="margin-bottom:1.5rem;">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Priority Order</label>
+                                <input type="number" name="priorityOrder" value="{{this.priorityOrder}}" min="1"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div style="display:flex;gap:0.75rem;">
+                                <button type="button" onclick="closeEditGuardian('{{this._id}}')"
+                                    style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
+                                <button type="submit"
+                                    style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {{/each}}
+
                 {{else}}
                 <div class="gh-empty">
                     <div class="empty-icon">🤝</div>
@@ -964,9 +1159,7 @@
                             <div class="repo-top-row">
                                 <span class="repo-name">{{this.name}}</span>
                                 {{#if this.isActiveBackupProtocol}}
-                                <span class="repo-visibility">🟢 Protected</span>
-                                {{else}}
-                                <span class="repo-visibility">Unprotected</span>
+                                <span class="repo-visibility">Protected</span>
                                 {{/if}}
                             </div>
 
@@ -1138,9 +1331,7 @@
                             <div class="repo-top-row">
                                 <span class="repo-name">{{this.name}}</span>
                                 {{#if this.hasAccepted}}
-                                <span class="repo-visibility">🟢 Accepted</span>
-                                {{else}}
-                                <span class="repo-visibility">Pending</span>
+                                <span class="repo-visibility">Accepted</span>
                                 {{/if}}
                             </div>
                             <p class="repo-desc">
@@ -1221,9 +1412,7 @@
                         <div class="repo-top-row">
                             <span class="repo-name">{{this.name}}</span>
                             {{#if this.hasAccepted}}
-                            <span class="repo-visibility">🟢 Accepted</span>
-                            {{else}}
-                            <span class="repo-visibility">Pending</span>
+                            <span class="repo-visibility">Accepted</span>
                             {{/if}}
                         </div>
                         <p class="repo-desc">
@@ -1429,6 +1618,24 @@
                 if (e.target === this) closeChangePassword();
             });
 
+            function openEditGuardian(id) {
+                const m = document.getElementById('editGuardianModal-' + id);
+                if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+            }
+            function closeEditGuardian(id) {
+                const m = document.getElementById('editGuardianModal-' + id);
+                if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+            }
+
+            function openEditCat(catId) {
+                const m = document.getElementById('editCatModal-' + catId);
+                if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+            }
+            function closeEditCat(catId) {
+                const m = document.getElementById('editCatModal-' + catId);
+                if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+            }
+
             // Profile photo upload
             document.getElementById('profilePhotoInput').addEventListener('change', async function () {
                 const file = this.files[0];
@@ -1470,6 +1677,12 @@
                     window.history.replaceState({}, '', '/homepage');
                 } else if (params.get('success') === 'password') {
                     showToast('Password changed successfully.', '#166534', '#22c55e');
+                    window.history.replaceState({}, '', '/homepage');
+                } else if (params.get('success') === 'cat') {
+                    showToast('Cat profile updated.', '#166534', '#22c55e');
+                    window.history.replaceState({}, '', '/homepage');
+                } else if (params.get('success') === 'guardian') {
+                    showToast('Guardian updated.', '#166534', '#22c55e');
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();

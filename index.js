@@ -25,6 +25,8 @@ import {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   changePassword,
+  editCat,
+  editGuardian,
   deleteAccount,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
@@ -303,6 +305,18 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   }
 });
 
+app.post("/guardians/:guardianId/edit", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { guardianId } = req.params;
+  const { name, email, phone, priorityOrder } = req.body;
+  try {
+    await editGuardian(sessionId, guardianId, { name, email, phone, priorityOrder });
+    res.redirect("/homepage?success=guardian");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+
 app.post("/guardians", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const { name, email, phone, priorityOrder } = req.body;
@@ -317,6 +331,22 @@ app.post("/guardians", requireAuth, async (req, res) => {
     res.redirect("/homepage");
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
+app.post("/cats/:catId/edit", requireAuth, upload.single("photo"), async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { catId } = req.params;
+  const { name, breed, age, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes } = req.body;
+  let photoUrl = null;
+  if (req.file) {
+    photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+  }
+  try {
+    await editCat(sessionId, catId, { name, breed, age, photoUrl, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes });
+    res.redirect("/homepage?success=cat");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
 
