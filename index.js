@@ -98,9 +98,6 @@ app.get("/login", async (req, res) => {
   });
 });
 
-app.get("/emergency", (req, res) => {
-  res.redirect("/scan");
-});
 
 app.post("/register", async (req, res) => {
   const { name, email, phone, password } = req.body;
@@ -466,10 +463,16 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
 });
 
 app.get("/cats/:catName", requireAuth, async (req, res) => {
-  const cat = await getCatByNamePresentationLayer(req.params.catName);
+  const sessionId = getSessionCookie(req);
+  const [cat, data] = await Promise.all([
+    getCatByNamePresentationLayer(req.params.catName),
+    getUserHomepage(sessionId),
+  ]);
   res.render("cat-detail", {
     title: cat.name,
     cat,
+    user: data?.user,
+    isUnavailable: data?.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
   });
