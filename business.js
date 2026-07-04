@@ -1,4 +1,5 @@
 import {
+<<<<<<< HEAD
   connectDB,
   Authenticate,
   createUser,
@@ -21,7 +22,33 @@ import {
   touchSession,
   getCatByName,
   searchUsersByName,
+=======
+    connectDB,
+    Authenticate,
+    createUser,
+    findUserByEmail,
+    getCatByQrCode,
+    getCatById,
+    getCatsByOwner,
+    createEmergencyEvent,
+    getEmergencyEventById,
+    getGuardiansByOwner,
+    assignGuardianToEvent,
+    createSession,
+    deleteSession,
+    getSessionBySessionId,
+    createCat,
+    addGuardian,
+    setActiveBackupProtocol,
+    updateUserPassword,
+    updateUserProfile,
+    touchSession,
+    createPasswordResetToken,
+    getPasswordResetToken,
+    deletePasswordResetToken,
+>>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
 } from "./persistance.js";
+import { sendPasswordResetEmail } from "./mailer.js";
 import bcrypt from "bcryptjs";
 
 async function getCatByNameBusinessLayer(catName) {
@@ -174,11 +201,35 @@ async function toggleCatBackupProtocol(sessionId, catId) {
   return newStatus;
 }
 
+<<<<<<< HEAD
 async function resetPassword(email, newPassword) {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("No account found with that email.");
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(email, passwordHash);
+=======
+async function updateUserPhoto(sessionId, photoUrl) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const user = await findUserByEmail(session.email);
+    if (!user) throw new Error("User not found");
+    await updateUserProfile(user._id, { photoUrl });
+}
+
+async function requestPasswordReset(email) {
+    const user = await findUserByEmail(email);
+    if (!user) throw new Error("No account found with that email.");
+    const token = await createPasswordResetToken(email);
+    await sendPasswordResetEmail(email, token);
+}
+
+async function resetPasswordWithToken(token, newPassword) {
+    const record = await getPasswordResetToken(token);
+    if (!record) throw new Error("This reset link is invalid or has expired.");
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await updateUserPassword(record.email, passwordHash);
+    await deletePasswordResetToken(token);
+>>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
 }
 
 async function updateProfile(
@@ -209,6 +260,7 @@ async function updateProfile(
 }
 
 export {
+<<<<<<< HEAD
   connectDB,
   logout,
   login,
@@ -225,4 +277,22 @@ export {
   updateProfile,
   getCatByNameBusinessLayer,
   searchGurdian,
+=======
+    connectDB,
+    logout,
+    login,
+    registerUser,
+    handleScan,
+    getEmergencyView,
+    claimGuardian,
+    checkSession,
+    getUserHomepage,
+    addNewCat,
+    addNewGuardian,
+    toggleCatBackupProtocol,
+    requestPasswordReset,
+    resetPasswordWithToken,
+    updateProfile,
+    updateUserPhoto,
+>>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
 };

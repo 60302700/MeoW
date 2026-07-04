@@ -11,10 +11,10 @@ import {
   addNewCat,
   addNewGuardian,
   toggleCatBackupProtocol,
-  resetPassword,
+  requestPasswordReset,
+  resetPasswordWithToken,
   updateProfile,
-  getCatByNameBusinessLayer,
-  searchGurdian,
+  updateUserPhoto,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -51,8 +51,8 @@ export {
   addNewCat,
   addNewGuardian,
   toggleCatBackupProtocol,
-  resetPassword,
+  requestPasswordReset,
+  resetPasswordWithToken,
   updateProfile,
-  getCatByNamePresentationLayer,
-  searchUsersByName,
+  updateUserPhoto,
 };

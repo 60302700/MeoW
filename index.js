@@ -14,10 +14,15 @@ import {
   addNewCat,
   addNewGuardian,
   toggleCatBackupProtocol,
-  resetPassword,
+  requestPasswordReset,
+  resetPasswordWithToken,
   updateProfile,
+<<<<<<< HEAD
   getCatByNamePresentationLayer,
   searchUsersByName,
+=======
+  updateUserPhoto,
+>>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -89,6 +94,7 @@ app.get("/login", async (req, res) => {
     title: "Login",
     isLoggedIn,
     expired: req.query.expired === "1",
+    reset: req.query.reset === "1",
   });
 });
 
@@ -116,6 +122,7 @@ app.get("/", async (req, res) => {
     title: "Login",
     isLoggedIn,
     expired: req.query.expired === "1",
+    reset: req.query.reset === "1",
   });
 });
 
@@ -219,46 +226,18 @@ app.get("/homepage", async (req, res) => {
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
 
-  // Note: 'photo' will be empty in req.body because it's now sent in req.file
   const { name, breed, age, care, photo } = req.body;
-
-  console.log("/cats form data:", req.body);
-  console.log(
-    "/cats file object:",
-    req.file
-      ? {
-          originalname: req.file.originalname,
-          mimetype: req.file.mimetype,
-          size: req.file.size,
-        }
-      : null,
-  );
-
   let photoString = "";
 
   try {
     if (req.file) {
       if (!req.file.buffer || req.file.buffer.length === 0) {
-        throw new Error(
-          "Uploaded image is empty or was not buffered correctly.",
-        );
+        throw new Error("Uploaded image is empty or was not buffered correctly.");
       }
-
-      console.log("Uploaded image buffer length:", req.file.buffer.length);
-      const base64String = req.file.buffer.toString("base64");
-      console.log("Converted image to Base64 length:", base64String.length);
-
-      // Build the data URI string so the browser can render it directly
-      photoString = `data:${req.file.mimetype};base64,${base64String}`;
+      photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     } else if (photo) {
-      console.log("Fallback photo field provided in body.");
-      if (photo.startsWith("data:")) {
-        photoString = photo;
-      } else {
-        photoString = `data:image/png;base64,${photo}`;
-      }
+      photoString = photo.startsWith("data:") ? photo : `data:image/png;base64,${photo}`;
     }
-    console.log(photoString);
     // 4. Send the data to your database function
     await addNewCat(sessionId, {
       name,
@@ -308,34 +287,67 @@ app.get("/forgot-password", async (req, res) => {
   res.render("forgot-password", {
     title: "Reset Password",
     isLoggedIn,
-    success: req.query.success,
+    sent: req.query.sent === "1",
   });
 });
 
 app.post("/forgot-password", async (req, res) => {
-  const { email, newPassword, confirmPassword } = req.body;
-  if (newPassword !== confirmPassword) {
-    return res.render("forgot-password", {
-      title: "Reset Password",
-      error: "Passwords do not match.",
-    });
-  }
-  if (newPassword.length < 6) {
-    return res.render("forgot-password", {
-      title: "Reset Password",
-      error: "Password must be at least 6 characters.",
-      values: { email },
-    });
-  }
+  const { email } = req.body;
   try {
-    await resetPassword(email, newPassword);
-    res.redirect("/forgot-password?success=1");
+    await requestPasswordReset(email);
+    res.redirect("/forgot-password?sent=1");
   } catch (err) {
     res.render("forgot-password", {
       title: "Reset Password",
       error: err.message,
       values: { email },
     });
+  }
+});
+
+app.get("/reset-password", async (req, res) => {
+  const { token, success } = req.query;
+  if (!token && !success) return res.redirect("/forgot-password");
+  res.render("reset-password", { title: "Set New Password", token, success: success === "1" });
+});
+
+app.post("/reset-password", async (req, res) => {
+  const { token, newPassword, confirmPassword } = req.body;
+  if (newPassword !== confirmPassword) {
+    return res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: "Passwords do not match.",
+    });
+  }
+  if (newPassword.length < 6) {
+    return res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: "Password must be at least 6 characters.",
+    });
+  }
+  try {
+    await resetPasswordWithToken(token, newPassword);
+    res.redirect("/login?reset=1");
+  } catch (err) {
+    res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: err.message,
+    });
+  }
+});
+
+app.post("/profile/photo", requireAuth, upload.single("photo"), async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    await updateUserPhoto(sessionId, photoUrl);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
