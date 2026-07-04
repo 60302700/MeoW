@@ -17,6 +17,7 @@ import {
   getSessionBySessionId,
   createCat,
   addGuardian,
+  updateCatById,
   setActiveBackupProtocol,
   updateUserPassword,
   updateUserProfile,
@@ -188,6 +189,37 @@ async function addNewGuardian(
   });
 }
 
+async function editCat(sessionId, catId, { name, breed, age, photoUrl, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes }) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const cat = await getCatById(catId);
+  if (!cat || cat.ownerId.toString() !== user._id.toString()) throw new Error("Cat not found");
+
+  const updates = {
+    name,
+    breed: breed || "",
+    age: parseInt(age, 10) || 0,
+    "careInstructions.feedingSchedule": feedingSchedule || "",
+    "careInstructions.foodBrand": foodBrand || "",
+    "careInstructions.allergies": allergies || "",
+    "careInstructions.conditions": conditions || "",
+    "careInstructions.medications": medications || "",
+    "careInstructions.vaccinations": vaccinations || "",
+    "careInstructions.neutered": neutered === "yes",
+    "careInstructions.vetName": vetName || "",
+    "careInstructions.vetPhone": vetPhone || "",
+    "careInstructions.microchip": microchip || "",
+    "careInstructions.passportNumber": passportNumber || "",
+    "careInstructions.personality": personality || "",
+    "careInstructions.notes": notes || "",
+  };
+  if (photoUrl) updates.photoUrl = photoUrl;
+
+  await updateCatById(catId, updates);
+}
+
 async function toggleCatBackupProtocol(sessionId, catId) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -349,6 +381,7 @@ export {
   getUserHomepage,
   addNewCat,
   addNewGuardian,
+  editCat,
   toggleCatBackupProtocol,
   requestPasswordReset,
   resetPasswordWithToken,

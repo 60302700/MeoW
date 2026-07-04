@@ -25,6 +25,7 @@ import {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   changePassword,
+  editCat,
   deleteAccount,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
@@ -317,6 +318,22 @@ app.post("/guardians", requireAuth, async (req, res) => {
     res.redirect("/homepage");
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
+app.post("/cats/:catId/edit", requireAuth, upload.single("photo"), async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { catId } = req.params;
+  const { name, breed, age, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes } = req.body;
+  let photoUrl = null;
+  if (req.file) {
+    photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+  }
+  try {
+    await editCat(sessionId, catId, { name, breed, age, photoUrl, feedingSchedule, foodBrand, allergies, conditions, medications, vaccinations, neutered, vetName, vetPhone, microchip, passportNumber, personality, notes });
+    res.redirect("/homepage?success=cat");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
 

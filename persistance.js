@@ -136,6 +136,11 @@ async function getCatByName(catName) {
   return Cats.findOne({ name: catName });
 }
 
+async function updateCatById(catId, updates) {
+  const { Cats } = collections();
+  await Cats.updateOne({ _id: new ObjectId(catId) }, { $set: updates });
+}
+
 async function setActiveBackupProtocol(catId, isActive) {
   const { Cats } = collections();
   await Cats.updateOne(
@@ -411,6 +416,7 @@ export {
   getCatById,
   getCatsByOwner,
   getCatByName,
+  updateCatById,
   setActiveBackupProtocol,
   addGuardian,
   getGuardiansByOwner,
