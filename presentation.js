@@ -45,10 +45,6 @@ async function logoutUser(sessionId) {
   return await logout(sessionId);
 }
 
-async function searchGuardianByName(name) {
-  return await searchGurdian(name);
-}
-
 async function updateGuardianPresentation(sessionId, Id, updates) {
   return await updateGuardianById(sessionId, Id, updates);
 }
@@ -74,6 +70,7 @@ export {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
+  searchGurdian,
   setOwnerUnavailable,
   setOwnerAvailable,
   getGuardianAccess,
