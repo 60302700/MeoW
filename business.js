@@ -160,6 +160,14 @@ async function toggleCatBackupProtocol(sessionId, catId) {
     return newStatus;
 }
 
+async function updateUserPhoto(sessionId, photoUrl) {
+    const session = await getSessionBySessionId(sessionId);
+    if (!session) throw new Error("Unauthorized");
+    const user = await findUserByEmail(session.email);
+    if (!user) throw new Error("User not found");
+    await updateUserProfile(user._id, { photoUrl });
+}
+
 async function requestPasswordReset(email) {
     const user = await findUserByEmail(email);
     if (!user) throw new Error("No account found with that email.");
@@ -211,5 +219,6 @@ export {
     toggleCatBackupProtocol,
     requestPasswordReset,
     resetPasswordWithToken,
-    updateProfile
+    updateProfile,
+    updateUserPhoto,
 };

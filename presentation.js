@@ -13,7 +13,8 @@ import {
     toggleCatBackupProtocol,
     requestPasswordReset,
     resetPasswordWithToken,
-    updateProfile
+    updateProfile,
+    updateUserPhoto,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -45,5 +46,6 @@ export {
     toggleCatBackupProtocol,
     requestPasswordReset,
     resetPasswordWithToken,
-    updateProfile
+    updateProfile,
+    updateUserPhoto,
 };
