@@ -38,6 +38,7 @@
                 </div>
 
                 <form id="register-form" method="POST" action="/register" novalidate>
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
                     {{!-- Step 1: Owner Info --}}
                     <div class="form-step active" id="step-1">

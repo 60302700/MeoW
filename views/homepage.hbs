@@ -876,6 +876,7 @@
                     <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit — {{this.name}}</h2>
 
                     <form method="POST" action="/cats/{{this._id}}/edit" enctype="multipart/form-data">
+                        <input type="hidden" name="_csrf" value="{{../csrfToken}}">
 
                         <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
 
@@ -1089,6 +1090,7 @@
                             style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
                         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
                         <form method="POST" action="/guardians/{{this._id}}/edit">
+                            <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
                                 <input type="text" name="name" value="{{this.name}}" required
@@ -1205,6 +1207,7 @@
                 </div>
 
                 <form id="catForm" method="POST" action="/cats" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
                     <p style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
 
@@ -1365,6 +1368,7 @@
                 </div>
 
                 <form method="POST" action="/guardians">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <div class="form-group">
                         <label for="g-name">Full Name</label>
                         <input type="text" id="g-name" name="name" placeholder="e.g. John Doe" required>
@@ -1444,6 +1448,7 @@
                         notifications.
                     </p>
                     <form method="POST" action="/scan" target="_blank">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
                         <div class="form-group">
                             <label for="sim-qr" style="color: #7f1d1d;">Select Pet to Simulate Scan</label>
                             <select id="sim-qr" name="qrCodeId" required
@@ -1468,6 +1473,7 @@
                         notification alerts for their guardians.
                     </p>
                     <form method="POST" action="/cats/toggle-protocol">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
                         <div class="form-group">
                             <label for="toggle-cat-id">Select Pet</label>
                             <select id="toggle-cat-id" name="catId" required>
@@ -1651,6 +1657,7 @@
                 // Upload
                 const formData = new FormData();
                 formData.append('photo', file);
+                formData.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
                 try {
                     const res = await fetch('/profile/photo', { method: 'POST', body: formData });
                     if (!res.ok) throw new Error('Upload failed');
@@ -1701,6 +1708,7 @@
                 <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Profile</h2>
 
                 <form method="POST" action="/profile/edit">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <div style="margin-bottom:1rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Full Name</label>
                         <input type="text" name="name" value="{{user.name}}" required
@@ -1741,6 +1749,7 @@
                     <div id="deleteAccountConfirm" style="display:none;">
                         <p style="font-size:0.82rem;color:#64748b;margin:0 0 0.75rem;">Enter your password to confirm. This cannot be undone.</p>
                         <form method="POST" action="/account/delete">
+                            <input type="hidden" name="_csrf" value="{{csrfToken}}">
                             <input type="password" name="password" placeholder="Current password" required
                                 style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;margin-bottom:0.75rem;transition:border-color 0.2s;"
                                 onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'">
@@ -1771,6 +1780,7 @@
                 <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Change Password</h2>
 
                 <form method="POST" action="/profile/password">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
                     <div style="margin-bottom:1rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Current Password</label>
                         <input type="password" name="currentPassword" required

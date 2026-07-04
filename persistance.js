@@ -420,9 +420,12 @@ async function updateGuardianByObjectId(guardianId, updates) {
   );
 }
 
-async function getGuardian(OId, guardianId) {
+async function getGuardian(ownerId, guardianId) {
   const { Guardians } = collections();
-  return Guardians.findOne({ _id: new ObjectId(guardianId), ownerId: OId });
+  return Guardians.findOne({
+    ownerId: new ObjectId(ownerId),
+    Id: guardianId,
+  });
 }
 
 export {

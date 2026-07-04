@@ -116,8 +116,15 @@ async function getUserHomepage(sessionId) {
   return { user, cats, guardians, isUnavailable: !!unavailability };
 }
 
-async function getGuardianForOwnerBusinessLayer(OId, guardianId) {
-  return await getGuardian(OId, guardianId);
+async function getGuardianForOwnerBusinessLayer(sessionId, guardianId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+
+  const guardian = await getGuardian(user._id.toString(), guardianId);
+  if (!guardian) throw new Error("Guardian not found or unauthorized");
+  return guardian;
 }
 
 async function addNewCat(
@@ -200,7 +207,11 @@ async function editGuardian(
   if (!session) throw new Error("Unauthorized");
   const user = await findUserByEmail(session.email);
   if (!user) throw new Error("User not found");
-  await updateGuardianByObjectId(guardianId, {
+
+  const guardian = await getGuardian(user._id.toString(), guardianId);
+  if (!guardian) throw new Error("Guardian not found or unauthorized");
+
+  await updateGuardianByObjectId(guardian._id.toString(), {
     name,
     email,
     phone,

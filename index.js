@@ -1,4 +1,6 @@
 import express from "express";
+import cookieParser from "cookie-parser";
+import { doubleCsrf } from "csrf-csrf";
 import { startEscalationWorkflow } from "./temporal/client.js";
 import {
   connectDB,
@@ -81,6 +83,39 @@ async function requireAuth(req, res, next) {
   }
   next();
 }
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── CSRF protection ─────────────────────────────────────────────────────────
+// Double-submit cookie pattern (csurf is deprecated/archived; csrf-csrf is the
+// maintained replacement). Bound to this app's own session cookie rather than
+// express-session, since no session middleware is in use here.
+const isProduction = process.env.NODE_ENV === "production";
+
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET,
+  getSessionIdentifier: (req) => getSessionCookie(req) ?? "anonymous",
+  cookieName: isProduction ? "__Host-psifi.x-csrf-token" : "psifi.x-csrf-token",
+  cookieOptions: {
+    sameSite: "strict",
+    secure: isProduction,
+  },
+  getCsrfTokenFromRequest: (req) => req.body?._csrf,
+});
+
+app.use(cookieParser());
+
+// Expose a token to every rendered view so forms can embed it as a hidden field.
+app.use((req, res, next) => {
+  res.locals.csrfToken = generateCsrfToken(req, res);
+  next();
+});
+
+// Multipart (file upload) routes run CSRF validation themselves, after multer
+// has parsed the body — see the routes using `upload.single`.
+app.use((req, res, next) => {
+  if (req.is("multipart/form-data")) return next();
+  doubleCsrfProtection(req, res, next);
+});
 // ───────────────────────────────────────────────────────────────────────────
 
 app.get("/register", async (req, res) => {
@@ -244,7 +279,7 @@ app.get("/profile/edit", async (req, res) => {
   });
 });
 
-app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
+app.post("/cats", requireAuth, upload.single("photo"), doubleCsrfProtection, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const {
     name,
@@ -309,6 +344,7 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
 app.get("/guardians/edit/:guardianId", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const { guardianId } = req.params;
+
   try {
     const guardian = await getGuardianForOwnerPresentation(
       sessionId,
@@ -363,6 +399,7 @@ app.post(
   "/cats/:catId/edit",
   requireAuth,
   upload.single("photo"),
+  doubleCsrfProtection,
   async (req, res) => {
     const sessionId = getSessionCookie(req);
     const { catId } = req.params;
@@ -495,6 +532,7 @@ app.post(
   "/profile/photo",
   requireAuth,
   upload.single("photo"),
+  doubleCsrfProtection,
   async (req, res) => {
     const sessionId = getSessionCookie(req);
     try {
@@ -539,6 +577,10 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     layout: "hp",
   });
 });
+
+app.get("/gurdian/access/:token", async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect("/");
 
 // ── Owner availability ─────────────────────────────────────────────────────
 app.post("/owner/unavailable", requireAuth, async (req, res) => {
@@ -647,6 +689,16 @@ app.get("/logout", async (req, res) => {
 
 app.use((req, res) => {
   res.status(404).render("404", { layout: false });
+});
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err.code === "EBADCSRFTOKEN") {
+    return res
+      .status(403)
+      .send("Forbidden: invalid or expired form submission. Please go back and try again.");
+  }
+  throw err;
 });
 
 const port = process.env.PORT || 3000;

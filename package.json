@@ -26,6 +26,8 @@
     "@temporalio/worker": "^1.19.0",
     "@temporalio/workflow": "^1.19.0",
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "csrf-csrf": "^4.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-handlebars": "^8.0.4",
@@ -34,6 +36,5 @@
     "multer": "^2.2.0",
     "nodemailer": "^9.0.3",
     "uuid": "^14.0.1"
-  },
-  "devDependencies": {}
+  }
 }

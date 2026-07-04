@@ -83,6 +83,5 @@ export {
   changePassword,
   deleteAccount,
   updateGuardianPresentation,
-  searchGuardianByName,
   getGuardianForOwnerPresentation,
 };

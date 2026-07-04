@@ -266,6 +266,7 @@
         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit — {{cat.name}}</h2>
 
         <form method="POST" action="/cats/{{cat._id}}/edit" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
 
             <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
 

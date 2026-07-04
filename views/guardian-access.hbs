@@ -278,6 +278,7 @@
                     <div class="ack-section">
                         <p>By acknowledging, you confirm you're aware of the situation and will look after these cats.</p>
                         <form method="POST" action="/guardian-access/{{token}}/acknowledge">
+                            <input type="hidden" name="_csrf" value="{{csrfToken}}">
                             <button type="submit" class="btn-ack">✅ I'm on it — Acknowledge</button>
                         </form>
                     </div>

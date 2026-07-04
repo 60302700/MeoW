@@ -11,6 +11,7 @@
         </div>
 
         <form method="POST" action="/scan" class="space-y-4">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <input type="text" name="qrCodeId" placeholder="e.g., QR-WHISK-9921" class="input-field input-code"
                 required>
             <button type="submit" class="btn btn-teal">Verify ID &amp; Alert Guardians</button>
@@ -51,6 +52,7 @@
         <button class="btn btn-orange" disabled>✅ Guardian Responding (En Route)</button>
         {{else}}
         <form method="POST" action="/scan/{{event._id}}/claim" class="space-y-4">
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <select name="guardianId" class="input-field" required>
                 <option value="" disabled selected>Select your name</option>
                 {{#each guardians}}
