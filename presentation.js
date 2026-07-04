@@ -11,7 +11,8 @@ import {
     addNewCat,
     addNewGuardian,
     toggleCatBackupProtocol,
-    resetPassword,
+    requestPasswordReset,
+    resetPasswordWithToken,
     updateProfile
 } from "./business.js";
 import { engine } from "express-handlebars";
@@ -42,6 +43,7 @@ export {
     addNewCat,
     addNewGuardian,
     toggleCatBackupProtocol,
-    resetPassword,
+    requestPasswordReset,
+    resetPasswordWithToken,
     updateProfile
 };

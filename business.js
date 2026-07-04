@@ -18,8 +18,12 @@ import {
     setActiveBackupProtocol,
     updateUserPassword,
     updateUserProfile,
-    touchSession
+    touchSession,
+    createPasswordResetToken,
+    getPasswordResetToken,
+    deletePasswordResetToken,
 } from "./persistance.js";
+import { sendPasswordResetEmail } from "./mailer.js";
 import bcrypt from "bcryptjs";
 
 async function login(email, password) {
@@ -156,11 +160,19 @@ async function toggleCatBackupProtocol(sessionId, catId) {
     return newStatus;
 }
 
-async function resetPassword(email, newPassword) {
+async function requestPasswordReset(email) {
     const user = await findUserByEmail(email);
     if (!user) throw new Error("No account found with that email.");
+    const token = await createPasswordResetToken(email);
+    await sendPasswordResetEmail(email, token);
+}
+
+async function resetPasswordWithToken(token, newPassword) {
+    const record = await getPasswordResetToken(token);
+    if (!record) throw new Error("This reset link is invalid or has expired.");
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(email, passwordHash);
+    await updateUserPassword(record.email, passwordHash);
+    await deletePasswordResetToken(token);
 }
 
 async function updateProfile(sessionId, { name, phone, currentPassword, newPassword }) {
@@ -197,6 +209,7 @@ export {
     addNewCat,
     addNewGuardian,
     toggleCatBackupProtocol,
-    resetPassword,
+    requestPasswordReset,
+    resetPasswordWithToken,
     updateProfile
 };

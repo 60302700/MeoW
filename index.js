@@ -14,7 +14,8 @@ import {
   addNewCat,
   addNewGuardian,
   toggleCatBackupProtocol,
-  resetPassword,
+  requestPasswordReset,
+  resetPasswordWithToken,
   updateProfile,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
@@ -87,6 +88,7 @@ app.get("/login", async (req, res) => {
     title: "Login",
     isLoggedIn,
     expired: req.query.expired === "1",
+    reset: req.query.reset === "1",
   });
 });
 
@@ -114,6 +116,7 @@ app.get("/", async (req, res) => {
     title: "Login",
     isLoggedIn,
     expired: req.query.expired === "1",
+    reset: req.query.reset === "1",
   });
 });
 
@@ -306,33 +309,54 @@ app.get("/forgot-password", async (req, res) => {
   res.render("forgot-password", {
     title: "Reset Password",
     isLoggedIn,
-    success: req.query.success,
+    sent: req.query.sent === "1",
   });
 });
 
 app.post("/forgot-password", async (req, res) => {
-  const { email, newPassword, confirmPassword } = req.body;
-  if (newPassword !== confirmPassword) {
-    return res.render("forgot-password", {
-      title: "Reset Password",
-      error: "Passwords do not match.",
-    });
-  }
-  if (newPassword.length < 6) {
-    return res.render("forgot-password", {
-      title: "Reset Password",
-      error: "Password must be at least 6 characters.",
-      values: { email },
-    });
-  }
+  const { email } = req.body;
   try {
-    await resetPassword(email, newPassword);
-    res.redirect("/forgot-password?success=1");
+    await requestPasswordReset(email);
+    res.redirect("/forgot-password?sent=1");
   } catch (err) {
     res.render("forgot-password", {
       title: "Reset Password",
       error: err.message,
       values: { email },
+    });
+  }
+});
+
+app.get("/reset-password", async (req, res) => {
+  const { token, success } = req.query;
+  if (!token && !success) return res.redirect("/forgot-password");
+  res.render("reset-password", { title: "Set New Password", token, success: success === "1" });
+});
+
+app.post("/reset-password", async (req, res) => {
+  const { token, newPassword, confirmPassword } = req.body;
+  if (newPassword !== confirmPassword) {
+    return res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: "Passwords do not match.",
+    });
+  }
+  if (newPassword.length < 6) {
+    return res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: "Password must be at least 6 characters.",
+    });
+  }
+  try {
+    await resetPasswordWithToken(token, newPassword);
+    res.redirect("/login?reset=1");
+  } catch (err) {
+    res.render("reset-password", {
+      title: "Set New Password",
+      token,
+      error: err.message,
     });
   }
 });

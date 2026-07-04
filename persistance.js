@@ -17,10 +17,14 @@ async function connectDB() {
     if (!db) {
         await client.connect();
         db = client.db(dbName);
-        // Auto-expire sessions after 30 minutes of inactivity
         await db.collection('Sessions').createIndex(
             { lastActivity: 1 },
             { expireAfterSeconds: 30 * 60 }
+        );
+        // Auto-expire password reset tokens after 1 hour
+        await db.collection('PasswordResetTokens').createIndex(
+            { createdAt: 1 },
+            { expireAfterSeconds: 60 * 60 }
         );
         console.log('Connected to MongoDB');
     }
@@ -39,6 +43,7 @@ function collections() {
         Guardians: db.collection('Guardians'),
         EmergencyEvents: db.collection('EmergencyEvents'),
         Sessions: db.collection('Sessions'),
+        PasswordResetTokens: db.collection('PasswordResetTokens'),
     };
 }
 
@@ -206,6 +211,26 @@ async function deleteSession(sessionId) {
     await Sessions.deleteOne({ sessionId: sessionId });
 }
 
+// ---- Password Reset Tokens ----
+
+async function createPasswordResetToken(email) {
+    const { PasswordResetTokens } = collections();
+    await PasswordResetTokens.deleteMany({ email }); // clear any old tokens
+    const token = uuidv4();
+    await PasswordResetTokens.insertOne({ email, token, createdAt: new Date() });
+    return token;
+}
+
+async function getPasswordResetToken(token) {
+    const { PasswordResetTokens } = collections();
+    return PasswordResetTokens.findOne({ token });
+}
+
+async function deletePasswordResetToken(token) {
+    const { PasswordResetTokens } = collections();
+    await PasswordResetTokens.deleteOne({ token });
+}
+
 export {
     connectDB,
     closeDB,
@@ -232,5 +257,8 @@ export {
     deleteSession,
     getSessionBySessionId,
     updateUserPassword,
-    updateUserProfile
+    updateUserProfile,
+    createPasswordResetToken,
+    getPasswordResetToken,
+    deletePasswordResetToken,
 };
