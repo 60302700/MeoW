@@ -16,6 +16,8 @@ import {
   toggleCatBackupProtocol,
   resetPassword,
   updateProfile,
+  getCatByNamePresentationLayer,
+  searchUsersByName,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -359,6 +361,15 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
   }
 });
 
+app.get("/cats/:catName", requireAuth, async (req, res) => {
+  const cat = await getCatByNamePresentationLayer(req.params.catName);
+  res.render("cat-detail", {
+    title: cat.name,
+    cat,
+    isLoggedIn: true,
+    layout: "hp",
+  });
+});
 // ── Logout ─────────────────────────────────────────────────────────────────
 app.get("/logout", async (req, res) => {
   res.clearCookie("session");

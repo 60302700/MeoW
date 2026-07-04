@@ -767,7 +767,7 @@
                     {{/if}}
                     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
                         <div class="repo-top-row">
-                            <span class="repo-name"><a href="/cats/{{this.id}}">{{this.name}}</a></span>
+                            <span class="repo-name"><a href="/cats/{{this.name}}" target="_blank">{{this.name}}</a></span>
                             {{#if this.isActiveBackupProtocol}}
                             <span class="repo-visibility">🟢 Protected</span>
                             {{else}}
@@ -985,38 +985,80 @@
 
         <div id="Guardians" style="display:none">
             <div class="container">
-                <h1>🛡️ Guardian Registration</h1>
+                <h1>🛡️ Guardian Search</h1>
 
-                <form method="POST" action="/guardians">
-                    <div class="form-group">
-                        <label for="g-name">Full Name</label>
-                        <input type="text" id="g-name" name="name" placeholder="e.g. John Doe" required>
+                <div class="gh-section-title" style="margin-bottom: 1rem;">
+                    <h3>Find account holders to add as guardians</h3>
+                    <p style="margin: 0.35rem 0 0; color: #475569; font-size: 0.92rem;">
+                        Search users who already have an account, then select the right guardian from the results.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="guardianSearch">Search by name</label>
+                    <input type="text" id="guardianSearch" placeholder="Start typing a user name..." style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;">
+                </div>
+
+                <div id="guardianSearchInfo" style="margin-bottom: 1rem; color: #475569; font-size: 0.92rem;">Enter a name to search registered users for guardian selection.</div>
+
+                <div id="guardianSearchResults" style="margin-bottom: 1.5rem;">
+                    {{#if hasGuardians}}
+                    <div id="guardianCards" class="gh-repo-grid">
+                        {{#each guardians}}
+                        <div class="gh-repo-card guardian-card" data-guardian-name="{{this.name}}" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <div class="repo-top-row">
+                                <span class="repo-name">{{this.name}}</span>
+                                {{#if this.hasAccepted}}
+                                <span class="repo-visibility">🟢 Accepted</span>
+                                {{else}}
+                                <span class="repo-visibility">Pending</span>
+                                {{/if}}
+                            </div>
+                            <p class="repo-desc">
+                                {{#if this.phone}}📞 {{this.phone}}{{/if}}{{#if this.email}} ✉️ {{this.email}}{{/if}}
+                            </p>
+                        </div>
+                        {{/each}}
                     </div>
-
-                    <div class="form-group">
-                        <label for="g-email">Email Address</label>
-                        <input type="email" id="g-email" name="email" placeholder="e.g. john@example.com" required>
+                    {{else}}
+                    <div class="gh-empty">
+                        <div class="empty-icon">🤝</div>
+                        <h4>No guardians assigned yet</h4>
+                        <p>Search for account holders and add them as guardians once the backend is ready.</p>
                     </div>
+                    {{/if}}
+                    <div id="guardianSearchEmpty" style="display:none;margin-top:1rem;color:#7c3aed;font-size:0.95rem;">No matching users found.</div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="g-phone">Phone Number</label>
-                        <input type="tel" id="g-phone" name="phone" placeholder="e.g. +974 5555 1234" required>
+                <div class="gh-section-title" style="margin-top: 1rem;">
+                    <h3>Your Current Guardians</h3>
+                </div>
+
+                {{#if hasGuardians}}
+                <div class="gh-repo-grid">
+                    {{#each guardians}}
+                    <div class="gh-repo-card" style="display:flex;flex-direction:column;gap:0.75rem;">
+                        <div class="repo-top-row">
+                            <span class="repo-name">{{this.name}}</span>
+                            {{#if this.hasAccepted}}
+                            <span class="repo-visibility">🟢 Accepted</span>
+                            {{else}}
+                            <span class="repo-visibility">Pending</span>
+                            {{/if}}
+                        </div>
+                        <p class="repo-desc">
+                            {{#if this.phone}}📞 {{this.phone}}{{/if}}{{#if this.email}} ✉️ {{this.email}}{{/if}}
+                        </p>
                     </div>
-
-                    <div class="form-group">
-                        <label for="g-priority">Priority Order</label>
-                        <select id="g-priority" name="priorityOrder" required>
-                            <option value="1">Priority #1 (Immediate responder)</option>
-                            <option value="2">Priority #2 (Backup responder)</option>
-                            <option value="3">Priority #3</option>
-                            <option value="4">Priority #4</option>
-                        </select>
-                    </div>
-
-                    <button type="submit">
-                        Register Guardian Plan
-                    </button>
-                </form>
+                    {{/each}}
+                </div>
+                {{else}}
+                <div class="gh-empty">
+                    <div class="empty-icon">🤝</div>
+                    <h4>No guardians assigned yet</h4>
+                    <p>Once you search and select a user, assigned guardians will appear here.</p>
+                </div>
+                {{/if}}
             </div>
         </div>
 
@@ -1128,6 +1170,40 @@
                 document.getElementById('Guardians').style.display = 'none';
             }
 
+            function initGuardianSearch() {
+                const input = document.getElementById('guardianSearch');
+                const cards = Array.from(document.querySelectorAll('.guardian-card'));
+                const emptyMessage = document.getElementById('guardianSearchEmpty');
+                if (!input || cards.length === 0) return;
+
+                input.addEventListener('input', () => {
+                    const query = input.value.trim().toLowerCase();
+                    let matchCount = 0;
+
+                    cards.forEach(card => {
+                        const name = card.dataset.guardianName.toLowerCase();
+                        const visible = query === '' || name.includes(query);
+                        card.style.display = visible ? 'flex' : 'none';
+                        if (visible) matchCount += 1;
+                    });
+
+                    const status = document.getElementById('guardianSearchInfo');
+                    if (status) {
+                        if (query === '') {
+                            status.textContent = 'Type a guardian name to filter the list below.';
+                        } else if (matchCount === 0) {
+                            status.textContent = 'No guardians match that search term.';
+                        } else {
+                            status.textContent = `${matchCount} guardian${matchCount === 1 ? '' : 's'} found.`;
+                        }
+                    }
+
+                    if (emptyMessage) {
+                        emptyMessage.style.display = query !== '' && matchCount === 0 ? 'block' : 'none';
+                    }
+                });
+            }
+
             function openEditProfile() {
                 document.getElementById('editProfileModal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -1152,6 +1228,8 @@
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();
+
+            initGuardianSearch();
         </script>
 
         <!-- ── Edit Profile Modal ─────────────────────────────────────────── -->

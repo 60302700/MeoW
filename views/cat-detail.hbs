@@ -1,0 +1,133 @@
+<style>
+    .profile-photo-container{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
+}
+
+    .profile-container{
+        display: flex;
+        flex-direction: row;
+        margin: auto;
+    }
+
+.profile-photo{
+    width:100%;
+    max-width:250px;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    border-radius:24px;
+    border:5px solid #f2f2f2;
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+    transition:transform .3s ease;
+}
+
+.profile-photo:hover{
+    transform:scale(1.03);
+}
+
+.profile-photo{
+    width:100%;
+    max-width:280px;
+    height:auto;
+    max-height:350px;
+    object-fit:cover;
+    border-radius:20px;
+    border:5px solid white;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.15),
+        0 0 0 1px rgba(0,0,0,.05);
+}
+.profile-photo{
+    cursor:pointer;
+    transition:all .3s ease;
+}
+
+.profile-photo.fullscreen{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    width:80vw;
+    max-width:800px;
+    max-height:80vh;
+    z-index:9999;
+    border-radius:20px;
+}
+
+</style>
+<div class="profile-container">
+
+    <aside class="profile-card">
+
+        <img src="{{cat.photoUrl}}" alt="{{cat.name}}" class="profile-photo">
+
+        <div class="profile-stats">
+
+        <h1>{{cat.name}}</h1>
+
+        <p class="breed">{{cat.breed}}</p>
+            <div class="stat">
+                <span class="label">Age</span>
+                <span class="value">{{cat.age}} years</span>
+            </div>
+
+            <div class="stat">
+                <span class="label">QR ID</span>
+                <span class="value">{{cat.qrCodeId}}</span>
+            </div>
+
+            <div class="stat">
+                <span class="label">Backup Protocol</span>
+
+                <span class="status {{#if cat.isActiveBackupProtocol}}active{{else}}inactive{{/if}}">
+                    {{#if cat.isActiveBackupProtocol}}
+                        Active
+                    {{else}}
+                        Inactive
+                    {{/if}}
+                </span>
+            </div>
+
+        </div>
+
+    </aside>
+
+    <main class="profile-content">
+
+        <section class="profile-section">
+
+            <h2>🍽 Diet</h2>
+
+            <p>{{cat.careInstructions.diet}}</p>
+
+        </section>
+
+        <section class="profile-section">
+
+            <h2>💊 Medical Information</h2>
+
+            <p>{{cat.careInstructions.medical}}</p>
+
+        </section>
+
+        <section class="profile-section">
+
+            <h2>😺 Habits & Personality</h2>
+
+            <p>{{cat.careInstructions.habits}}</p>
+
+        </section>
+
+        <section class="profile-section">
+
+            <h2>🏥 Veterinarian</h2>
+
+            <p>{{cat.careInstructions.vetDetails}}</p>
+
+        </section>
+
+    </main>
+
+</div>
