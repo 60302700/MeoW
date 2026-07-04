@@ -19,6 +19,7 @@ import {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
+  searchGurdian,
   getGuardianForOwnerPresentation,
   setOwnerUnavailable,
   setOwnerAvailable,

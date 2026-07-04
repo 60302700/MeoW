@@ -8,6 +8,7 @@ import {
   getCatByQrCode,
   getCatById,
   getCatsByOwner,
+  getCatByName,
   createEmergencyEvent,
   getEmergencyEventById,
   getGuardiansByOwner,
@@ -26,8 +27,6 @@ import {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
-  searchGuardianById,
-  updateGuardianById as persistenceUpdateGuardianById,
   searchUsersByName,
   createOwnerUnavailability,
   getActiveUnavailability,
@@ -189,7 +188,6 @@ async function addNewGuardian(
     phone,
     email,
     priorityOrder: parseInt(priorityOrder, 10) || 1,
-    Id: Id || null,
   });
 }
 
