@@ -27,9 +27,6 @@ import {
   searchGuardianById,
   updateGuardianById as persistenceUpdateGuardianById,
   searchUsersByName,
-  createPasswordResetToken,
-  getPasswordResetToken,
-  deletePasswordResetToken,
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,
@@ -337,6 +334,20 @@ async function acknowledgeGuardianAccess(token) {
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
 }
 
+// Business-level guardian update: validates session and ownership
+async function updateGuardianById(sessionId, Id, updates) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+
+  const guardians = await getGuardiansByOwner(user._id);
+  const found = guardians.find((g) => g.Id === Id);
+  if (!found) throw new Error("Guardian not found or unauthorized");
+
+  await persistenceUpdateGuardianById(Id, updates);
+}
+
 export {
   connectDB,
   logout,
@@ -362,4 +373,5 @@ export {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
+  updateGuardianById,
 };

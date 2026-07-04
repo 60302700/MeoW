@@ -396,8 +396,13 @@ async function searchGuardianById(Id) {
 
 async function updateGuardianById(Id, updates) {
   const { Guardians } = collections();
-  // Only set fields provided in updates
-  await Guardians.updateOne({ Id: Id }, { $set: updates });
+  // Update and return the updated guardian document
+  const result = await Guardians.findOneAndUpdate(
+    { Id: Id },
+    { $set: updates },
+    { returnDocument: "after" },
+  );
+  return result.value;
 }
 
 export {
@@ -439,4 +444,5 @@ export {
   createGuardianAccessToken,
   getGuardianAccessToken,
   acknowledgeGuardianToken,
+  updateGuardianById,
 };

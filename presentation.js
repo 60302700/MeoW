@@ -23,6 +23,7 @@ import {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
+  updateGuardianById,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -43,7 +44,11 @@ async function logoutUser(sessionId) {
 }
 
 async function searchGuardianByName(name) {
-  return await GuardianSearch(name);
+  return await searchGurdian(name);
+}
+
+async function updateGuardianPresentation(sessionId, Id, updates) {
+  return await updateGuardianById(sessionId, Id, updates);
 }
 
 export {
@@ -65,11 +70,11 @@ export {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
-  searchUsersByName,
   setOwnerUnavailable,
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
+  updateGuardianPresentation,
 };
