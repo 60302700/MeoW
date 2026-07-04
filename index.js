@@ -17,12 +17,10 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
   updateProfile,
-<<<<<<< HEAD
   getCatByNamePresentationLayer,
-  searchUsersByName,
-=======
   updateUserPhoto,
->>>>>>> c73e43eb410270a15cc886877b646e80ac949e4c
+  searchGuardianByName,
+  updateGuardianPresentation,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -223,6 +221,26 @@ app.get("/homepage", async (req, res) => {
   });
 });
 
+app.get("/profile/edit", async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const isLoggedIn = await Loggedin(req);
+  if (!isLoggedIn) {
+    if (sessionId) res.clearCookie("session");
+    return res.redirect(sessionId ? "/?expired=1" : "/");
+  }
+  const data = await getUserHomepage(sessionId);
+  if (!data) {
+    return res.redirect("/");
+  }
+  const { user } = data;
+  res.render("profile-edit", {
+    title: "Edit Profile",
+    isLoggedIn,
+    user,
+    error: req.query.error,
+  });
+});
+
 app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   const sessionId = getSessionCookie(req);
 
@@ -232,11 +250,15 @@ app.post("/cats", requireAuth, upload.single("photo"), async (req, res) => {
   try {
     if (req.file) {
       if (!req.file.buffer || req.file.buffer.length === 0) {
-        throw new Error("Uploaded image is empty or was not buffered correctly.");
+        throw new Error(
+          "Uploaded image is empty or was not buffered correctly.",
+        );
       }
       photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     } else if (photo) {
-      photoString = photo.startsWith("data:") ? photo : `data:image/png;base64,${photo}`;
+      photoString = photo.startsWith("data:")
+        ? photo
+        : `data:image/png;base64,${photo}`;
     }
     // 4. Send the data to your database function
     await addNewCat(sessionId, {
@@ -259,7 +281,13 @@ app.post("/guardians", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const { name, email, phone, priorityOrder } = req.body;
   try {
-    await addNewGuardian(sessionId, { name, email, phone, priorityOrder });
+    await addNewGuardian(sessionId, {
+      name,
+      email,
+      phone,
+      priorityOrder,
+      Id: uuidv4(),
+    });
     res.redirect("/homepage");
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
@@ -308,7 +336,11 @@ app.post("/forgot-password", async (req, res) => {
 app.get("/reset-password", async (req, res) => {
   const { token, success } = req.query;
   if (!token && !success) return res.redirect("/forgot-password");
-  res.render("reset-password", { title: "Set New Password", token, success: success === "1" });
+  res.render("reset-password", {
+    title: "Set New Password",
+    token,
+    success: success === "1",
+  });
 });
 
 app.post("/reset-password", async (req, res) => {
@@ -339,17 +371,22 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
-app.post("/profile/photo", requireAuth, upload.single("photo"), async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  try {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    await updateUserPhoto(sessionId, photoUrl);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+app.post(
+  "/profile/photo",
+  requireAuth,
+  upload.single("photo"),
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    try {
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+      const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      await updateUserPhoto(sessionId, photoUrl);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+);
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
@@ -381,6 +418,43 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     isLoggedIn: true,
     layout: "hp",
   });
+});
+
+app.get("/guardians/edit/:id", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { id } = req.params;
+  try {
+    const guardian = await searchGuardianByName(id);
+    if (!guardian) {
+      return res.redirect(
+        "/homepage?error=" + encodeURIComponent("Guardian not found."),
+      );
+    }
+    res.render("guardian-edit", {
+      isLoggedIn: true,
+      guardian,
+      layout: "hp",
+    });
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
+});
+
+app.post("/guardians/edit/:id", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { id } = req.params;
+  const { name, phone, email, priorityOrder } = req.body;
+  try {
+    await updateGuardianPresentation(sessionId, id, {
+      name,
+      phone,
+      email,
+      priorityOrder: parseInt(priorityOrder, 10) || 1,
+    });
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+  }
 });
 // ── Logout ─────────────────────────────────────────────────────────────────
 app.get("/logout", async (req, res) => {

@@ -142,7 +142,7 @@ async function setActiveBackupProtocol(catId, isActive) {
 
 // ---- Guardians ----
 
-async function addGuardian({ ownerId, name, phone, email, priorityOrder }) {
+async function addGuardian({ ownerId, name, phone, email, priorityOrder, Id }) {
   const { Guardians } = collections();
   const result = await Guardians.insertOne({
     ownerId: new ObjectId(ownerId),
@@ -151,6 +151,7 @@ async function addGuardian({ ownerId, name, phone, email, priorityOrder }) {
     email,
     priorityOrder,
     hasAccepted: false,
+    Id: Id || null,
   });
   return result.insertedId;
 }
@@ -289,6 +290,17 @@ async function deletePasswordResetToken(token) {
   await PasswordResetTokens.deleteOne({ token });
 }
 
+async function searchGuardianById(Id) {
+  const { Guardians } = collections();
+  return Guardians.findOne({ Id: Id });
+}
+
+async function updateGuardianById(Id, updates) {
+  const { Guardians } = collections();
+  // Only set fields provided in updates
+  await Guardians.updateOne({ Id: Id }, { $set: updates });
+}
+
 export {
   connectDB,
   closeDB,
@@ -319,4 +331,8 @@ export {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
+  searchUsersByName,
+  searchGuardianById,
+  updateGuardianById,
+  getCatByName,
 };

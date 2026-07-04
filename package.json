@@ -1,25 +1,25 @@
 {
   "name": "kitty",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/60302700/Kitty#readme",
+  "bugs": {
+    "url": "https://github.com/60302700/Kitty/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/60302700/Kitty.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "worker": "node temporal/worker.js",
     "start": "node index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/60302700/Kitty.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/60302700/Kitty/issues"
-  },
-  "homepage": "https://github.com/60302700/Kitty#readme",
   "dependencies": {
     "@temporalio/activity": "^1.19.0",
     "@temporalio/client": "^1.19.0",
@@ -34,5 +34,6 @@
     "multer": "^2.2.0",
     "nodemailer": "^9.0.3",
     "uuid": "^14.0.1"
-  }
+  },
+  "devDependencies": {}
 }

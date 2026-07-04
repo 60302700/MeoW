@@ -1,0 +1,103 @@
+<div class="main-content">
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-8">
+    <div class="space-y-6">
+      <div>
+        <h1 class="title-xl">Edit Guardian</h1>
+        <p class="text-slate-600 mt-2">Update guardian details. Changes will be
+          saved to your account's guardian list.</p>
+      </div>
+
+      {{#if error}}
+        <div
+          class="rounded-xl bg-red-50 border border-red-200 p-4 text-red-700"
+        >
+          {{error}}
+        </div>
+      {{/if}}
+
+      <form
+        method="POST"
+        action="/guardians/edit/{{guardian.Id}}"
+        class="space-y-6"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-slate-700">Full Name</label>
+            <input
+              name="name"
+              value="{{guardian.name}}"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label
+              class="block text-sm font-semibold text-slate-700"
+            >Email</label>
+            <input
+              type="email"
+              name="email"
+              value="{{guardian.email}}"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label
+              class="block text-sm font-semibold text-slate-700"
+            >Phone</label>
+            <input
+              type="tel"
+              name="phone"
+              value="{{guardian.phone}}"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-slate-700">Priority
+              Order</label>
+            <input
+              name="priorityOrder"
+              type="number"
+              min="1"
+              step="1"
+              value="{{guardian.priorityOrder}}"
+              class="w-full md:w-36 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none shadow-sm focus:ring-2 focus:ring-pink-200"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Guardian
+            UUID</label>
+          <div class="flex gap-3">
+            <input
+              id="guardian-uuid"
+              value="{{guardian.Id}}"
+              readonly
+              class="flex-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-600 outline-none"
+            />
+            <button
+              type="button"
+              onclick="navigator.clipboard?.writeText(document.getElementById('guardian-uuid').value)"
+              class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium text-white"
+            >Copy</button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 items-center justify-between">
+          <button
+            type="submit"
+            class="rounded-2xl bg-[#0f172a] px-6 py-3 text-sm font-semibold text-white shadow"
+          >Save changes</button>
+          <a
+            href="/homepage"
+            class="text-sm text-slate-600 hover:text-slate-900"
+          >Back to dashboard</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

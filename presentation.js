@@ -15,6 +15,9 @@ import {
   resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
+  GuardianSearch,
+  updateGuardianById,
+  getCatByNameBusinessLayer,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -34,9 +37,14 @@ async function logoutUser(sessionId) {
   return await logout(sessionId);
 }
 
-async function searchUsersByName(name) {
-  return await searchGurdian(name);
+async function searchGuardianByName(name) {
+  return await GuardianSearch(name);
 }
+
+async function updateGuardianPresentation(sessionId, Id, updates) {
+  return await updateGuardianById(sessionId, Id, updates);
+}
+
 export {
   connectDB,
   engine,
@@ -55,4 +63,7 @@ export {
   resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
+  getCatByNamePresentationLayer,
+  searchGuardianByName,
+  updateGuardianPresentation,
 };
