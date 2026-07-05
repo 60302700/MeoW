@@ -828,18 +828,9 @@
                     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
                         <div class="repo-top-row">
                             <span class="repo-name"><a href="/cats/{{this.name}}" target="_blank">{{this.name}}</a></span>
-                            <div style="display:flex;align-items:center;gap:0.4rem;">
-                                {{#if this.isActiveBackupProtocol}}
-                                <span class="repo-visibility">Protected</span>
-                                {{/if}}
-                                <form method="POST" action="/cats/{{this._id}}/delete" style="margin:0;"
-                                    onsubmit="return confirm('Delete {{this.name}}? This cannot be undone.')">
-                                    <input type="hidden" name="_csrf" value="{{../csrfToken}}">
-                                    <button type="submit"
-                                        style="background:none;border:1.5px solid #fecdd3;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#e11d48;cursor:pointer;transition:all 0.15s;"
-                                        onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='none'">Delete</button>
-                                </form>
-                            </div>
+                            {{#if this.isActiveBackupProtocol}}
+                            <span class="repo-visibility">Protected</span>
+                            {{/if}}
                         </div>
 
                         <p class="repo-desc">
