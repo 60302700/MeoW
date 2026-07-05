@@ -35,7 +35,7 @@ import {
   acknowledgeGuardianToken,
   getGuardian,
 } from "./persistance.js";
-import { sendPasswordResetEmail } from "./mailer.js";
+import { sendPasswordResetEmail, sendWalletCardEmail } from "./mailer.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
@@ -436,6 +436,24 @@ async function acknowledgeGuardianAccess(token) {
   if (record.acknowledged) return;
   await acknowledgeGuardianToken(token);
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
+
+  const [guardian, owner, cats] = await Promise.all([
+    getGuardian(record.ownerId.toString(), record.guardianId.toString()),
+    findUserById(record.ownerId.toString()),
+    getCatsByOwner(record.ownerId.toString()),
+  ]);
+
+  if (guardian?.email && owner) {
+    const baseUrl = process.env.APP_URL || "http://localhost:3000";
+    const magicLink = `${baseUrl}/guardian-access?token=${token}`;
+    await sendWalletCardEmail(
+      guardian.email,
+      guardian.name || "Guardian",
+      owner,
+      cats,
+      magicLink,
+    );
+  }
 }
 
 // Business-level guardian update: validates session and ownership

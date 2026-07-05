@@ -26,28 +26,18 @@ export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerNam
     }
 
     const catList = catNames.length ? catNames.join(', ') : 'their cats';
-    const qrBuffer = await QRCode.toBuffer(magicLink, { width: 180, margin: 2 });
 
     await t.sendMail({
         from: `"MeoW Safety" <${process.env.GMAIL_USER}>`,
         to: toEmail,
         subject: `Action required: ${ownerName} needs you to look after ${catList}`,
-        attachments: [
-            { filename: 'qr.png', content: qrBuffer, cid: 'guardian-qr' },
-        ],
         html: `
 <div style="font-family:ui-sans-serif,system-ui,sans-serif;background:#f5f3ff;padding:32px 16px;">
-
-  <!-- Card -->
   <div style="max-width:460px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
-
-    <!-- Header strip -->
     <div style="background:linear-gradient(135deg,#9d174d,#ec4899);padding:24px 28px 20px;">
       <p style="margin:0;color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">MeoW Safety Network</p>
       <h1 style="margin:6px 0 0;color:#ffffff;font-size:1.4rem;font-weight:800;">Guardian Alert</h1>
     </div>
-
-    <!-- Body -->
     <div style="padding:28px 28px 20px;">
       <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${guardianName},</p>
       <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
@@ -55,36 +45,90 @@ export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerNam
         You are their next guardian for <strong style="color:#9d174d;">${catList}</strong>.
         Please acknowledge within <strong>30 minutes</strong> or the next guardian will be contacted.
       </p>
-
-      <!-- CTA button -->
       <a href="${magicLink}"
-         style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;margin-bottom:24px;">
+         style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
         View Cats &amp; Acknowledge
       </a>
-
-      <!-- Divider with label -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
-        <span style="font-size:0.7rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Or scan the QR code</span>
-        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
-      </div>
-
-      <!-- QR code -->
-      <div style="text-align:center;margin-bottom:20px;">
-        <img src="cid:guardian-qr" width="160" height="160" alt="Scan to open guardian page"
-             style="border-radius:10px;border:4px solid #f1f5f9;">
-        <p style="margin:8px 0 0;font-size:0.72rem;color:#94a3b8;">Scan with your phone camera</p>
-      </div>
     </div>
-
-    <!-- Footer strip -->
     <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">
       <p style="margin:0;font-size:0.72rem;color:#94a3b8;">MeoW — Cat Safety Network &nbsp;·&nbsp; This link expires in 48 hours</p>
     </div>
-
   </div>
-</div>
-        `,
+</div>`,
+    });
+}
+
+export async function sendWalletCardEmail(toEmail, guardianName, owner, cats, magicLink) {
+    const t = getTransporter();
+    if (!t) {
+        console.warn(`[Mailer] Would send wallet card to ${toEmail} — mailer disabled`);
+        return;
+    }
+
+    const qrBuffer = await QRCode.toBuffer(magicLink, { width: 200, margin: 2 });
+
+    const catCards = cats.map(cat => `
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:12px;">
+        <p style="margin:0 0 10px;font-size:1rem;font-weight:800;color:#0f172a;">${cat.name}${cat.breed ? ` <span style="font-weight:400;color:#64748b;font-size:0.85rem;">· ${cat.breed}</span>` : ''}${cat.age ? ` <span style="font-weight:400;color:#64748b;font-size:0.85rem;">· ${cat.age} yrs</span>` : ''}</p>
+        ${cat.careInstructions?.feedingSchedule ? `<p style="margin:0 0 5px;font-size:0.82rem;color:#475569;"><strong>Feeding:</strong> ${cat.careInstructions.feedingSchedule}</p>` : ''}
+        ${cat.careInstructions?.allergies ? `<p style="margin:0 0 5px;font-size:0.82rem;color:#dc2626;"><strong>Allergies:</strong> ${cat.careInstructions.allergies}</p>` : ''}
+        ${cat.careInstructions?.medications ? `<p style="margin:0 0 5px;font-size:0.82rem;color:#475569;"><strong>Medications:</strong> ${cat.careInstructions.medications}</p>` : ''}
+        ${cat.careInstructions?.vetName ? `<p style="margin:0;font-size:0.82rem;color:#475569;"><strong>Vet:</strong> ${cat.careInstructions.vetName}${cat.careInstructions.vetPhone ? ` · ${cat.careInstructions.vetPhone}` : ''}</p>` : ''}
+      </div>`).join('');
+
+    await t.sendMail({
+        from: `"MeoW Safety" <${process.env.GMAIL_USER}>`,
+        to: toEmail,
+        subject: `Your guardian wallet card for ${owner.name}'s cats`,
+        attachments: [
+            { filename: 'qr.png', content: qrBuffer, cid: 'guardian-qr' },
+        ],
+        html: `
+<div style="font-family:ui-sans-serif,system-ui,sans-serif;background:#f5f3ff;padding:32px 16px;">
+  <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#9d174d,#ec4899);padding:24px 28px 20px;">
+      <p style="margin:0;color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">MeoW Safety Network</p>
+      <h1 style="margin:6px 0 0;color:#ffffff;font-size:1.4rem;font-weight:800;">Your Guardian Wallet Card</h1>
+    </div>
+
+    <div style="padding:24px 28px;">
+
+      <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
+        Hi <strong style="color:#0f172a;">${guardianName}</strong>, thank you for confirming. Here is everything you need to care for the cats.
+      </p>
+
+      <!-- Owner details -->
+      <div style="background:linear-gradient(135deg,#fdf2f8,#fce7f3);border:1px solid #fbcfe8;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <p style="margin:0 0 4px;font-size:0.7rem;font-weight:700;color:#9d174d;text-transform:uppercase;letter-spacing:0.06em;">Owner</p>
+        <p style="margin:0 0 4px;font-size:1rem;font-weight:800;color:#0f172a;">${owner.name}</p>
+        ${owner.phone ? `<p style="margin:0 0 2px;font-size:0.85rem;color:#475569;">Phone: ${owner.phone}</p>` : ''}
+        <p style="margin:0;font-size:0.85rem;color:#475569;">Email: ${owner.email}</p>
+      </div>
+
+      <!-- Cat care cards -->
+      <p style="margin:0 0 10px;font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">Cats in your care</p>
+      ${catCards}
+
+      <!-- QR + link -->
+      <div style="text-align:center;margin-top:20px;padding:20px;background:#f8fafc;border-radius:12px;">
+        <p style="margin:0 0 12px;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">Your access link</p>
+        <img src="cid:guardian-qr" width="160" height="160" alt="Scan to open guardian page"
+             style="border-radius:10px;border:4px solid #e2e8f0;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;">
+        <p style="margin:0 0 12px;font-size:0.75rem;color:#94a3b8;">Scan or click the button below to access the full care page</p>
+        <a href="${magicLink}"
+           style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:0.85rem;">
+          Open Guardian Page
+        </a>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">
+      <p style="margin:0;font-size:0.72rem;color:#94a3b8;">MeoW — Cat Safety Network &nbsp;·&nbsp; Keep this email safe for reference</p>
+    </div>
+  </div>
+</div>`,
     });
 }
 
