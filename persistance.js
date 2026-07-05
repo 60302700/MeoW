@@ -423,8 +423,8 @@ async function updateGuardianByObjectId(guardianId, updates) {
 async function getGuardian(ownerId, guardianId) {
   const { Guardians } = collections();
   return Guardians.findOne({
+    _id: new ObjectId(guardianId),
     ownerId: new ObjectId(ownerId),
-    Id: guardianId,
   });
 }
 
