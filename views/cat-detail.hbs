@@ -136,6 +136,58 @@
         color: #334155;
         display: inline-block;
     }
+
+    .edit-inline-section {
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 1.25rem;
+        padding: 2rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        margin-top: 0.5rem;
+    }
+
+    .edit-inline-section input,
+    .edit-inline-section textarea,
+    .edit-inline-section select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.65rem;
+        font-size: 0.9rem;
+        color: #0f172a;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        background: white;
+    }
+    .edit-inline-section input:focus,
+    .edit-inline-section textarea:focus,
+    .edit-inline-section select:focus { border-color: #ec4899; }
+
+    .edit-inline-section label.field-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.3rem;
+    }
+
+    .edit-section-heading {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0 0 0.75rem;
+    }
+
+    .edit-divider {
+        border: none;
+        border-top: 1px solid #f1f5f9;
+        margin: 1.25rem 0;
+    }
 </style>
 
 <div class="cat-detail-wrap">
@@ -151,7 +203,7 @@
             <h1 class="cat-hero-name">{{cat.name}}</h1>
             <p class="cat-hero-breed">{{#if cat.breed}}{{cat.breed}}{{else}}Unknown breed{{/if}}{{#if cat.gender}} · {{cat.gender}}{{/if}}{{#if cat.age}} · {{cat.age}} yrs{{/if}}</p>
             <div style="display:flex;gap:0.6rem;margin-top:0.75rem;flex-wrap:wrap;">
-                <button class="edit-cat-btn" style="margin-top:0;" onclick="document.getElementById('editCatModal').style.display='flex';document.body.style.overflow='hidden'">Edit profile</button>
+                <button id="editToggleBtn" class="edit-cat-btn" style="margin-top:0;" onclick="showEditMode()">Edit profile</button>
                 <form method="POST" action="/cats/{{cat._id}}/delete" style="margin:0;"
                     onsubmit="return confirm('Permanently delete {{cat.name}}? This cannot be undone.')">
                     <input type="hidden" name="_csrf" value="{{csrfToken}}">
@@ -163,261 +215,255 @@
         </div>
     </div>
 
-    <div class="cat-sections">
+    <!-- ── View sections (shown by default) ─────────────────────────────── -->
+    <div id="catViewSections">
+        <div class="cat-sections">
 
-        <div class="cat-section">
-            <p class="cat-section-title">Identity</p>
-            <div class="cat-field">
-                <div class="cat-field-label">Microchip</div>
-                {{#if cat.careInstructions.microchip}}
-                <span class="mono-id">{{cat.careInstructions.microchip}}</span>
-                {{else}}
-                <div class="cat-field-value empty">Not recorded</div>
-                {{/if}}
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Passport / Travel Document</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.passportNumber}}empty{{/unless}}">
-                    {{#if cat.careInstructions.passportNumber}}{{cat.careInstructions.passportNumber}}{{else}}Not recorded{{/if}}
+            <div class="cat-section">
+                <p class="cat-section-title">Identity</p>
+                <div class="cat-field">
+                    <div class="cat-field-label">Microchip</div>
+                    {{#if cat.careInstructions.microchip}}
+                    <span class="mono-id">{{cat.careInstructions.microchip}}</span>
+                    {{else}}
+                    <div class="cat-field-value empty">Not recorded</div>
+                    {{/if}}
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Passport / Travel Document</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.passportNumber}}empty{{/unless}}">
+                        {{#if cat.careInstructions.passportNumber}}{{cat.careInstructions.passportNumber}}{{else}}Not recorded{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">QR Code ID</div>
+                    <span class="mono-id">{{cat.qrCodeId}}</span>
                 </div>
             </div>
-            <div class="cat-field">
-                <div class="cat-field-label">QR Code ID</div>
-                <span class="mono-id">{{cat.qrCodeId}}</span>
+
+            <div class="cat-section">
+                <p class="cat-section-title">Veterinarian</p>
+                <div class="cat-field">
+                    <div class="cat-field-label">Clinic / Vet Name</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.vetName}}empty{{/unless}}">
+                        {{#if cat.careInstructions.vetName}}{{cat.careInstructions.vetName}}{{else}}Not specified{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Phone</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.vetPhone}}empty{{/unless}}">
+                        {{#if cat.careInstructions.vetPhone}}{{cat.careInstructions.vetPhone}}{{else}}Not specified{{/if}}
+                    </div>
+                </div>
             </div>
+
+            <div class="cat-section">
+                <p class="cat-section-title">Diet & Feeding</p>
+                <div class="cat-field">
+                    <div class="cat-field-label">Feeding Schedule</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.feedingSchedule}}empty{{/unless}}">
+                        {{#if cat.careInstructions.feedingSchedule}}{{cat.careInstructions.feedingSchedule}}{{else}}Not specified{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Food Brand / Type</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.foodBrand}}empty{{/unless}}">
+                        {{#if cat.careInstructions.foodBrand}}{{cat.careInstructions.foodBrand}}{{else}}Not specified{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Allergies / Intolerances</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.allergies}}empty{{/unless}}">
+                        {{#if cat.careInstructions.allergies}}{{cat.careInstructions.allergies}}{{else}}None known{{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="cat-section">
+                <p class="cat-section-title">Medical</p>
+                <div class="cat-field">
+                    <div class="cat-field-label">Known Conditions</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.conditions}}empty{{/unless}}">
+                        {{#if cat.careInstructions.conditions}}{{cat.careInstructions.conditions}}{{else}}None known{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Current Medications</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.medications}}empty{{/unless}}">
+                        {{#if cat.careInstructions.medications}}{{cat.careInstructions.medications}}{{else}}None{{/if}}
+                    </div>
+                </div>
+                <div class="cat-field">
+                    <div class="cat-field-label">Vaccinations</div>
+                    <div class="cat-field-value {{#unless cat.careInstructions.vaccinations}}empty{{/unless}}">
+                        {{#if cat.careInstructions.vaccinations}}{{cat.careInstructions.vaccinations}}{{else}}Not recorded{{/if}}
+                    </div>
+                </div>
+            </div>
+
+            <div class="cat-section full-width">
+                <p class="cat-section-title">Personality & Habits</p>
+                <div class="cat-field-value {{#unless cat.careInstructions.personality}}empty{{/unless}}">
+                    {{#if cat.careInstructions.personality}}{{cat.careInstructions.personality}}{{else}}Not described{{/if}}
+                </div>
+            </div>
+
+            {{#if cat.careInstructions.notes}}
+            <div class="cat-section full-width notes-section">
+                <p class="cat-section-title">Caretaker Notes</p>
+                <div class="cat-field-value">{{cat.careInstructions.notes}}</div>
+            </div>
+            {{/if}}
+
         </div>
-
-        <div class="cat-section">
-            <p class="cat-section-title">Veterinarian</p>
-            <div class="cat-field">
-                <div class="cat-field-label">Clinic / Vet Name</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.vetName}}empty{{/unless}}">
-                    {{#if cat.careInstructions.vetName}}{{cat.careInstructions.vetName}}{{else}}Not specified{{/if}}
-                </div>
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Phone</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.vetPhone}}empty{{/unless}}">
-                    {{#if cat.careInstructions.vetPhone}}{{cat.careInstructions.vetPhone}}{{else}}Not specified{{/if}}
-                </div>
-            </div>
-        </div>
-
-        <div class="cat-section">
-            <p class="cat-section-title">Diet & Feeding</p>
-            <div class="cat-field">
-                <div class="cat-field-label">Feeding Schedule</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.feedingSchedule}}empty{{/unless}}">
-                    {{#if cat.careInstructions.feedingSchedule}}{{cat.careInstructions.feedingSchedule}}{{else}}Not specified{{/if}}
-                </div>
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Food Brand / Type</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.foodBrand}}empty{{/unless}}">
-                    {{#if cat.careInstructions.foodBrand}}{{cat.careInstructions.foodBrand}}{{else}}Not specified{{/if}}
-                </div>
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Allergies / Intolerances</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.allergies}}empty{{/unless}}">
-                    {{#if cat.careInstructions.allergies}}{{cat.careInstructions.allergies}}{{else}}None known{{/if}}
-                </div>
-            </div>
-        </div>
-
-        <div class="cat-section">
-            <p class="cat-section-title">Medical</p>
-            <div class="cat-field">
-                <div class="cat-field-label">Known Conditions</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.conditions}}empty{{/unless}}">
-                    {{#if cat.careInstructions.conditions}}{{cat.careInstructions.conditions}}{{else}}None known{{/if}}
-                </div>
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Current Medications</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.medications}}empty{{/unless}}">
-                    {{#if cat.careInstructions.medications}}{{cat.careInstructions.medications}}{{else}}None{{/if}}
-                </div>
-            </div>
-            <div class="cat-field">
-                <div class="cat-field-label">Vaccinations</div>
-                <div class="cat-field-value {{#unless cat.careInstructions.vaccinations}}empty{{/unless}}">
-                    {{#if cat.careInstructions.vaccinations}}{{cat.careInstructions.vaccinations}}{{else}}Not recorded{{/if}}
-                </div>
-            </div>
-        </div>
-
-        <div class="cat-section full-width">
-            <p class="cat-section-title">Personality & Habits</p>
-            <div class="cat-field-value {{#unless cat.careInstructions.personality}}empty{{/unless}}">
-                {{#if cat.careInstructions.personality}}{{cat.careInstructions.personality}}{{else}}Not described{{/if}}
-            </div>
-        </div>
-
-        {{#if cat.careInstructions.notes}}
-        <div class="cat-section full-width notes-section">
-            <p class="cat-section-title">Caretaker Notes</p>
-            <div class="cat-field-value">{{cat.careInstructions.notes}}</div>
-        </div>
-        {{/if}}
-
     </div>
+
+    <!-- ── Inline edit form (hidden by default) ──────────────────────────── -->
+    <div id="catEditSection" style="display:none;">
+        <div class="edit-inline-section">
+            <form method="POST" action="/cats/{{cat._id}}/edit" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+
+                <p class="edit-section-heading">Basic Info</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div>
+                        <label class="field-label">Name</label>
+                        <input type="text" name="name" value="{{cat.name}}" required>
+                    </div>
+                    <div>
+                        <label class="field-label">Breed</label>
+                        <input type="text" name="breed" value="{{cat.breed}}">
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div>
+                        <label class="field-label">Age (yrs)</label>
+                        <input type="number" name="age" value="{{cat.age}}" min="0">
+                    </div>
+                    <div>
+                        <label class="field-label">Gender</label>
+                        <select name="gender">
+                            <option value="">Unknown</option>
+                            <option value="Male" {{#if (eq cat.gender "Male")}}selected{{/if}}>Male</option>
+                            <option value="Female" {{#if (eq cat.gender "Female")}}selected{{/if}}>Female</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Neutered</label>
+                        <select name="neutered">
+                            <option value="">Unknown</option>
+                            <option value="yes" {{#if cat.careInstructions.neutered}}selected{{/if}}>Yes</option>
+                            <option value="no" {{#unless cat.careInstructions.neutered}}selected{{/unless}}>No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="field-label">Replace Photo</label>
+                        <label style="display:block;padding:0.6rem 0.85rem;border:2px dashed #e2e8f0;border-radius:0.65rem;font-size:0.82rem;color:#94a3b8;cursor:pointer;text-align:center;transition:border-color 0.2s;box-sizing:border-box;"
+                            onmouseover="this.style.borderColor='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0'">
+                            Choose file
+                            <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.parentElement.textContent=this.files[0]?this.files[0].name:'Choose file'">
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div>
+                        <label class="field-label">Microchip</label>
+                        <input type="text" name="microchip" value="{{cat.careInstructions.microchip}}">
+                    </div>
+                    <div>
+                        <label class="field-label">Passport No.</label>
+                        <input type="text" name="passportNumber" value="{{cat.careInstructions.passportNumber}}">
+                    </div>
+                </div>
+
+                <hr class="edit-divider">
+                <p class="edit-section-heading">Diet & Feeding</p>
+
+                <div style="margin-bottom:0.75rem;">
+                    <label class="field-label">Feeding Schedule</label>
+                    <input type="text" name="feedingSchedule" value="{{cat.careInstructions.feedingSchedule}}">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div>
+                        <label class="field-label">Food Brand / Type</label>
+                        <input type="text" name="foodBrand" value="{{cat.careInstructions.foodBrand}}">
+                    </div>
+                    <div>
+                        <label class="field-label">Allergies</label>
+                        <input type="text" name="allergies" value="{{cat.careInstructions.allergies}}">
+                    </div>
+                </div>
+
+                <hr class="edit-divider">
+                <p class="edit-section-heading">Medical</p>
+
+                <div style="margin-bottom:0.75rem;">
+                    <label class="field-label">Known Conditions</label>
+                    <textarea name="conditions" rows="2">{{cat.careInstructions.conditions}}</textarea>
+                </div>
+                <div style="margin-bottom:0.75rem;">
+                    <label class="field-label">Current Medications</label>
+                    <textarea name="medications" rows="2">{{cat.careInstructions.medications}}</textarea>
+                </div>
+                <div style="margin-bottom:0.75rem;">
+                    <label class="field-label">Vaccinations</label>
+                    <textarea name="vaccinations" rows="2">{{cat.careInstructions.vaccinations}}</textarea>
+                </div>
+
+                <hr class="edit-divider">
+                <p class="edit-section-heading">Veterinarian</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                    <div>
+                        <label class="field-label">Vet Name / Clinic</label>
+                        <input type="text" name="vetName" value="{{cat.careInstructions.vetName}}">
+                    </div>
+                    <div>
+                        <label class="field-label">Vet Phone</label>
+                        <input type="tel" name="vetPhone" value="{{cat.careInstructions.vetPhone}}">
+                    </div>
+                </div>
+
+                <hr class="edit-divider">
+                <p class="edit-section-heading">Personality & Notes</p>
+
+                <div style="margin-bottom:0.75rem;">
+                    <label class="field-label">Personality / Habits</label>
+                    <textarea name="personality" rows="2">{{cat.careInstructions.personality}}</textarea>
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label class="field-label">Caretaker Notes</label>
+                    <textarea name="notes" rows="2">{{cat.careInstructions.notes}}</textarea>
+                </div>
+
+                <div style="display:flex;gap:0.75rem;">
+                    <button type="button" onclick="showViewMode()"
+                        style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
+                    <button type="submit"
+                        style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 
-<!-- ── Edit Cat Modal ──────────────────────────────────────────────────── -->
-<div id="editCatModal"
-    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;"
-    onclick="if(event.target===this){this.style.display='none';document.body.style.overflow=''}">
-    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
-        <button onclick="document.getElementById('editCatModal').style.display='none';document.body.style.overflow=''"
-            style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
-
-        <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit — {{cat.name}}</h2>
-
-        <form method="POST" action="/cats/{{cat._id}}/edit" enctype="multipart/form-data">
-            <input type="hidden" name="_csrf" value="{{csrfToken}}">
-
-            <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Basic Info</p>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
-                    <input type="text" name="name" value="{{cat.name}}" required
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Breed</label>
-                    <input type="text" name="breed" value="{{cat.breed}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Age (yrs)</label>
-                    <input type="number" name="age" value="{{cat.age}}" min="0"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Gender</label>
-                    <select name="gender" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;background:white;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                        <option value="">Unknown</option>
-                        <option value="Male" {{#if (eq cat.gender "Male")}}selected{{/if}}>Male</option>
-                        <option value="Female" {{#if (eq cat.gender "Female")}}selected{{/if}}>Female</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Neutered</label>
-                    <select name="neutered" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;background:white;">
-                        <option value="">Unknown</option>
-                        <option value="yes" {{#if cat.careInstructions.neutered}}selected{{/if}}>Yes</option>
-                        <option value="no" {{#unless cat.careInstructions.neutered}}selected{{/unless}}>No</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Replace Photo</label>
-                    <label style="display:block;padding:0.6rem 0.85rem;border:2px dashed #e2e8f0;border-radius:0.65rem;font-size:0.82rem;color:#94a3b8;cursor:pointer;text-align:center;transition:border-color 0.2s;"
-                        onmouseover="this.style.borderColor='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0'">
-                        Choose file
-                        <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.parentElement.textContent=this.files[0]?this.files[0].name:'Choose file'">
-                    </label>
-                </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Microchip</label>
-                    <input type="text" name="microchip" value="{{cat.careInstructions.microchip}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Passport No.</label>
-                    <input type="text" name="passportNumber" value="{{cat.careInstructions.passportNumber}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
-            <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Diet & Feeding</p>
-
-            <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Feeding Schedule</label>
-                <input type="text" name="feedingSchedule" value="{{cat.careInstructions.feedingSchedule}}"
-                    style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Food Brand / Type</label>
-                    <input type="text" name="foodBrand" value="{{cat.careInstructions.foodBrand}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Allergies</label>
-                    <input type="text" name="allergies" value="{{cat.careInstructions.allergies}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
-            <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Medical</p>
-
-            <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Known Conditions</label>
-                <textarea name="conditions" rows="2" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{cat.careInstructions.conditions}}</textarea>
-            </div>
-            <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Current Medications</label>
-                <textarea name="medications" rows="2" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{cat.careInstructions.medications}}</textarea>
-            </div>
-            <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vaccinations</label>
-                <textarea name="vaccinations" rows="2" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{cat.careInstructions.vaccinations}}</textarea>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
-            <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Veterinarian</p>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vet Name / Clinic</label>
-                    <input type="text" name="vetName" value="{{cat.careInstructions.vetName}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Vet Phone</label>
-                    <input type="tel" name="vetPhone" value="{{cat.careInstructions.vetPhone}}"
-                        style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                        onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #f1f5f9;margin:1rem 0;">
-            <p style="font-size:0.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 0.75rem;">Personality & Notes</p>
-
-            <div style="margin-bottom:0.75rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Personality / Habits</label>
-                <textarea name="personality" rows="2" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{cat.careInstructions.personality}}</textarea>
-            </div>
-            <div style="margin-bottom:1.5rem;">
-                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Caretaker Notes</label>
-                <textarea name="notes" rows="2" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">{{cat.careInstructions.notes}}</textarea>
-            </div>
-
-            <div style="display:flex;gap:0.75rem;">
-                <button type="button" onclick="document.getElementById('editCatModal').style.display='none';document.body.style.overflow=''"
-                    style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
-                <button type="submit"
-                    style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
+<script nonce="{{nonce}}">
+    function showEditMode() {
+        document.getElementById('catViewSections').style.display = 'none';
+        document.getElementById('catEditSection').style.display = 'block';
+        document.getElementById('editToggleBtn').textContent = 'Cancel editing';
+        document.getElementById('editToggleBtn').setAttribute('onclick', 'showViewMode()');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function showViewMode() {
+        document.getElementById('catEditSection').style.display = 'none';
+        document.getElementById('catViewSections').style.display = 'block';
+        document.getElementById('editToggleBtn').textContent = 'Edit profile';
+        document.getElementById('editToggleBtn').setAttribute('onclick', 'showEditMode()');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
