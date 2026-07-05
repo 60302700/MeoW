@@ -27,7 +27,6 @@ import {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
-  searchUsersByName,
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,
@@ -61,10 +60,6 @@ function validatePassword(password) {
 
 async function getCatByNameBusinessLayer(catName, ownerId) {
   return getCatByName(catName, ownerId);
-}
-
-async function searchGurdian(name) {
-  return await searchUsersByName(name);
 }
 
 async function login(email, password) {
@@ -508,7 +503,6 @@ export {
   updateProfile,
   updateUserPhoto,
   getCatByNameBusinessLayer,
-  searchGurdian,
   setOwnerUnavailable,
   setOwnerAvailable,
   getGuardianAccess,

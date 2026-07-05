@@ -274,23 +274,6 @@ async function deleteSession(sessionId) {
   await Sessions.deleteOne({ sessionId: sessionId });
 }
 
-// ---- searhc function ----
-
-function escapeRegex(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-async function searchUsersByName(name) {
-  const { Users } = collections();
-  const query = name ? escapeRegex(name.trim()) : "";
-  return Users.find(
-    { name: { $regex: query, $options: "i" } },
-  )
-    .project({ _id: 1, name: 1, email: 1, phone: 1 })
-    .limit(20)
-    .toArray();
-}
-
 async function deleteUserAccount(userId, email) {
   const {
     Users,
@@ -472,7 +455,6 @@ export {
   getPasswordResetToken,
   deletePasswordResetToken,
   deleteUserAccount,
-  searchUsersByName,
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,

@@ -21,7 +21,6 @@ import {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
-  searchGurdian,
   getGuardianForOwnerPresentation,
   setOwnerUnavailable,
   setOwnerAvailable,
@@ -36,6 +35,7 @@ import {
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
+import { uploadImageBuffer, uploadImageDataUri } from "./cloudinary.js";
 
 const app = express();
 
@@ -53,7 +53,6 @@ const hbsEngine = engine({
   },
 });
 app.engine("hbs", hbsEngine);
-app.engine("handlebars", engine({ extname: ".handlebars" }));
 app.set("view engine", "hbs");
 app.set("views", "./views");
 
@@ -68,23 +67,20 @@ function getSessionCookie(req) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+async function isSessionValid(sessionId) {
+  if (!sessionId) return false;
+  return checkSessionMiddleware(sessionId);
+}
+
 async function Loggedin(req) {
-  const isLoggedIn = getSessionCookie(req);
-  if (!isLoggedIn) return false;
-  const valid = await checkSessionMiddleware(isLoggedIn);
-  if (!valid) return false;
-  return true;
+  return isSessionValid(getSessionCookie(req));
 }
 
 async function requireAuth(req, res, next) {
   const sessionId = getSessionCookie(req);
-  if (!sessionId) return res.redirect("/");
-  const valid = await checkSessionMiddleware(sessionId);
-  if (!valid) {
-    res.clearCookie("session");
-    return res.redirect("/?expired=1");
-  }
-  next();
+  if (await isSessionValid(sessionId)) return next();
+  if (sessionId) res.clearCookie("session");
+  return res.redirect(sessionId ? "/?expired=1" : "/");
 }
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -321,11 +317,12 @@ app.post(
             "Uploaded image is empty or was not buffered correctly.",
           );
         }
-        photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        photoString = await uploadImageBuffer(req.file.buffer, "cats");
       } else if (photo) {
-        photoString = photo.startsWith("data:")
+        const dataUri = photo.startsWith("data:")
           ? photo
           : `data:image/png;base64,${photo}`;
+        photoString = await uploadImageDataUri(dataUri, "cats");
       }
       await addNewCat(sessionId, {
         name,
@@ -381,10 +378,10 @@ app.post(
     const { guardianId } = req.params;
     const { name, email, phone, priorityOrder } = req.body;
     let photoUrl = null;
-    if (req.file) {
-      photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    }
     try {
+      if (req.file) {
+        photoUrl = await uploadImageBuffer(req.file.buffer, "guardians");
+      }
       await editGuardian(sessionId, guardianId, {
         name,
         email,
@@ -419,10 +416,10 @@ app.post(
     const sessionId = getSessionCookie(req);
     const { name, email, phone, priorityOrder } = req.body;
     let photoString = "";
-    if (req.file) {
-      photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    }
     try {
+      if (req.file) {
+        photoString = await uploadImageBuffer(req.file.buffer, "guardians");
+      }
       await addNewGuardian(sessionId, {
         name,
         email,
@@ -465,10 +462,10 @@ app.post(
       notes,
     } = req.body;
     let photoUrl = null;
-    if (req.file) {
-      photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-    }
     try {
+      if (req.file) {
+        photoUrl = await uploadImageBuffer(req.file.buffer, "cats");
+      }
       await editCat(sessionId, catId, {
         name,
         breed,
@@ -504,10 +501,6 @@ app.post("/cats/:catId/delete", requireAuth, async (req, res) => {
   } catch (err) {
     res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
   }
-});
-
-app.post("/cats/:catId", requireAuth, async (req, res) => {
-  res.redirect("/homepage");
 });
 
 app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
@@ -591,7 +584,7 @@ app.post(
     const sessionId = getSessionCookie(req);
     try {
       if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-      const photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      const photoUrl = await uploadImageBuffer(req.file.buffer, "profiles");
       await updateUserPhoto(sessionId, photoUrl);
       res.json({ ok: true });
     } catch (err) {
@@ -626,8 +619,14 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const data = await getUserHomepage(sessionId);
   if (!data) return res.redirect("/");
-  const cat = await getCatByNamePresentationLayer(req.params.catName, data.user._id.toString());
-  if (!cat) return res.redirect("/homepage?error=" + encodeURIComponent("Cat not found"));
+  const cat = await getCatByNamePresentationLayer(
+    req.params.catName,
+    data.user._id.toString(),
+  );
+  if (!cat)
+    return res.redirect(
+      "/homepage?error=" + encodeURIComponent("Cat not found"),
+    );
   res.render("cat-detail", {
     title: cat.name,
     cat,
@@ -707,19 +706,29 @@ app.post("/guardian-access/:token/chat", async (req, res) => {
     const Groq = (await import("groq-sdk")).default;
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const catContext = cats.map(cat => {
-      const ci = cat.careInstructions || {};
-      const lines = [`Cat: ${cat.name}${cat.breed ? ` (${cat.breed})` : ""}${cat.age ? `, ${cat.age} yrs` : ""}`];
-      if (ci.feedingSchedule) lines.push(`  Feeding: ${ci.feedingSchedule}${ci.foodBrand ? ` — ${ci.foodBrand}` : ""}`);
-      if (ci.allergies) lines.push(`  Allergies: ${ci.allergies}`);
-      if (ci.medications) lines.push(`  Medications: ${ci.medications}`);
-      if (ci.conditions) lines.push(`  Medical conditions: ${ci.conditions}`);
-      if (ci.vetName) lines.push(`  Vet: ${ci.vetName}${ci.vetPhone ? ` (${ci.vetPhone})` : ""}`);
-      if (ci.personality) lines.push(`  Personality: ${ci.personality}`);
-      if (ci.notes) lines.push(`  Notes: ${ci.notes}`);
-      if (ci.neutered) lines.push(`  Neutered: yes`);
-      return lines.join("\n");
-    }).join("\n\n");
+    const catContext = cats
+      .map((cat) => {
+        const ci = cat.careInstructions || {};
+        const lines = [
+          `Cat: ${cat.name}${cat.breed ? ` (${cat.breed})` : ""}${cat.age ? `, ${cat.age} yrs` : ""}`,
+        ];
+        if (ci.feedingSchedule)
+          lines.push(
+            `  Feeding: ${ci.feedingSchedule}${ci.foodBrand ? ` — ${ci.foodBrand}` : ""}`,
+          );
+        if (ci.allergies) lines.push(`  Allergies: ${ci.allergies}`);
+        if (ci.medications) lines.push(`  Medications: ${ci.medications}`);
+        if (ci.conditions) lines.push(`  Medical conditions: ${ci.conditions}`);
+        if (ci.vetName)
+          lines.push(
+            `  Vet: ${ci.vetName}${ci.vetPhone ? ` (${ci.vetPhone})` : ""}`,
+          );
+        if (ci.personality) lines.push(`  Personality: ${ci.personality}`);
+        if (ci.notes) lines.push(`  Notes: ${ci.notes}`);
+        if (ci.neutered) lines.push(`  Neutered: yes`);
+        return lines.join("\n");
+      })
+      .join("\n\n");
 
     const systemPrompt = `You are a helpful cat care assistant for a guardian looking after ${ownerName}'s cats. You have access to the following care information:\n\n${catContext}\n\nAnswer the guardian's questions based on this information. If something isn't explicitly mentioned, give practical cat care advice. Be concise, friendly, and focused on cat welfare. Do not make up specific details like vet names or phone numbers that aren't provided.`;
 
@@ -735,7 +744,9 @@ app.post("/guardian-access/:token/chat", async (req, res) => {
     res.json({ reply: completion.choices[0].message.content });
   } catch (err) {
     console.error("[Chat]", err.message);
-    res.status(500).json({ error: "Could not get a response. Please try again." });
+    res
+      .status(500)
+      .json({ error: "Could not get a response. Please try again." });
   }
 });
 // ───────────────────────────────────────────────────────────────────────────
