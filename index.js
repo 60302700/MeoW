@@ -693,7 +693,7 @@ app.post(
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { name, phone, currentPassword, newPassword, confirmNewPassword } =
+  const { name, phone, location, currentPassword, newPassword, confirmNewPassword } =
     req.body;
   if (newPassword && newPassword !== confirmNewPassword) {
     return res.redirect(
@@ -704,6 +704,7 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
     await updateProfile(sessionId, {
       name,
       phone,
+      location,
       currentPassword,
       newPassword: newPassword || null,
     });
@@ -761,13 +762,14 @@ app.get("/guardian-access", async (req, res) => {
   const { token } = req.query;
   if (!token) return res.redirect("/");
   try {
-    const { record, cats, ownerName, guardianName, alreadyAcknowledged } =
+    const { record, cats, ownerName, ownerLocation, guardianName, alreadyAcknowledged } =
       await getGuardianAccess(token);
     res.render("guardian-access", {
       title: "Guardian Access",
       token,
       cats,
       ownerName,
+      ownerLocation,
       guardianName,
       alreadyAcknowledged,
       acked: req.query.acked === "1",

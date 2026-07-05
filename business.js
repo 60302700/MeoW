@@ -342,7 +342,7 @@ async function resetPasswordWithToken(token, newPassword) {
 
 async function updateProfile(
   sessionId,
-  { name, phone, currentPassword, newPassword },
+  { name, phone, location, currentPassword, newPassword },
 ) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -362,6 +362,7 @@ async function updateProfile(
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
   if (phone !== undefined) updates.phone = phone.trim();
+  if (location !== undefined) updates.location = location.trim();
   if (Object.keys(updates).length > 0) {
     await updateUserProfile(user._id, updates);
   }
@@ -470,6 +471,7 @@ async function getGuardianAccess(token) {
     record,
     cats,
     ownerName: owner?.name || "Unknown",
+    ownerLocation: owner?.location || "",
     guardianName: guardian?.name || "Guardian",
     alreadyAcknowledged: record.acknowledged,
   };

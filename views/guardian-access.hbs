@@ -324,6 +324,12 @@
         <div class="ack-card" style="margin-bottom:1.75rem;">
             <div class="ack-card-body">
                 <h2>Can you take care of these cats?</h2>
+                {{#if ownerLocation}}
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;padding:0.65rem 0.9rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.75rem;font-size:0.875rem;color:#475569;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span><strong style="color:#0f172a;">Cats are located at:</strong> {{ownerLocation}}</span>
+                </div>
+                {{/if}}
                 <p>Review the care instructions below. If you can step in, click Accept — a wallet card with all the details will be emailed to you. If you're unable to help, click Decline and the next guardian will be contacted immediately.</p>
                 <div style="display:flex;gap:0.75rem;">
                     <form method="POST" action="/guardian-access/{{token}}/decline" style="flex:1;">

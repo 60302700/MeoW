@@ -766,6 +766,12 @@
                 <span class="detail-icon">📧</span>
                 {{user.email}}
             </li>
+            {{#if user.location}}
+            <li>
+                <span class="detail-icon">📍</span>
+                {{user.location}}
+            </li>
+            {{/if}}
             <li>
                 <span class="detail-icon">🐾</span>
                 MeoW Safety Network
@@ -1544,7 +1550,7 @@
                             style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
                             onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
-                    <div style="margin-bottom:1.5rem;">
+                    <div style="margin-bottom:1rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Phone</label>
                         <div class="phone-wrap" style="border-radius:0.75rem;">
                             <select class="cc-select" data-phone-cc>
@@ -1553,6 +1559,12 @@
                             <input type="tel" class="phone-num" data-phone-num value="{{user.phone}}" placeholder="e.g. 5555 1234">
                             <input type="hidden" name="phone">
                         </div>
+                    </div>
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Location</label>
+                        <input type="text" name="location" value="{{user.location}}" placeholder="e.g. Doha, Qatar"
+                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
                     <div style="display:flex;gap:0.75rem;">
                         <button type="button" onclick="closeEditProfile()"
