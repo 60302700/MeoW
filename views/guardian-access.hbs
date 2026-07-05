@@ -5,286 +5,588 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}} — MeoW</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #f5f3ff 100%);
+            background: #f8fafc;
             min-height: 100vh;
-            padding: 2rem 1rem;
             color: #0f172a;
         }
 
-        .container {
-            max-width: 680px;
-            margin: 0 auto;
+        /* ── Top bar ── */
+        .topbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 1.5rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-
-        .brand {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .brand h1 {
-            font-size: 1.75rem;
+        .topbar-brand {
+            font-size: 1.1rem;
             font-weight: 900;
-            background: linear-gradient(135deg, #d946a8, #a855f7);
+            background: linear-gradient(135deg, #9d174d, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
-        .brand p {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
+        .topbar-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
-        .card {
-            background: white;
-            border-radius: 1.25rem;
-            padding: 2rem;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-            margin-bottom: 1.5rem;
+        /* ── Hero banner ── */
+        .hero {
+            background: linear-gradient(135deg, #9d174d 0%, #db2777 60%, #a855f7 100%);
+            padding: 2.5rem 1.5rem 3.5rem;
+            text-align: center;
+            position: relative;
         }
-
-        .alert {
-            border-radius: 0.75rem;
-            padding: 1rem 1.25rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+        .hero-label {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.8rem;
+            border-radius: 99px;
+            margin-bottom: 0.75rem;
         }
-
-        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
-        .alert-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
-        .alert-info { background: #fdf6ff; border-left: 4px solid #d946a8; color: #701a75; }
-
-        .header-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .header-section h2 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #0f172a;
+        .hero h1 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 900;
             margin-bottom: 0.4rem;
+            line-height: 1.2;
         }
-
-        .header-section p {
-            color: #475569;
+        .hero p {
+            color: rgba(255,255,255,0.8);
             font-size: 0.9rem;
             line-height: 1.5;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .hero-wave {
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
         }
 
-        .cat-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
+        /* ── Main content ── */
+        .content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 3rem;
+        }
+
+        /* ── Acknowledge card ── */
+        .ack-card {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .ack-card-body {
+            padding: 1.75rem;
+        }
+        .ack-card h2 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+        .ack-card p {
+            font-size: 0.875rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+        .btn-ack {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            color: white;
+            border: none;
+            border-radius: 0.875rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s, transform 0.15s;
+            letter-spacing: 0.01em;
+        }
+        .btn-ack:hover { opacity: 0.92; transform: translateY(-1px); }
+
+        .acked-banner {
+            padding: 1.75rem;
+            text-align: center;
+        }
+        .acked-icon {
+            width: 56px;
+            height: 56px;
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            border-radius: 50%;
             display: flex;
-            gap: 1rem;
-            align-items: flex-start;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 0.75rem;
+        }
+        .acked-banner h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #166534;
+            margin-bottom: 0.3rem;
+        }
+        .acked-banner p {
+            font-size: 0.85rem;
+            color: #475569;
         }
 
-        .cat-photo {
-            width: 72px;
-            height: 72px;
+        /* ── Section label ── */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.75rem;
+        }
+
+        /* ── Cat card ── */
+        .cat-card {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+        .cat-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .cat-avatar {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
-            border: 2px solid #f0abfc;
+            border: 2px solid #fbcfe8;
         }
-
-        .cat-photo-placeholder {
-            width: 72px;
-            height: 72px;
+        .cat-avatar-placeholder {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: linear-gradient(135deg, #fce7f3, #f5f3ff);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.5rem;
             flex-shrink: 0;
-            border: 2px solid #f0abfc;
+            border: 2px solid #fbcfe8;
         }
-
-        .cat-info h3 {
+        .cat-header-info h3 {
             font-size: 1.05rem;
-            font-weight: 700;
+            font-weight: 800;
             color: #0f172a;
-            margin-bottom: 0.2rem;
         }
-
-        .cat-meta {
-            font-size: 0.8rem;
+        .cat-header-meta {
+            font-size: 0.78rem;
             color: #64748b;
-            margin-bottom: 0.6rem;
+            margin-top: 0.15rem;
         }
-
-        .care-block {
-            background: #fdf6ff;
-            border-radius: 0.5rem;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.8rem;
-            color: #334155;
-            line-height: 1.5;
+        .cat-body {
+            padding: 1.25rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
+        @media (max-width: 480px) { .cat-body { grid-template-columns: 1fr; } }
 
-        .care-label {
-            font-weight: 700;
-            color: #d946a8;
-            display: block;
-            margin-bottom: 0.15rem;
-        }
-
-        .care-section + .care-section {
-            margin-top: 0.6rem;
-        }
-
-        .ack-section {
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .ack-section p {
-            color: #475569;
-            font-size: 0.9rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.5;
-        }
-
-        .btn-ack {
-            display: inline-block;
-            padding: 0.85rem 2.5rem;
-            background: linear-gradient(135deg, #d946a8, #a855f7);
-            color: white;
-            border: none;
+        .care-item {
+            background: #f8fafc;
             border-radius: 0.75rem;
-            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+        .care-item.full { grid-column: 1 / -1; }
+        .care-item.allergy { background: #fff1f2; }
+        .care-item.notes { background: #fffbeb; }
+        .care-item-label {
+            font-size: 0.68rem;
             font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            transition: opacity 0.2s, transform 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+        .care-item.allergy .care-item-label { color: #e11d48; }
+        .care-item.notes .care-item-label { color: #b45309; }
+        .care-item-value {
+            font-size: 0.875rem;
+            color: #1e293b;
+            line-height: 1.5;
+            font-weight: 500;
         }
 
-        .btn-ack:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-
-        .already-acked {
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .already-acked .big-check {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .already-acked p {
-            color: #166534;
+        /* ── Alert boxes ── */
+        .alert {
+            border-radius: 0.875rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
             font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .alert-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="brand">
-            <h1>🐱 MeoW</h1>
-            <p>Cat Safety Network</p>
+
+    <div class="topbar">
+        <span class="topbar-brand">MeoW</span>
+        <span class="topbar-label">Guardian Access</span>
+    </div>
+
+    {{#if error}}
+    <div class="content">
+        <div class="alert alert-error">{{error}}</div>
+    </div>
+    {{else}}
+
+    <div class="hero">
+        <span class="hero-label">Guardian Request</span>
+        <h1>{{ownerName}} needs your help</h1>
+        <p>Review the care instructions below and confirm you are available to look after their cats.</p>
+        <svg class="hero-wave" viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 40 C360 0 1080 0 1440 40 L1440 40 L0 40 Z" fill="#f8fafc"/>
+        </svg>
+    </div>
+
+    <div class="content">
+
+        {{#unless alreadyAcknowledged}}
+        {{#unless acked}}
+        <!-- Acknowledge card — only shown before confirmation -->
+        <div class="ack-card" style="margin-bottom:1.75rem;">
+            <div class="ack-card-body">
+                <h2>Confirm you're available</h2>
+                <p>By acknowledging, you confirm you're aware of the situation and will look after these cats. A wallet card with all care details will be sent to your email.</p>
+                <form method="POST" action="/guardian-access/{{token}}/acknowledge">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <button type="submit" class="btn-ack">I'm on it — Acknowledge</button>
+                </form>
+            </div>
         </div>
+        {{/unless}}
+        {{/unless}}
 
-        {{#if error}}
-            <div class="alert alert-error">{{error}}</div>
-        {{else}}
-            {{#if acked}}
-                <div class="alert alert-success">✅ You've acknowledged — {{ownerName}}'s cats are in good hands!</div>
-            {{/if}}
+        {{#if acked}}
+        <div class="alert alert-success">You're confirmed — a wallet card has been sent to your email. Here are the full care details.</div>
+        {{/if}}
 
-            <div class="card">
-                <div class="header-section">
-                    <h2>🐾 {{ownerName}} needs your help</h2>
-                    <p>They've marked themselves as unavailable. Please review the care instructions below and acknowledge that you're looking after their cats.</p>
-                </div>
+        <!-- Cat cards -->
+        <p class="section-label">Cats in your care</p>
 
-                {{#each cats}}
-                <div class="cat-card">
-                    {{#if this.photoUrl}}
-                        <img class="cat-photo" src="{{this.photoUrl}}" alt="{{this.name}}">
-                    {{else}}
-                        <div class="cat-photo-placeholder">🐱</div>
-                    {{/if}}
-                    <div class="cat-info">
-                        <h3>{{this.name}}</h3>
-                        <div class="cat-meta">{{this.breed}}{{#if this.age}} · {{this.age}} yrs{{/if}}</div>
-                        <div class="care-block">
-                            {{#if this.careInstructions.feedingSchedule}}
-                            <div class="care-section">
-                                <span class="care-label">Feeding</span>
-                                {{this.careInstructions.feedingSchedule}}
-                                {{#if this.careInstructions.foodBrand}} — {{this.careInstructions.foodBrand}}{{/if}}
-                            </div>
-                            {{/if}}
-                            {{#if this.careInstructions.allergies}}
-                            <div class="care-section">
-                                <span class="care-label">Allergies</span>
-                                {{this.careInstructions.allergies}}
-                            </div>
-                            {{/if}}
-                            {{#if this.careInstructions.conditions}}
-                            <div class="care-section">
-                                <span class="care-label">Conditions</span>
-                                {{this.careInstructions.conditions}}
-                            </div>
-                            {{/if}}
-                            {{#if this.careInstructions.medications}}
-                            <div class="care-section">
-                                <span class="care-label">Medications</span>
-                                {{this.careInstructions.medications}}
-                            </div>
-                            {{/if}}
-                            {{#if this.careInstructions.vetName}}
-                            <div class="care-section">
-                                <span class="care-label">Vet</span>
-                                {{this.careInstructions.vetName}}{{#if this.careInstructions.vetPhone}} — {{this.careInstructions.vetPhone}}{{/if}}
-                            </div>
-                            {{/if}}
-                            {{#if this.careInstructions.notes}}
-                            <div class="care-section" style="background:#fffbeb;border-left-color:#f59e0b;">
-                                <span class="care-label" style="color:#92400e;">Notes</span>
-                                {{this.careInstructions.notes}}
-                            </div>
-                            {{/if}}
-                        </div>
-                    </div>
-                </div>
-                {{/each}}
-
-                {{#if alreadyAcknowledged}}
-                    <div class="already-acked">
-                        <div class="big-check">✅</div>
-                        <p>You already acknowledged this request.</p>
-                    </div>
-                {{else if acked}}
-                    <div class="already-acked">
-                        <div class="big-check">✅</div>
-                        <p>You're all set! {{ownerName}} has been notified.</p>
-                    </div>
+        {{#each cats}}
+        <div class="cat-card">
+            <div class="cat-header">
+                {{#if this.photoUrl}}
+                    <img class="cat-avatar" src="{{this.photoUrl}}" alt="{{this.name}}">
                 {{else}}
-                    <div class="ack-section">
-                        <p>By acknowledging, you confirm you're aware of the situation and will look after these cats.</p>
-                        <form method="POST" action="/guardian-access/{{token}}/acknowledge">
-                            <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                            <button type="submit" class="btn-ack">✅ I'm on it — Acknowledge</button>
-                        </form>
+                    <div class="cat-avatar-placeholder">🐱</div>
+                {{/if}}
+                <div class="cat-header-info">
+                    <h3>{{this.name}}</h3>
+                    <div class="cat-header-meta">
+                        {{#if this.breed}}{{this.breed}}{{/if}}
+                        {{#if this.age}} · {{this.age}} yrs{{/if}}
+                        {{#if this.careInstructions.neutered}} · Neutered{{/if}}
                     </div>
+                </div>
+            </div>
+            <div class="cat-body">
+                {{#if this.careInstructions.feedingSchedule}}
+                <div class="care-item">
+                    <div class="care-item-label">Feeding</div>
+                    <div class="care-item-value">{{this.careInstructions.feedingSchedule}}{{#if this.careInstructions.foodBrand}} — {{this.careInstructions.foodBrand}}{{/if}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.vetName}}
+                <div class="care-item">
+                    <div class="care-item-label">Vet</div>
+                    <div class="care-item-value">{{this.careInstructions.vetName}}{{#if this.careInstructions.vetPhone}}<br><a href="tel:{{this.careInstructions.vetPhone}}" style="color:#9d174d;text-decoration:none;font-weight:600;">{{this.careInstructions.vetPhone}}</a>{{/if}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.allergies}}
+                <div class="care-item allergy full">
+                    <div class="care-item-label">Allergies</div>
+                    <div class="care-item-value">{{this.careInstructions.allergies}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.conditions}}
+                <div class="care-item full">
+                    <div class="care-item-label">Medical conditions</div>
+                    <div class="care-item-value">{{this.careInstructions.conditions}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.medications}}
+                <div class="care-item full">
+                    <div class="care-item-label">Medications</div>
+                    <div class="care-item-value">{{this.careInstructions.medications}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.personality}}
+                <div class="care-item full">
+                    <div class="care-item-label">Personality</div>
+                    <div class="care-item-value">{{this.careInstructions.personality}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.microchip}}
+                <div class="care-item">
+                    <div class="care-item-label">Microchip</div>
+                    <div class="care-item-value">{{this.careInstructions.microchip}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.passportNumber}}
+                <div class="care-item">
+                    <div class="care-item-label">Passport</div>
+                    <div class="care-item-value">{{this.careInstructions.passportNumber}}</div>
+                </div>
+                {{/if}}
+                {{#if this.careInstructions.notes}}
+                <div class="care-item notes full">
+                    <div class="care-item-label">Notes</div>
+                    <div class="care-item-value">{{this.careInstructions.notes}}</div>
+                </div>
                 {{/if}}
             </div>
-        {{/if}}
+        </div>
+        {{/each}}
+
     </div>
+
+    <div class="footer">
+        MeoW — Cat Safety Network &nbsp;·&nbsp; This link is private — do not share it
+    </div>
+
+    {{/if}}
+
+    <!-- AI Chat Widget -->
+    <div id="chat-bubble" onclick="toggleChat()" title="Ask about cat care">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.03 2 11c0 2.67 1.19 5.07 3.09 6.72L4 21l3.77-1.42C9.1 20.17 10.52 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z" fill="white"/>
+        </svg>
+    </div>
+
+    <div id="chat-panel">
+        <div id="chat-header">
+            <div>
+                <div style="font-weight:700;font-size:0.95rem;">Cat Care Assistant</div>
+                <div style="font-size:0.72rem;opacity:0.8;">Ask anything about the cats</div>
+            </div>
+            <button onclick="toggleChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.2rem;line-height:1;">✕</button>
+        </div>
+        <div id="chat-messages">
+            <div class="msg msg-bot">Hi! I have access to all the care details for the cats. Ask me anything — feeding, medications, what to do in an emergency, or general cat care tips.</div>
+        </div>
+        <div id="chat-input-row">
+            <input id="chat-input" type="text" placeholder="Ask about the cats..." maxlength="400" onkeydown="if(event.key==='Enter')sendMessage()">
+            <button id="chat-send" onclick="sendMessage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        #chat-bubble {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(157,23,77,0.4);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        #chat-bubble:hover { transform: scale(1.08); }
+
+        #chat-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            width: 340px;
+            max-height: 480px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+        #chat-panel.open { display: flex; }
+
+        #chat-header {
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 10px 13px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .msg-bot {
+            background: #f1f5f9;
+            color: #1e293b;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .msg-user {
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .msg-typing {
+            background: #f1f5f9;
+            color: #94a3b8;
+            align-self: flex-start;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        #chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid #f1f5f9;
+        }
+        #chat-input {
+            flex: 1;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            outline: none;
+            font-family: inherit;
+        }
+        #chat-input:focus { border-color: #ec4899; }
+        #chat-send {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        #chat-send:disabled { opacity: 0.5; cursor: default; }
+
+        @media (max-width: 400px) {
+            #chat-panel { right: 10px; left: 10px; width: auto; }
+        }
+    </style>
+
+    <script>
+        const TOKEN = '{{token}}';
+
+        function toggleChat() {
+            document.getElementById('chat-panel').classList.toggle('open');
+            if (document.getElementById('chat-panel').classList.contains('open')) {
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            appendMessage(msg, 'user');
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('chat-send').disabled = true;
+
+            const typing = appendMessage('Thinking...', 'typing');
+
+            try {
+                const res = await fetch(`/guardian-access/${TOKEN}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg }),
+                });
+                const data = await res.json();
+                typing.remove();
+                appendMessage(data.reply || data.error, data.error ? 'bot' : 'bot');
+            } catch {
+                typing.remove();
+                appendMessage('Something went wrong. Please try again.', 'bot');
+            } finally {
+                input.disabled = false;
+                document.getElementById('chat-send').disabled = false;
+                input.focus();
+            }
+        }
+
+        function appendMessage(text, type) {
+            const box = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `msg msg-${type}`;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return div;
+        }
+    </script>
 </body>
 </html>

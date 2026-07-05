@@ -34,8 +34,10 @@ import {
   getGuardianAccessToken,
   acknowledgeGuardianToken,
   getGuardian,
+  deleteCatById,
+  deleteGuardianById,
 } from "./persistance.js";
-import { sendPasswordResetEmail } from "./mailer.js";
+import { sendPasswordResetEmail, sendWalletCardEmail } from "./mailer.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
@@ -44,8 +46,21 @@ import {
 import bcrypt from "bcryptjs";
 import { ReturnDocument } from "mongodb";
 
-async function getCatByNameBusinessLayer(catName) {
-  return getCatByName(catName);
+function validatePassword(password) {
+  if (!password || password.length < 8)
+    throw new Error("Password must be at least 8 characters.");
+  if (!/[A-Z]/.test(password))
+    throw new Error("Password must contain at least one uppercase letter.");
+  if (!/[a-z]/.test(password))
+    throw new Error("Password must contain at least one lowercase letter.");
+  if (!/[0-9]/.test(password))
+    throw new Error("Password must contain at least one number.");
+  if (!/[^A-Za-z0-9]/.test(password))
+    throw new Error("Password must contain at least one special character.");
+}
+
+async function getCatByNameBusinessLayer(catName, ownerId) {
+  return getCatByName(catName, ownerId);
 }
 
 async function searchGurdian(name) {
@@ -66,6 +81,7 @@ async function registerUser({ name, email, password, phone }) {
   if (existing) {
     throw new Error("Email already registered");
   }
+  validatePassword(password);
   const passwordHash = await bcrypt.hash(password, 10);
   return createUser({ name, email, passwordHash, phone });
 }
@@ -281,8 +297,11 @@ async function editCat(
 async function toggleCatBackupProtocol(sessionId, catId) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
   const cat = await getCatById(catId);
-  if (!cat) throw new Error("Cat not found");
+  if (!cat || cat.ownerId.toString() !== user._id.toString())
+    throw new Error("Cat not found");
 
   const newStatus = !cat.isActiveBackupProtocol;
   await setActiveBackupProtocol(catId, newStatus);
@@ -307,6 +326,7 @@ async function requestPasswordReset(email) {
 async function resetPasswordWithToken(token, newPassword) {
   const record = await getPasswordResetToken(token);
   if (!record) throw new Error("This reset link is invalid or has expired.");
+  validatePassword(newPassword);
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(record.email, passwordHash);
   await deletePasswordResetToken(token);
@@ -346,8 +366,30 @@ async function changePassword(sessionId, currentPassword, newPassword) {
   if (!user) throw new Error("User not found");
   const valid = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!valid) throw new Error("Current password is incorrect.");
+  validatePassword(newPassword);
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(session.email, passwordHash);
+}
+
+async function deleteCat(sessionId, catId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const cat = await getCatById(catId);
+  if (!cat || cat.ownerId.toString() !== user._id.toString())
+    throw new Error("Cat not found");
+  await deleteCatById(catId, user._id.toString());
+}
+
+async function deleteGuardian(sessionId, guardianId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const guardian = await getGuardian(user._id.toString(), guardianId);
+  if (!guardian) throw new Error("Guardian not found or unauthorized");
+  await deleteGuardianById(guardianId, user._id.toString());
 }
 
 async function deleteAccount(sessionId, password) {
@@ -425,25 +467,26 @@ async function acknowledgeGuardianAccess(token) {
   if (record.acknowledged) return;
   await acknowledgeGuardianToken(token);
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
+
+  const [guardian, owner, cats] = await Promise.all([
+    getGuardian(record.ownerId.toString(), record.guardianId.toString()),
+    findUserById(record.ownerId.toString()),
+    getCatsByOwner(record.ownerId.toString()),
+  ]);
+
+  if (guardian?.email && owner) {
+    const baseUrl = process.env.APP_URL || "http://localhost:3000";
+    const magicLink = `${baseUrl}/guardian-access?token=${token}`;
+    await sendWalletCardEmail(
+      guardian.email,
+      guardian.name || "Guardian",
+      owner,
+      cats,
+      magicLink,
+    );
+  }
 }
 
-// Business-level guardian update: validates session and ownership
-async function updateGuardianById(sessionId, Id, updates) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-
-  const guardians = await getGuardiansByOwner(user._id);
-  const found = guardians.find((g) => g.Id === Id);
-  if (!found) throw new Error("Guardian not found or unauthorized");
-
-  await persistenceUpdateGuardianById(Id, updates);
-}
-
-async function searchGuardian(Id) {
-  return await searchGuardianById(Id);
-}
 
 export {
   connectDB,
@@ -472,7 +515,7 @@ export {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
-  updateGuardianById,
-  searchGuardian,
   getGuardianForOwnerBusinessLayer,
+  deleteCat,
+  deleteGuardian,
 };

@@ -31,6 +31,8 @@ import {
   editCat,
   editGuardian,
   deleteAccount,
+  deleteCat,
+  deleteGuardian,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -57,6 +59,7 @@ app.set("views", "./views");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
 function getSessionCookie(req) {
@@ -178,6 +181,8 @@ app.post("/login", async (req, res) => {
       res.cookie("session", session, {
         maxAge: 5 * 60 * 60 * 1000,
         httpOnly: true,
+        sameSite: "strict",
+        secure: isProduction,
       });
       res.redirect("/homepage");
     }
@@ -392,6 +397,7 @@ app.post(
   },
 );
 
+<<<<<<< HEAD
 app.post(
   "/guardians",
   requireAuth,
@@ -419,6 +425,35 @@ app.post(
     }
   },
 );
+=======
+app.post("/guardians/:guardianId/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { guardianId } = req.params;
+  try {
+    await deleteGuardian(sessionId, guardianId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
+app.post("/guardians", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { name, email, phone, priorityOrder } = req.body;
+  try {
+    await addNewGuardian(sessionId, {
+      name,
+      email,
+      phone,
+      priorityOrder,
+      Id: uuidv4(),
+    });
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+>>>>>>> 640e37759dd7f830c54f6c37d199b7cdd602794b
 
 app.post(
   "/cats/:catId/edit",
@@ -476,6 +511,17 @@ app.post(
     }
   },
 );
+
+app.post("/cats/:catId/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { catId } = req.params;
+  try {
+    await deleteCat(sessionId, catId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
 
 app.post("/cats/:catId", requireAuth, async (req, res) => {
   res.redirect("/homepage");
@@ -595,13 +641,15 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
 
 app.get("/cats/:catName", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const [cat, data] = await Promise.all([
-    getCatByNamePresentationLayer(req.params.catName),
-    getUserHomepage(sessionId),
-  ]);
+  const data = await getUserHomepage(sessionId);
+  if (!data) return res.redirect("/");
+  const cat = await getCatByNamePresentationLayer(req.params.catName, data.user._id.toString());
+  if (!cat) return res.redirect("/homepage?error=" + encodeURIComponent("Cat not found"));
   res.render("cat-detail", {
     title: cat.name,
     cat,
+    user: data.user,
+    isUnavailable: data.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
   });
@@ -662,6 +710,49 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
     res.redirect(
       `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,
     );
+  }
+});
+
+app.post("/guardian-access/:token/chat", async (req, res) => {
+  const { token } = req.params;
+  const { message } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ error: "Message is required." });
+  }
+  try {
+    const { cats, ownerName } = await getGuardianAccess(token);
+    const Groq = (await import("groq-sdk")).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const catContext = cats.map(cat => {
+      const ci = cat.careInstructions || {};
+      const lines = [`Cat: ${cat.name}${cat.breed ? ` (${cat.breed})` : ""}${cat.age ? `, ${cat.age} yrs` : ""}`];
+      if (ci.feedingSchedule) lines.push(`  Feeding: ${ci.feedingSchedule}${ci.foodBrand ? ` — ${ci.foodBrand}` : ""}`);
+      if (ci.allergies) lines.push(`  Allergies: ${ci.allergies}`);
+      if (ci.medications) lines.push(`  Medications: ${ci.medications}`);
+      if (ci.conditions) lines.push(`  Medical conditions: ${ci.conditions}`);
+      if (ci.vetName) lines.push(`  Vet: ${ci.vetName}${ci.vetPhone ? ` (${ci.vetPhone})` : ""}`);
+      if (ci.personality) lines.push(`  Personality: ${ci.personality}`);
+      if (ci.notes) lines.push(`  Notes: ${ci.notes}`);
+      if (ci.neutered) lines.push(`  Neutered: yes`);
+      return lines.join("\n");
+    }).join("\n\n");
+
+    const systemPrompt = `You are a helpful cat care assistant for a guardian looking after ${ownerName}'s cats. You have access to the following care information:\n\n${catContext}\n\nAnswer the guardian's questions based on this information. If something isn't explicitly mentioned, give practical cat care advice. Be concise, friendly, and focused on cat welfare. Do not make up specific details like vet names or phone numbers that aren't provided.`;
+
+    const completion = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message.trim() },
+      ],
+      max_tokens: 400,
+    });
+
+    res.json({ reply: completion.choices[0].message.content });
+  } catch (err) {
+    console.error("[Chat]", err.message);
+    res.status(500).json({ error: "Could not get a response. Please try again." });
   }
 });
 // ───────────────────────────────────────────────────────────────────────────

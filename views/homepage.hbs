@@ -1115,7 +1115,7 @@
                         <button onclick="closeEditGuardian('{{this.Id}}')"
                             style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
                         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
-                        <form method="POST" action="/guardians/edit/{{this.Id}}" enctype="multipart/form-data">
+                        <form method="POST" action="/guardians/edit/{{this._id}}">
                             <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.85rem;">
                                 {{#if this.photoUrl}}
@@ -1160,6 +1160,13 @@
                                 <button type="submit"
                                     style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
                             </div>
+                        </form>
+                        <form method="POST" action="/guardians/{{this._id}}/delete" style="margin-top:0.75rem;"
+                            onsubmit="return confirm('Remove {{this.name}} as a guardian? This cannot be undone.')">
+                            <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                            <button type="submit"
+                                style="width:100%;padding:0.75rem;background:none;border:2px solid #fecdd3;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#e11d48;cursor:pointer;transition:all 0.15s;"
+                                onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='none'">Remove Guardian</button>
                         </form>
                     </div>
                 </div>
@@ -1531,6 +1538,10 @@
             </div>
         </div>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 640e37759dd7f830c54f6c37d199b7cdd602794b
         <script>
             // Generate the GitHub-style activity grid with random paw-print activity
             (function () {
@@ -1640,6 +1651,24 @@
             if (_pwModal) _pwModal.addEventListener('click', function (e) {
                 if (e.target === this) closeChangePassword();
             });
+
+            function checkPwStrength(inputId, rulesId) {
+                const val = document.getElementById(inputId).value;
+                const box = document.getElementById(rulesId);
+                box.style.display = val.length > 0 ? 'block' : 'none';
+                const rules = {
+                    len:  val.length >= 8,
+                    up:   /[A-Z]/.test(val),
+                    low:  /[a-z]/.test(val),
+                    num:  /[0-9]/.test(val),
+                    spec: /[^A-Za-z0-9]/.test(val),
+                };
+                box.querySelectorAll('[data-rule]').forEach(el => {
+                    const ok = rules[el.dataset.rule];
+                    el.style.color = ok ? '#16a34a' : '#ef4444';
+                    el.innerHTML = (ok ? '&#10003;' : '&#10007;') + ' ' + el.textContent.slice(2);
+                });
+            }
 
             function openEditGuardian(id) {
                 const m = document.getElementById('editGuardianModal-' + id);
@@ -1824,9 +1853,17 @@
                     </div>
                     <div style="margin-bottom:1rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">New Password</label>
-                        <input type="password" name="newPassword" minlength="6" required
+                        <input type="password" id="newPasswordChg" name="newPassword" minlength="8" required
                             style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'"
+                            oninput="checkPwStrength('newPasswordChg','pw-rules-chg')">
+                        <div id="pw-rules-chg" style="display:none;margin-top:0.5rem;padding:0.65rem 0.85rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.65rem;">
+                            <p data-rule="len"  style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; At least 8 characters</p>
+                            <p data-rule="up"   style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; One uppercase letter</p>
+                            <p data-rule="low"  style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; One lowercase letter</p>
+                            <p data-rule="num"  style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; One number</p>
+                            <p data-rule="spec" style="font-size:0.76rem;margin:0;color:#94a3b8;">&#10007; One special character</p>
+                        </div>
                     </div>
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Confirm New Password</label>

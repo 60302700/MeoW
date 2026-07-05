@@ -131,9 +131,11 @@ async function getCatsByOwner(ownerId) {
   return Cats.find({ ownerId: new ObjectId(ownerId) }).toArray();
 }
 
-async function getCatByName(catName) {
+async function getCatByName(catName, ownerId) {
   const { Cats } = collections();
-  return Cats.findOne({ name: catName });
+  const query = { name: catName };
+  if (ownerId) query.ownerId = new ObjectId(ownerId);
+  return Cats.findOne(query);
 }
 
 async function updateCatById(catId, updates) {
@@ -281,10 +283,11 @@ function escapeRegex(text) {
 async function searchUsersByName(name) {
   const { Users } = collections();
   const query = name ? escapeRegex(name.trim()) : "";
-  return Users.find({
-    name: { $regex: query, $options: "i" },
-  })
-    .project({ passwordHash: 0 })
+  return Users.find(
+    { name: { $regex: query, $options: "i" } },
+  )
+    .project({ _id: 1, name: 1, email: 1, phone: 1 })
+    .limit(20)
     .toArray();
 }
 
@@ -371,7 +374,11 @@ async function createGuardianAccessToken(
 
 async function getGuardianAccessToken(token) {
   const { GuardianAccessTokens } = collections();
-  return GuardianAccessTokens.findOne({ token });
+  const record = await GuardianAccessTokens.findOne({ token });
+  if (!record) return null;
+  const ageHours = (Date.now() - new Date(record.createdAt).getTime()) / 36e5;
+  if (ageHours > 48) return null;
+  return record;
 }
 
 async function acknowledgeGuardianToken(token) {
@@ -403,23 +410,6 @@ async function deletePasswordResetToken(token) {
   await PasswordResetTokens.deleteOne({ token });
 }
 
-async function searchGuardianById(Id) {
-  const { Guardians } = collections();
-  return Guardians.findOne({ Id: Id });
-}
-
-async function updateGuardianById(Id, updates) {
-  const { Guardians } = collections();
-
-  // Update and return the updated guardian document
-  const result = await Guardians.findOneAndUpdate(
-    { Id: Id },
-    { $set: updates },
-    { returnDocument: "after" },
-  );
-  return result.value;
-  await Guardians.updateOne({ Id: Id }, { $set: updates });
-}
 
 async function updateGuardianByObjectId(guardianId, updates) {
   const { Guardians } = collections();
@@ -432,9 +422,20 @@ async function updateGuardianByObjectId(guardianId, updates) {
 async function getGuardian(ownerId, guardianId) {
   const { Guardians } = collections();
   return Guardians.findOne({
+    _id: new ObjectId(guardianId),
     ownerId: new ObjectId(ownerId),
-    Id: guardianId,
   });
+}
+
+async function deleteCatById(catId, ownerId) {
+  const { Cats, EmergencyEvents } = collections();
+  await EmergencyEvents.deleteMany({ catId: new ObjectId(catId) });
+  await Cats.deleteOne({ _id: new ObjectId(catId), ownerId: new ObjectId(ownerId) });
+}
+
+async function deleteGuardianById(guardianId, ownerId) {
+  const { Guardians } = collections();
+  await Guardians.deleteOne({ _id: new ObjectId(guardianId), ownerId: new ObjectId(ownerId) });
 }
 
 export {
@@ -478,7 +479,7 @@ export {
   createGuardianAccessToken,
   getGuardianAccessToken,
   acknowledgeGuardianToken,
-  updateGuardianById,
-  searchGuardianById,
   getGuardian,
+  deleteCatById,
+  deleteGuardianById,
 };

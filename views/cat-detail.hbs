@@ -150,7 +150,16 @@
         <div class="cat-hero-info">
             <h1 class="cat-hero-name">{{cat.name}}</h1>
             <p class="cat-hero-breed">{{#if cat.breed}}{{cat.breed}}{{else}}Unknown breed{{/if}}{{#if cat.age}} · {{cat.age}} yrs{{/if}}</p>
-            <button class="edit-cat-btn" onclick="document.getElementById('editCatModal').style.display='flex';document.body.style.overflow='hidden'">Edit profile</button>
+            <div style="display:flex;gap:0.6rem;margin-top:0.75rem;flex-wrap:wrap;">
+                <button class="edit-cat-btn" style="margin-top:0;" onclick="document.getElementById('editCatModal').style.display='flex';document.body.style.overflow='hidden'">Edit profile</button>
+                <form method="POST" action="/cats/{{cat._id}}/delete" style="margin:0;"
+                    onsubmit="return confirm('Permanently delete {{cat.name}}? This cannot be undone.')">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <button type="submit" class="edit-cat-btn" style="margin-top:0;border-color:#fecdd3;color:#e11d48;"
+                        onmouseover="this.style.background='#fff1f2';this.style.borderColor='#e11d48';"
+                        onmouseout="this.style.background='none';this.style.borderColor='#fecdd3';">Delete cat</button>
+                </form>
+            </div>
         </div>
     </div>
 
