@@ -418,6 +418,17 @@ async function getGuardian(ownerId, guardianId) {
   });
 }
 
+async function deleteCatById(catId, ownerId) {
+  const { Cats, EmergencyEvents } = collections();
+  await EmergencyEvents.deleteMany({ catId: new ObjectId(catId) });
+  await Cats.deleteOne({ _id: new ObjectId(catId), ownerId: new ObjectId(ownerId) });
+}
+
+async function deleteGuardianById(guardianId, ownerId) {
+  const { Guardians } = collections();
+  await Guardians.deleteOne({ _id: new ObjectId(guardianId), ownerId: new ObjectId(ownerId) });
+}
+
 export {
   connectDB,
   closeDB,
@@ -460,4 +471,6 @@ export {
   getGuardianAccessToken,
   acknowledgeGuardianToken,
   getGuardian,
+  deleteCatById,
+  deleteGuardianById,
 };

@@ -26,6 +26,8 @@ import {
   changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
+  deleteCat,
+  deleteGuardian,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
@@ -78,4 +80,6 @@ export {
   changePassword,
   deleteAccount,
   getGuardianForOwnerPresentation,
+  deleteCat,
+  deleteGuardian,
 };

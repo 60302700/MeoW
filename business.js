@@ -34,6 +34,8 @@ import {
   getGuardianAccessToken,
   acknowledgeGuardianToken,
   getGuardian,
+  deleteCatById,
+  deleteGuardianById,
 } from "./persistance.js";
 import { sendPasswordResetEmail, sendWalletCardEmail } from "./mailer.js";
 import {
@@ -364,6 +366,27 @@ async function changePassword(sessionId, currentPassword, newPassword) {
   await updateUserPassword(session.email, passwordHash);
 }
 
+async function deleteCat(sessionId, catId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const cat = await getCatById(catId);
+  if (!cat || cat.ownerId.toString() !== user._id.toString())
+    throw new Error("Cat not found");
+  await deleteCatById(catId, user._id.toString());
+}
+
+async function deleteGuardian(sessionId, guardianId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+  const guardian = await getGuardian(user._id.toString(), guardianId);
+  if (!guardian) throw new Error("Guardian not found or unauthorized");
+  await deleteGuardianById(guardianId, user._id.toString());
+}
+
 async function deleteAccount(sessionId, password) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -488,4 +511,6 @@ export {
   changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
+  deleteCat,
+  deleteGuardian,
 };

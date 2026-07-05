@@ -31,6 +31,8 @@ import {
   editCat,
   editGuardian,
   deleteAccount,
+  deleteCat,
+  deleteGuardian,
 } from "./presentation.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
@@ -387,6 +389,17 @@ app.post("/guardians/edit/:guardianId", requireAuth, async (req, res) => {
   }
 });
 
+app.post("/guardians/:guardianId/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { guardianId } = req.params;
+  try {
+    await deleteGuardian(sessionId, guardianId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
 app.post("/guardians", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
   const { name, email, phone, priorityOrder } = req.body;
@@ -460,6 +473,17 @@ app.post(
     }
   },
 );
+
+app.post("/cats/:catId/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { catId } = req.params;
+  try {
+    await deleteCat(sessionId, catId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
 
 app.post("/cats/:catId", requireAuth, async (req, res) => {
   res.redirect("/homepage");
