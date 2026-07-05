@@ -399,7 +399,17 @@ app.post(
   },
 );
 
-<<<<<<< HEAD
+app.post("/guardians/:guardianId/delete", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { guardianId } = req.params;
+  try {
+    await deleteGuardian(sessionId, guardianId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
 app.post(
   "/guardians",
   requireAuth,
@@ -427,35 +437,6 @@ app.post(
     }
   },
 );
-=======
-app.post("/guardians/:guardianId/delete", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { guardianId } = req.params;
-  try {
-    await deleteGuardian(sessionId, guardianId);
-    res.redirect("/homepage");
-  } catch (err) {
-    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
-  }
-});
-
-app.post("/guardians", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { name, email, phone, priorityOrder } = req.body;
-  try {
-    await addNewGuardian(sessionId, {
-      name,
-      email,
-      phone,
-      priorityOrder,
-      Id: uuidv4(),
-    });
-    res.redirect("/homepage");
-  } catch (err) {
-    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
-  }
-});
->>>>>>> 640e37759dd7f830c54f6c37d199b7cdd602794b
 
 app.post(
   "/cats/:catId/edit",
