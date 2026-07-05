@@ -33,6 +33,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .logo-paw {
+            display: inline-block;
+            width: 0.85em;
+            height: 0.85em;
+            vertical-align: -0.1em;
         }
         .topbar-label {
             font-size: 0.72rem;
@@ -267,7 +275,7 @@
 <body>
 
     <div class="topbar">
-        <span class="topbar-brand">MeoW</span>
+        <a href="/" class="topbar-brand">Me<svg class="logo-paw" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="pawGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="50%" stop-color="#ec4899"/><stop offset="100%" stop-color="#a855f7"/></linearGradient></defs><g fill="url(#pawGrad)"><ellipse cx="32" cy="42" rx="17" ry="14"/><ellipse cx="13" cy="24" rx="8" ry="10" transform="rotate(-20 13 24)"/><ellipse cx="26" cy="13" rx="8" ry="10" transform="rotate(-5 26 13)"/><ellipse cx="41" cy="13" rx="8" ry="10" transform="rotate(8 41 13)"/><ellipse cx="53" cy="25" rx="8" ry="10" transform="rotate(22 53 25)"/></g></svg>W</a>
         <span class="topbar-label">Guardian Access</span>
     </div>
 
