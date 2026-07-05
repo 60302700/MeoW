@@ -178,6 +178,8 @@ app.post("/login", async (req, res) => {
       res.cookie("session", session, {
         maxAge: 5 * 60 * 60 * 1000,
         httpOnly: true,
+        sameSite: "strict",
+        secure: isProduction,
       });
       res.redirect("/homepage");
     }
@@ -576,13 +578,15 @@ app.post("/profile/edit", requireAuth, async (req, res) => {
 
 app.get("/cats/:catName", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const [cat, data] = await Promise.all([
-    getCatByNamePresentationLayer(req.params.catName),
-    getUserHomepage(sessionId),
-  ]);
+  const data = await getUserHomepage(sessionId);
+  if (!data) return res.redirect("/");
+  const cat = await getCatByNamePresentationLayer(req.params.catName, data.user._id.toString());
+  if (!cat) return res.redirect("/homepage?error=" + encodeURIComponent("Cat not found"));
   res.render("cat-detail", {
     title: cat.name,
     cat,
+    user: data.user,
+    isUnavailable: data.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
   });

@@ -57,8 +57,8 @@ function validatePassword(password) {
     throw new Error("Password must contain at least one special character.");
 }
 
-async function getCatByNameBusinessLayer(catName) {
-  return getCatByName(catName);
+async function getCatByNameBusinessLayer(catName, ownerId) {
+  return getCatByName(catName, ownerId);
 }
 
 async function searchGurdian(name) {
@@ -290,8 +290,11 @@ async function editCat(
 async function toggleCatBackupProtocol(sessionId, catId) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
   const cat = await getCatById(catId);
-  if (!cat) throw new Error("Cat not found");
+  if (!cat || cat.ownerId.toString() !== user._id.toString())
+    throw new Error("Cat not found");
 
   const newStatus = !cat.isActiveBackupProtocol;
   await setActiveBackupProtocol(catId, newStatus);
@@ -456,23 +459,6 @@ async function acknowledgeGuardianAccess(token) {
   }
 }
 
-// Business-level guardian update: validates session and ownership
-async function updateGuardianById(sessionId, Id, updates) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-
-  const guardians = await getGuardiansByOwner(user._id);
-  const found = guardians.find((g) => g.Id === Id);
-  if (!found) throw new Error("Guardian not found or unauthorized");
-
-  await persistenceUpdateGuardianById(Id, updates);
-}
-
-async function searchGuardian(Id) {
-  return await searchGuardianById(Id);
-}
 
 export {
   connectDB,
@@ -501,7 +487,5 @@ export {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
-  updateGuardianById,
-  searchGuardian,
   getGuardianForOwnerBusinessLayer,
 };

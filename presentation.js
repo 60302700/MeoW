@@ -25,13 +25,12 @@ import {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
-  updateGuardianById,
   getGuardianForOwnerBusinessLayer,
 } from "./business.js";
 import { engine } from "express-handlebars";
 
-async function getCatByNamePresentationLayer(catName) {
-  return getCatByNameBusinessLayer(catName);
+async function getCatByNamePresentationLayer(catName, ownerId) {
+  return getCatByNameBusinessLayer(catName, ownerId);
 }
 
 async function authenticateUser(email, password) {
@@ -44,10 +43,6 @@ async function checkSessionMiddleware(sessionId) {
 
 async function logoutUser(sessionId) {
   return await logout(sessionId);
-}
-
-async function updateGuardianPresentation(sessionId, Id, updates) {
-  return await updateGuardianById(sessionId, Id, updates);
 }
 
 async function getGuardianForOwnerPresentation(OId, guardianId) {
@@ -82,6 +77,5 @@ export {
   acknowledgeGuardianAccess,
   changePassword,
   deleteAccount,
-  updateGuardianPresentation,
   getGuardianForOwnerPresentation,
 };
