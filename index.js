@@ -117,6 +117,8 @@ app.use((req, res, next) => {
 // has parsed the body — see the routes using `upload.single`.
 app.use((req, res, next) => {
   if (req.is("multipart/form-data")) return next();
+  // JSON API routes protected by their own tokens don't need CSRF
+  if (req.is("application/json")) return next();
   doubleCsrfProtection(req, res, next);
 });
 // ───────────────────────────────────────────────────────────────────────────
@@ -741,7 +743,7 @@ app.post("/guardian-access/:token/chat", async (req, res) => {
     const systemPrompt = `You are a helpful cat care assistant for a guardian looking after ${ownerName}'s cats. You have access to the following care information:\n\n${catContext}\n\nAnswer the guardian's questions based on this information. If something isn't explicitly mentioned, give practical cat care advice. Be concise, friendly, and focused on cat welfare. Do not make up specific details like vet names or phone numbers that aren't provided.`;
 
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message.trim() },
@@ -816,7 +818,8 @@ app.use((err, req, res, next) => {
         "Forbidden: invalid or expired form submission. Please go back and try again.",
       );
   }
-  throw err;
+  console.error("[unhandled error]", err);
+  res.status(err.status || 500).send(`Error: ${err.message}`);
 });
 
 const port = process.env.PORT || 3000;
