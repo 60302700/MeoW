@@ -44,11 +44,11 @@ export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerNam
       <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
         <strong style="color:#0f172a;">${ownerName}</strong> has marked themselves as unavailable.
         You are their next guardian for <strong style="color:#9d174d;">${catList}</strong>.
-        Please acknowledge within <strong>30 minutes</strong> or the next guardian will be contacted.
+        Please respond within <strong>30 minutes</strong> or the next guardian will be contacted.
       </p>
       <a href="${magicLink}"
          style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
-        View Cats &amp; Acknowledge
+        View Care Details &amp; Respond
       </a>
     </div>
     <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">

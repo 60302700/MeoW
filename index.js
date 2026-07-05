@@ -30,6 +30,7 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  declineGuardianAccess,
   changePassword,
   editCat,
   editGuardian,
@@ -760,13 +761,14 @@ app.get("/guardian-access", async (req, res) => {
   const { token } = req.query;
   if (!token) return res.redirect("/");
   try {
-    const { record, cats, ownerName, alreadyAcknowledged } =
+    const { record, cats, ownerName, guardianName, alreadyAcknowledged } =
       await getGuardianAccess(token);
     res.render("guardian-access", {
       title: "Guardian Access",
       token,
       cats,
       ownerName,
+      guardianName,
       alreadyAcknowledged,
       acked: req.query.acked === "1",
       layout: false,
@@ -785,6 +787,22 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
   try {
     await acknowledgeGuardianAccess(token);
     res.redirect(`/guardian-access?token=${token}&acked=1`);
+  } catch (err) {
+    res.redirect(
+      `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,
+    );
+  }
+});
+
+app.post("/guardian-access/:token/decline", doubleCsrfProtection, async (req, res) => {
+  const { token } = req.params;
+  try {
+    await declineGuardianAccess(token);
+    res.render("guardian-access", {
+      title: "Request Declined",
+      declined: true,
+      layout: false,
+    });
   } catch (err) {
     res.redirect(
       `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,

@@ -357,6 +357,14 @@ async function resetGuardiansHasAccepted(ownerId) {
   );
 }
 
+async function declineGuardianToken(token) {
+  const { GuardianAccessTokens } = collections();
+  await GuardianAccessTokens.updateOne(
+    { token },
+    { $set: { invalidated: true, declined: true, declinedAt: new Date() } },
+  );
+}
+
 async function acknowledgeGuardianToken(token) {
   const { GuardianAccessTokens } = collections();
   return GuardianAccessTokens.findOneAndUpdate(
@@ -449,6 +457,7 @@ export {
   createGuardianAccessToken,
   getGuardianAccessToken,
   invalidateGuardianTokensByUnavailability,
+  declineGuardianToken,
   acknowledgeGuardianToken,
   setGuardianHasAccepted,
   resetGuardiansHasAccepted,

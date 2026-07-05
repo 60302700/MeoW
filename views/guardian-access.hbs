@@ -271,16 +271,38 @@
         <span class="topbar-label">Guardian Access</span>
     </div>
 
-    {{#if error}}
+    {{#if declined}}
+    <div class="hero">
+        <span class="hero-label">Request Declined</span>
+        <h1>Response recorded</h1>
+        <p>You have declined this request. The next available guardian will be contacted shortly.</p>
+        <svg class="hero-wave" viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 40 C360 0 1080 0 1440 40 L1440 40 L0 40 Z" fill="#f8fafc"/>
+        </svg>
+    </div>
+    <div class="content">
+        <div class="alert alert-error" style="text-align:center;">You have declined the guardian request. You can close this page.</div>
+    </div>
+    {{else if error}}
     <div class="content">
         <div class="alert alert-error">{{error}}</div>
     </div>
     {{else}}
 
     <div class="hero">
+        {{#if alreadyAcknowledged}}
+        <span class="hero-label">You're all set</span>
+        <h1>Hi {{guardianName}}, welcome back</h1>
+        <p>Here are the care instructions for the cats in your care. Keep this page handy.</p>
+        {{else if acked}}
+        <span class="hero-label">Confirmed</span>
+        <h1>Thank you, {{guardianName}}</h1>
+        <p>You're now the active guardian. A wallet card has been sent to your email — the care details are below.</p>
+        {{else}}
         <span class="hero-label">Guardian Request</span>
         <h1>{{ownerName}} needs your help</h1>
-        <p>Review the care instructions below and confirm you are available to look after their cats.</p>
+        <p>Review the care instructions below, then let us know if you can take care of these cats.</p>
+        {{/if}}
         <svg class="hero-wave" viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 40 C360 0 1080 0 1440 40 L1440 40 L0 40 Z" fill="#f8fafc"/>
         </svg>
@@ -290,22 +312,32 @@
 
         {{#unless alreadyAcknowledged}}
         {{#unless acked}}
-        <!-- Acknowledge card — only shown before confirmation -->
+        <!-- Accept / Decline card — only shown before response -->
         <div class="ack-card" style="margin-bottom:1.75rem;">
             <div class="ack-card-body">
-                <h2>Confirm you're available</h2>
-                <p>By acknowledging, you confirm you're aware of the situation and will look after these cats. A wallet card with all care details will be sent to your email.</p>
-                <form method="POST" action="/guardian-access/{{token}}/acknowledge">
-                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                    <button type="submit" class="btn-ack">I'm on it — Acknowledge</button>
-                </form>
+                <h2>Can you take care of these cats?</h2>
+                <p>Review the care instructions below. If you can step in, click Accept — a wallet card with all the details will be emailed to you. If you're unable to help, click Decline and the next guardian will be contacted immediately.</p>
+                <div style="display:flex;gap:0.75rem;">
+                    <form method="POST" action="/guardian-access/{{token}}/decline" style="flex:1;">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                        <button type="submit" style="width:100%;padding:1rem;background:none;border:2px solid #e2e8f0;border-radius:0.875rem;font-size:0.95rem;font-weight:700;color:#64748b;cursor:pointer;transition:all 0.2s;"
+                            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';"
+                            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b';">
+                            Decline
+                        </button>
+                    </form>
+                    <form method="POST" action="/guardian-access/{{token}}/acknowledge" style="flex:2;">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                        <button type="submit" class="btn-ack">Accept — I'll take care of them</button>
+                    </form>
+                </div>
             </div>
         </div>
         {{/unless}}
         {{/unless}}
 
         {{#if acked}}
-        <div class="alert alert-success">You're confirmed — a wallet card has been sent to your email. Here are the full care details.</div>
+        <div class="alert alert-success">Confirmed — a wallet card with all care details has been sent to your email.</div>
         {{/if}}
 
         <!-- Cat cards -->
@@ -395,6 +427,7 @@
 
     {{/if}}
 
+    {{#unless declined}}
     <!-- AI Chat Widget -->
     <div id="chat-bubble" onclick="toggleChat()" title="Ask about cat care">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -604,5 +637,6 @@
             return div;
         }
     </script>
+    {{/unless}}
 </body>
 </html>

@@ -32,6 +32,7 @@ import {
   resolveUnavailability,
   getGuardianAccessToken,
   invalidateGuardianTokensByUnavailability,
+  declineGuardianToken,
   acknowledgeGuardianToken,
   setGuardianHasAccepted,
   resetGuardiansHasAccepted,
@@ -44,6 +45,7 @@ import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
   signalGuardianAcknowledged,
+  signalGuardianDeclined,
 } from "./temporal/client.js";
 import bcrypt from "bcryptjs";
 
@@ -459,14 +461,26 @@ async function setOwnerAvailable(sessionId) {
 async function getGuardianAccess(token) {
   const record = await getGuardianAccessToken(token);
   if (!record) throw new Error("This link is invalid or has expired.");
-  const cats = await getCatsByOwner(record.ownerId.toString());
-  const owner = await findUserById(record.ownerId.toString());
+  const [cats, owner, guardian] = await Promise.all([
+    getCatsByOwner(record.ownerId.toString()),
+    findUserById(record.ownerId.toString()),
+    getGuardian(record.ownerId.toString(), record.guardianId.toString()),
+  ]);
   return {
     record,
     cats,
     ownerName: owner?.name || "Unknown",
+    guardianName: guardian?.name || "Guardian",
     alreadyAcknowledged: record.acknowledged,
   };
+}
+
+async function declineGuardianAccess(token) {
+  const record = await getGuardianAccessToken(token);
+  if (!record) throw new Error("This link is invalid or has expired.");
+  if (record.acknowledged) throw new Error("You have already accepted this request.");
+  await declineGuardianToken(token);
+  await signalGuardianDeclined(record.unavailabilityId.toString());
 }
 
 async function acknowledgeGuardianAccess(token) {
@@ -522,6 +536,7 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  declineGuardianAccess,
   changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
