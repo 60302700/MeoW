@@ -27,7 +27,6 @@ import {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
-  searchUsersByName,
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,
@@ -44,7 +43,6 @@ import {
   signalGuardianAcknowledged,
 } from "./temporal/client.js";
 import bcrypt from "bcryptjs";
-import { ReturnDocument } from "mongodb";
 
 function validatePassword(password) {
   if (!password || password.length < 8)
@@ -61,10 +59,6 @@ function validatePassword(password) {
 
 async function getCatByNameBusinessLayer(catName, ownerId) {
   return getCatByName(catName, ownerId);
-}
-
-async function searchGurdian(name) {
-  return await searchUsersByName(name);
 }
 
 async function login(email, password) {
@@ -322,7 +316,7 @@ async function updateUserPhoto(sessionId, photoUrl) {
 
 async function requestPasswordReset(email) {
   const user = await findUserByEmail(email);
-  if (!user) throw new Error("No account found with that email.");
+  if (!user) return; // silently do nothing to prevent email enumeration
   const token = await createPasswordResetToken(email);
   await sendPasswordResetEmail(email, token);
 }
@@ -512,7 +506,6 @@ export {
   updateProfile,
   updateUserPhoto,
   getCatByNameBusinessLayer,
-  searchGurdian,
   setOwnerUnavailable,
   setOwnerAvailable,
   getGuardianAccess,

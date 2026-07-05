@@ -1,6 +1,9 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import { doubleCsrf } from "csrf-csrf";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import Groq from "groq-sdk";
 import { startEscalationWorkflow } from "./temporal/client.js";
 import {
   connectDB,
@@ -21,7 +24,6 @@ import {
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
-  searchGurdian,
   getGuardianForOwnerPresentation,
   setOwnerUnavailable,
   setOwnerAvailable,
@@ -38,11 +40,20 @@ import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 
 const app = express();
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files (JPEG, PNG, WebP, GIF) are allowed."));
+    }
+  },
 });
 
 const hbsEngine = engine({
@@ -57,8 +68,9 @@ app.engine("handlebars", engine({ extname: ".handlebars" }));
 app.set("view engine", "hbs");
 app.set("views", "./views");
 
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
@@ -89,9 +101,6 @@ async function requireAuth(req, res, next) {
 // ───────────────────────────────────────────────────────────────────────────
 
 // ── CSRF protection ─────────────────────────────────────────────────────────
-// Double-submit cookie pattern (csurf is deprecated/archived; csrf-csrf is the
-// maintained replacement). Bound to this app's own session cookie rather than
-// express-session, since no session middleware is in use here.
 const isProduction = process.env.NODE_ENV === "production";
 
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
@@ -107,19 +116,33 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 
 app.use(cookieParser());
 
-// Expose a token to every rendered view so forms can embed it as a hidden field.
 app.use((req, res, next) => {
   res.locals.csrfToken = generateCsrfToken(req, res);
   next();
 });
 
-// Multipart (file upload) routes run CSRF validation themselves, after multer
-// has parsed the body — see the routes using `upload.single`.
 app.use((req, res, next) => {
   if (req.is("multipart/form-data")) return next();
-  // JSON API routes protected by their own tokens don't need CSRF
   if (req.is("application/json")) return next();
   doubleCsrfProtection(req, res, next);
+});
+// ───────────────────────────────────────────────────────────────────────────
+
+// ── Rate limiters ────────────────────────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too many attempts, please try again in 15 minutes.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: "Too many messages, please slow down.",
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -143,7 +166,7 @@ app.get("/emergency", (req, res) => {
   res.redirect("/scan");
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register", authLimiter, async (req, res) => {
   const { name, email, phone, password } = req.body;
   try {
     await registerUser({ name, email, phone, password });
@@ -168,7 +191,7 @@ app.get("/", async (req, res) => {
   });
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", authLimiter, async (req, res) => {
   const { email, password } = req.body;
   try {
     const session = await authenticateUser(email, password);
@@ -263,26 +286,6 @@ app.get("/homepage", async (req, res) => {
     isUnavailable,
     error: req.query.error,
     layout: "hp",
-  });
-});
-
-app.get("/profile/edit", async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const isLoggedIn = await Loggedin(req);
-  if (!isLoggedIn) {
-    if (sessionId) res.clearCookie("session");
-    return res.redirect(sessionId ? "/?expired=1" : "/");
-  }
-  const data = await getUserHomepage(sessionId);
-  if (!data) {
-    return res.redirect("/");
-  }
-  const { user } = data;
-  res.render("profile-edit", {
-    title: "Edit Profile",
-    isLoggedIn,
-    user,
-    error: req.query.error,
   });
 });
 
@@ -440,6 +443,18 @@ app.post(
   },
 );
 
+// toggle-protocol must be registered before /:catId routes to avoid being shadowed
+app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
+  const sessionId = getSessionCookie(req);
+  const { catId } = req.body;
+  try {
+    await toggleCatBackupProtocol(sessionId, catId);
+    res.redirect("/homepage");
+  } catch (err) {
+    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+  }
+});
+
 app.post(
   "/cats/:catId/edit",
   requireAuth,
@@ -510,21 +525,6 @@ app.post("/cats/:catId/delete", requireAuth, async (req, res) => {
   }
 });
 
-app.post("/cats/:catId", requireAuth, async (req, res) => {
-  res.redirect("/homepage");
-});
-
-app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { catId } = req.body;
-  try {
-    await toggleCatBackupProtocol(sessionId, catId);
-    res.redirect("/homepage");
-  } catch (err) {
-    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
-  }
-});
-
 app.get("/forgot-password", async (req, res) => {
   const isLoggedIn = await Loggedin(req);
   res.render("forgot-password", {
@@ -534,7 +534,7 @@ app.get("/forgot-password", async (req, res) => {
   });
 });
 
-app.post("/forgot-password", async (req, res) => {
+app.post("/forgot-password", authLimiter, async (req, res) => {
   const { email } = req.body;
   try {
     await requestPasswordReset(email);
@@ -599,7 +599,7 @@ app.post(
       await updateUserPhoto(sessionId, photoUrl);
       res.json({ ok: true });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: "Upload failed. Please try again." });
     }
   },
 );
@@ -700,16 +700,17 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
   }
 });
 
-app.post("/guardian-access/:token/chat", async (req, res) => {
+app.post("/guardian-access/:token/chat", chatLimiter, async (req, res) => {
   const { token } = req.params;
   const { message } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ error: "Message is required." });
   }
+  if (message.length > 500) {
+    return res.status(400).json({ error: "Message is too long." });
+  }
   try {
     const { cats, ownerName } = await getGuardianAccess(token);
-    const Groq = (await import("groq-sdk")).default;
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const catContext = cats.map(cat => {
       const ci = cat.careInstructions || {};
@@ -804,7 +805,7 @@ app.use((err, req, res, next) => {
       );
   }
   console.error("[unhandled error]", err);
-  res.status(err.status || 500).send(`Error: ${err.message}`);
+  res.status(err.status || 500).send("Something went wrong. Please try again.");
 });
 
 const port = process.env.PORT || 3000;

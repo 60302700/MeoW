@@ -31,11 +31,6 @@ async function connectDB() {
   return db;
 }
 
-async function closeDB() {
-  await client.close();
-  db = null;
-}
-
 function collections() {
   return {
     Users: db.collection("Users"),
@@ -185,14 +180,6 @@ async function getGuardiansByOwner(ownerId) {
     .toArray();
 }
 
-async function setGuardianAccepted(guardianId, hasAccepted) {
-  const { Guardians } = collections();
-  await Guardians.updateOne(
-    { _id: new ObjectId(guardianId) },
-    { $set: { hasAccepted } },
-  );
-}
-
 // ---- Emergency Events ----
 
 async function createEmergencyEvent({ qrCodeId, catId, responderGeo }) {
@@ -213,13 +200,6 @@ async function getEmergencyEventById(eventId) {
   return EmergencyEvents.findOne({ _id: new ObjectId(eventId) });
 }
 
-async function getEmergencyEventsByCat(catId) {
-  const { EmergencyEvents } = collections();
-  return EmergencyEvents.find({ catId: new ObjectId(catId) })
-    .sort({ triggeredAt: -1 })
-    .toArray();
-}
-
 async function assignGuardianToEvent(eventId, guardianId) {
   const { EmergencyEvents } = collections();
   await EmergencyEvents.updateOne(
@@ -230,14 +210,6 @@ async function assignGuardianToEvent(eventId, guardianId) {
         status: "GUARDIAN_RESPONDED",
       },
     },
-  );
-}
-
-async function updateEmergencyEventStatus(eventId, status) {
-  const { EmergencyEvents } = collections();
-  await EmergencyEvents.updateOne(
-    { _id: new ObjectId(eventId) },
-    { $set: { status } },
   );
 }
 
@@ -259,11 +231,6 @@ async function touchSession(sessionId) {
     { sessionId },
     { $set: { lastActivity: new Date() } },
   );
-}
-
-async function getSession(email) {
-  const { Sessions } = collections();
-  return Sessions.findOne({ email: email });
 }
 
 async function getSessionBySessionId(sessionId) {
@@ -442,7 +409,6 @@ async function deleteGuardianById(guardianId, ownerId) {
 
 export {
   connectDB,
-  closeDB,
   createUser,
   findUserByEmail,
   findUserById,
@@ -456,16 +422,12 @@ export {
   addGuardian,
   getGuardiansByOwner,
   updateGuardianByObjectId,
-  setGuardianAccepted,
   createEmergencyEvent,
   getEmergencyEventById,
-  getEmergencyEventsByCat,
   assignGuardianToEvent,
-  updateEmergencyEventStatus,
   Authenticate,
   createSession,
   touchSession,
-  getSession,
   deleteSession,
   getSessionBySessionId,
   updateUserPassword,
