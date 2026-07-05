@@ -288,25 +288,10 @@
 
     <div class="content">
 
-        {{#if acked}}
-        <div class="alert alert-success">Your acknowledgement was sent. {{ownerName}} has been notified — thank you!</div>
-        {{/if}}
-
-        <!-- Acknowledge / status card -->
+        {{#unless alreadyAcknowledged}}
+        {{#unless acked}}
+        <!-- Acknowledge card — only shown before confirmation -->
         <div class="ack-card" style="margin-bottom:1.75rem;">
-            {{#if alreadyAcknowledged}}
-            <div class="acked-banner">
-                <div class="acked-icon">✓</div>
-                <h3>Already acknowledged</h3>
-                <p>You confirmed you're looking after {{ownerName}}'s cats. Keep this page bookmarked for reference.</p>
-            </div>
-            {{else if acked}}
-            <div class="acked-banner">
-                <div class="acked-icon">✓</div>
-                <h3>You're confirmed</h3>
-                <p>{{ownerName}} has been notified. A wallet card with full care details has been sent to your email.</p>
-            </div>
-            {{else}}
             <div class="ack-card-body">
                 <h2>Confirm you're available</h2>
                 <p>By acknowledging, you confirm you're aware of the situation and will look after these cats. A wallet card with all care details will be sent to your email.</p>
@@ -315,8 +300,13 @@
                     <button type="submit" class="btn-ack">I'm on it — Acknowledge</button>
                 </form>
             </div>
-            {{/if}}
         </div>
+        {{/unless}}
+        {{/unless}}
+
+        {{#if acked}}
+        <div class="alert alert-success">You're confirmed — a wallet card has been sent to your email. Here are the full care details.</div>
+        {{/if}}
 
         <!-- Cat cards -->
         <p class="section-label">Cats in your care</p>
