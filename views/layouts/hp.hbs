@@ -1696,6 +1696,7 @@
                 <li style="list-style:none;">
                     {{#if isUnavailable}}
                     <form method="POST" action="/owner/available" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
                         <button type="submit" class="nav-emergency"
                             onclick="return confirm('Mark yourself as available? This will stop the guardian alert chain.')">
                             🚨 Cancel Alert
@@ -1703,9 +1704,10 @@
                     </form>
                     {{else}}
                     <form method="POST" action="/owner/unavailable" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
                         <button type="submit" class="nav-emergency"
                             onclick="return confirm('This will send emergency alerts to your guardians in priority order. Continue?')">
-                            🚨 Emergency
+                            🚨 Alert Guardians
                         </button>
                     </form>
                     {{/if}}

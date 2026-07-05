@@ -151,7 +151,15 @@ async function setActiveBackupProtocol(catId, isActive) {
 
 // ---- Guardians ----
 
-async function addGuardian({ ownerId, name, phone, email, priorityOrder, Id }) {
+async function addGuardian({
+  ownerId,
+  name,
+  phone,
+  email,
+  priorityOrder,
+  Id,
+  photoUrl,
+}) {
   const { Guardians } = collections();
   const result = await Guardians.insertOne({
     ownerId: new ObjectId(ownerId),
@@ -161,6 +169,7 @@ async function addGuardian({ ownerId, name, phone, email, priorityOrder, Id }) {
     priorityOrder,
     hasAccepted: false,
     Id: Id || null,
+    photoUrl: photoUrl || "",
   });
   return result.insertedId;
 }

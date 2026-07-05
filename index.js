@@ -349,57 +349,76 @@ app.post(
 
 app.get("/guardians/edit/:guardianId", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { guardianId } = req.params;
-
   try {
     const guardian = await getGuardianForOwnerPresentation(
       sessionId,
-      guardianId,
+      req.params.guardianId,
     );
     res.render("guardian-edit", {
       title: "Edit Guardian",
       isLoggedIn: true,
       guardian,
-      error: req.query.error,
     });
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
 });
 
-app.post("/guardians/edit/:guardianId", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { guardianId } = req.params;
-  const { name, email, phone, priorityOrder } = req.body;
-  try {
-    await editGuardian(sessionId, guardianId, {
-      name,
-      email,
-      phone,
-      priorityOrder,
-    });
-    res.redirect("/homepage?success=guardian");
-  } catch (err) {
-    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
-  }
-});
+app.post(
+  "/guardians/edit/:guardianId",
+  requireAuth,
+  upload.single("photo"),
+  doubleCsrfProtection,
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { guardianId } = req.params;
+    const { name, email, phone, priorityOrder } = req.body;
+    let photoUrl = null;
+    if (req.file) {
+      photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    }
+    try {
+      await editGuardian(sessionId, guardianId, {
+        name,
+        email,
+        phone,
+        priorityOrder,
+        photoUrl,
+      });
+      res.redirect("/homepage?success=guardian");
+    } catch (err) {
+      res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+    }
+  },
+);
 
-app.post("/guardians", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { name, email, phone, priorityOrder } = req.body;
-  try {
-    await addNewGuardian(sessionId, {
-      name,
-      email,
-      phone,
-      priorityOrder,
-      Id: uuidv4(),
-    });
-    res.redirect("/homepage");
-  } catch (err) {
-    res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
-  }
-});
+app.post(
+  "/guardians",
+  requireAuth,
+  upload.single("photo"),
+  doubleCsrfProtection,
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { name, email, phone, priorityOrder } = req.body;
+    let photoString = "";
+    if (req.file) {
+      photoString = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    }
+    try {
+      await addNewGuardian(sessionId, {
+        name,
+        email,
+        phone,
+        priorityOrder,
+        Id: uuidv4(),
+        photoUrl: photoString,
+      });
+      res.redirect("/homepage");
+    } catch (err) {
+      res.redirect(`/homepage?error=${encodeURIComponent(err.message)}`);
+    }
+  },
+);
 
 app.post(
   "/cats/:catId/edit",

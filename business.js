@@ -182,7 +182,7 @@ async function addNewCat(
 
 async function addNewGuardian(
   sessionId,
-  { name, email, phone, priorityOrder },
+  { name, email, phone, priorityOrder, Id, photoUrl },
 ) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -195,13 +195,15 @@ async function addNewGuardian(
     phone,
     email,
     priorityOrder: parseInt(priorityOrder, 10) || 1,
+    Id,
+    photoUrl,
   });
 }
 
 async function editGuardian(
   sessionId,
   guardianId,
-  { name, email, phone, priorityOrder },
+  { name, email, phone, priorityOrder, photoUrl },
 ) {
   const session = await getSessionBySessionId(sessionId);
   if (!session) throw new Error("Unauthorized");
@@ -211,12 +213,15 @@ async function editGuardian(
   const guardian = await getGuardian(user._id.toString(), guardianId);
   if (!guardian) throw new Error("Guardian not found or unauthorized");
 
-  await updateGuardianByObjectId(guardian._id.toString(), {
+  const updates = {
     name,
     email,
     phone,
     priorityOrder: parseInt(priorityOrder, 10) || 1,
-  });
+  };
+  if (photoUrl) updates.photoUrl = photoUrl;
+
+  await updateGuardianByObjectId(guardian._id.toString(), updates);
 }
 
 async function editCat(

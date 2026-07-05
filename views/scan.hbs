@@ -37,13 +37,27 @@
 
         <div class="alert-box alert-warning mb-6">
             <h3 class="text-xs uppercase mb-2">⚠️ Urgent Care Instructions</h3>
-            <p class="text-sm mb-2">{{cat.careInstructions.diet}}</p>
-            <p class="text-sm">⚠️ {{cat.careInstructions.medical}}</p>
+            {{#if cat.careInstructions.allergies}}
+            <p class="text-sm mb-2">⚠️ Allergies: {{cat.careInstructions.allergies}}</p>
+            {{/if}}
+            {{#if cat.careInstructions.conditions}}
+            <p class="text-sm mb-2">🩺 Conditions: {{cat.careInstructions.conditions}}</p>
+            {{/if}}
+            {{#if cat.careInstructions.medications}}
+            <p class="text-sm mb-2">💊 Medications: {{cat.careInstructions.medications}}</p>
+            {{/if}}
+            {{#if cat.careInstructions.feedingSchedule}}
+            <p class="text-sm">🍽️ Feeding: {{cat.careInstructions.feedingSchedule}}</p>
+            {{/if}}
         </div>
 
         <div class="alert-box alert-info mb-6 space-y-2">
             <p><strong>Owner:</strong> Contact unavailable (Incapacitated)</p>
-            <p>🏥 Vet: {{cat.careInstructions.vetDetails}}</p>
+            {{#if cat.careInstructions.vetName}}
+            <p>🏥 Vet: {{cat.careInstructions.vetName}}{{#if cat.careInstructions.vetPhone}} — {{cat.careInstructions.vetPhone}}{{/if}}</p>
+            {{else}}
+            <p>🏥 Vet: Not on file</p>
+            {{/if}}
             <p><strong>Status:</strong> {{#if claimed}}Guardian responding{{else}}Automated Guardian Alerts
                 Dispatched{{/if}}</p>
         </div>

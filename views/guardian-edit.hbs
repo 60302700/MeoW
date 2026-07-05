@@ -18,6 +18,7 @@
       <form
         method="POST"
         action="/guardians/edit/{{guardian.Id}}"
+        enctype="multipart/form-data"
         class="space-y-6 ge-form"
       >
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
@@ -32,20 +33,28 @@
           .ge-grid { display:grid;grid-template-columns:1fr;gap:14px }
           @media(min-width:720px){ .ge-grid{grid-template-columns:repeat(2,1fr)} }
           .ge-row { display:flex;gap:12px;align-items:center }
-          .ge-uuid { background:#f8fafc;color:#475569;padding:10px 12px;border-radius:10px;border:1px solid #e6e8ee }
           .btn-primary { background:linear-gradient(90deg,#ec4899,#be185d);color:white;padding:10px 14px;border-radius:12px;border:none;font-weight:700;box-shadow:0 8px 20px rgba(236,72,153,0.15);transition:transform .12s ease,box-shadow .12s }
           .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 36px rgba(236,72,153,0.18) }
           .btn-ghost { background:transparent;border:1px solid #e6e8ee;padding:10px 12px;border-radius:12px }
-          .ge-copy { min-width:82px }
         </style>
 
         <div class="ge-card-header">
+          {{#if guardian.photoUrl}}
+          <img src="{{guardian.photoUrl}}" alt="{{guardian.name}}" style="width:46px;height:46px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px rgba(236,72,153,0.18);flex-shrink:0;">
+          {{else}}
           <div class="icon">🛡️</div>
+          {{/if}}
           <div>
             <div style="font-weight:800;color:#0f172a">Guardian Details</div>
             <div class="ge-hint">Edit contact info and response priority for this guardian.</div>
           </div>
         </div>
+
+        <div>
+          <label class="ge-label">Photo</label>
+          <input type="file" name="photo" accept="image/*" class="ge-input" style="padding:10px 12px;" />
+        </div>
+
         <div class="ge-grid">
           <div>
             <label class="ge-label">Full Name</label>
@@ -70,15 +79,6 @@
               <option value="3" {{#if (eq guardian.priorityOrder 3)}}selected{{/if}}>Priority #3</option>
               <option value="4" {{#if (eq guardian.priorityOrder 4)}}selected{{/if}}>Priority #4</option>
             </select>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <label class="block text-sm font-semibold text-slate-700">Guardian
-            UUID</label>
-          <div class="flex gap-3">
-            <input id="guardian-uuid" value="{{guardian.Id}}" readonly class="ge-uuid" />
-            <button type="button" onclick="navigator.clipboard?.writeText(document.getElementById('guardian-uuid').value)" class="btn-ghost ge-copy">Copy</button>
           </div>
         </div>
 
