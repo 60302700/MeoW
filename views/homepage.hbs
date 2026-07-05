@@ -729,7 +729,7 @@
          LEFT SIDEBAR — PROFILE
          ═══════════════════════════════════════════ -->
     <aside class="gh-sidebar">
-        <div class="gh-avatar-wrap" onclick="document.getElementById('profilePhotoInput').click()" title="Change profile photo">
+        <div class="gh-avatar-wrap" id="avatarWrap" title="Change profile photo">
             <img class="gh-avatar" id="profileAvatar"
                 src="{{#if user.photoUrl}}{{user.photoUrl}}{{else}}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f1f5f9'/%3E%3Ctext x='50' y='62' font-size='48' text-anchor='middle'%3E🐾%3C/text%3E%3C/svg%3E{{/if}}"
                 alt="{{user.name}}'s profile photo">
@@ -787,18 +787,18 @@
 
         <!-- Tab bar -->
         <div class="gh-section-bar">
-            <span class="gh-tab active" onclick="showOverview()">
+            <span class="gh-tab active" id="tabOverview">
                 <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
                 Overview
             </span>
-            <span class="gh-tab" onclick="showCats()">
+            <span class="gh-tab" id="tabCats">
                 <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg></span>
                 Cats
                 {{#if hasCats}}
                 <span class="tab-count">{{cats.length}}</span>
                 {{/if}}
             </span>
-            <span class="gh-tab" onclick="showGuardians()">
+            <span class="gh-tab" id="tabGuardians">
                 <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                 Guardians
                 {{#if hasGuardians}}
@@ -883,9 +883,8 @@
                                     <span class="repo-visibility" style="background:#fffbeb;border-color:#fde68a;color:#92400e;">Pending</span>
                                     {{/if}}
                                 {{/if}}
-                                    <button onclick="openEditGuardian('{{this.Id}}')"
-                                        style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                        onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
+                                    <button class="js-edit-guardian" data-id="{{this.Id}}"
+                                        style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;">Edit</button>
                                 </div>
                             </div>
 
@@ -913,11 +912,10 @@
 
                 <!-- ── Per-guardian edit modals ────────────────────────── -->
                 {{#each guardians}}
-                <div id="editGuardianModal-{{this.Id}}"
-                    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;"
-                    onclick="if(event.target===this)closeEditGuardian('{{this.Id}}')">
+                <div id="editGuardianModal-{{this.Id}}" class="js-guardian-backdrop" data-id="{{this.Id}}"
+                    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
                     <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
-                        <button onclick="closeEditGuardian('{{this.Id}}')"
+                        <button class="js-close-guardian" data-id="{{this.Id}}"
                             style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
                         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
                         <form method="POST" action="/guardians/edit/{{this._id}}">
@@ -964,18 +962,17 @@
                                     onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                             </div>
                             <div style="display:flex;gap:0.75rem;">
-                                <button type="button" onclick="closeEditGuardian('{{this.Id}}')"
+                                <button type="button" class="js-close-guardian" data-id="{{this.Id}}"
                                     style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
                                 <button type="submit"
                                     style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
                             </div>
                         </form>
                         <form method="POST" action="/guardians/{{this._id}}/delete" style="margin-top:0.75rem;"
-                            onsubmit="return confirm('Remove {{this.name}} as a guardian? This cannot be undone.')">
+                            class="js-delete-guardian-form" data-name="{{this.name}}">
                             <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                             <button type="submit"
-                                style="width:100%;padding:0.75rem;background:none;border:2px solid #fecdd3;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#e11d48;cursor:pointer;transition:all 0.15s;"
-                                onmouseover="this.style.background='#fff1f2'" onmouseout="this.style.background='none'">Remove Guardian</button>
+                                style="width:100%;padding:0.75rem;background:none;border:2px solid #fecdd3;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#e11d48;cursor:pointer;transition:all 0.15s;">Remove Guardian</button>
                         </form>
                     </div>
                 </div>
@@ -996,7 +993,7 @@
 
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.5rem;">
                     <h1 style="margin:0;">Cats</h1>
-                    <button type="button" onclick="openAddCat()"
+                    <button type="button" id="btnAddCat"
                         style="background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;padding:0.65rem 1.2rem;font-size:0.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);white-space:nowrap;">
                         + Add Cat
                     </button>
@@ -1043,7 +1040,7 @@
                 <!-- ── Add Cat modal ──────────────────────────────────────── -->
                 <div id="addCatModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:520px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
-                    <button type="button" onclick="closeAddCat()"
+                    <button type="button" id="btnCloseAddCat"
                         style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
 
                     <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Add a New Cat</h2>
@@ -1165,7 +1162,7 @@
             <div class="container">
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.5rem;">
                     <h1 style="margin:0;">Guardian Search</h1>
-                    <button type="button" onclick="openAddGuardian()"
+                    <button type="button" id="btnAddGuardian"
                         style="background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;padding:0.65rem 1.2rem;font-size:0.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);white-space:nowrap;">
                         + Add Guardian
                     </button>
@@ -1230,7 +1227,7 @@
                 <!-- ── Add Guardian modal ─────────────────────────────────── -->
                 <div id="addGuardianModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
                 <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:460px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
-                    <button type="button" onclick="closeAddGuardian()"
+                    <button type="button" id="btnCloseAddGuardian"
                         style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
 
                     <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 0.35rem;">Add a Guardian</h2>
@@ -1504,6 +1501,59 @@
 
             initGuardianSearch();
 
+            // ── Event listener wiring (replaces inline onclick — required for CSP nonce policy) ──
+            (function () {
+                function wire(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+
+                // Profile photo
+                wire('avatarWrap', function () { document.getElementById('profilePhotoInput').click(); });
+
+                // Tabs
+                wire('tabOverview',  showOverview);
+                wire('tabCats',      showCats);
+                wire('tabGuardians', showGuardians);
+
+                // Add / close cat modal
+                wire('btnAddCat',      openAddCat);
+                wire('btnCloseAddCat', closeAddCat);
+
+                // Add / close guardian modal
+                wire('btnAddGuardian',      openAddGuardian);
+                wire('btnCloseAddGuardian', closeAddGuardian);
+
+                // Edit profile modal
+                wire('btnCloseEditProfile',  closeEditProfile);
+                wire('btnCancelEditProfile', closeEditProfile);
+                wire('btnShowDeleteConfirm', showDeleteConfirm);
+                wire('btnHideDeleteConfirm', hideDeleteConfirm);
+
+                // Change password modal
+                wire('btnCloseChangePw',  closeChangePassword);
+                wire('btnCancelChangePw', closeChangePassword);
+
+                // New password strength checker
+                var npw = document.getElementById('newPasswordChg');
+                if (npw) npw.addEventListener('input', function () { checkPwStrength('newPasswordChg', 'pw-rules-chg'); });
+
+                // Guardian edit/close buttons (loop-rendered, use delegation via data-id)
+                document.querySelectorAll('.js-edit-guardian').forEach(function (btn) {
+                    btn.addEventListener('click', function () { openEditGuardian(btn.dataset.id); });
+                });
+                document.querySelectorAll('.js-guardian-backdrop').forEach(function (el) {
+                    el.addEventListener('click', function (e) { if (e.target === el) closeEditGuardian(el.dataset.id); });
+                });
+                document.querySelectorAll('.js-close-guardian').forEach(function (btn) {
+                    btn.addEventListener('click', function () { closeEditGuardian(btn.dataset.id); });
+                });
+
+                // Guardian delete confirmation
+                document.querySelectorAll('.js-delete-guardian-form').forEach(function (form) {
+                    form.addEventListener('submit', function (e) {
+                        if (!confirm('Remove ' + form.dataset.name + ' as a guardian? This cannot be undone.')) e.preventDefault();
+                    });
+                });
+            })();
+
             (function() {
                 const CODES = ['+974','+971','+966','+92','+91','+86','+82','+81','+65','+61','+60','+55','+52','+49','+44','+39','+34','+33','+31','+27','+20','+7','+234','+90','+1'];
                 document.querySelectorAll('.phone-wrap').forEach(function(wrap) {
@@ -1537,7 +1587,7 @@
             style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
             <div
                 style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:440px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;">
-                <button onclick="closeEditProfile()"
+                <button id="btnCloseEditProfile"
                     style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
 
                 <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Profile</h2>
@@ -1567,7 +1617,7 @@
                             onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
                     <div style="display:flex;gap:0.75rem;">
-                        <button type="button" onclick="closeEditProfile()"
+                        <button type="button" id="btnCancelEditProfile"
                             style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
                             Cancel
                         </button>
@@ -1584,9 +1634,8 @@
                     <p style="font-size:0.82rem;color:#94a3b8;margin:0 0 1rem;line-height:1.5;">Permanently removes your account, cats, guardians, and all associated data.</p>
 
                     <div id="deleteAccountTrigger">
-                        <button type="button" onclick="showDeleteConfirm()"
-                            style="padding:0.65rem 1.25rem;background:none;border:1.5px solid #e2e8f0;border-radius:0.65rem;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.2s;"
-                            onmouseover="this.style.borderColor='#fca5a5';this.style.color='#b91c1c'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+                        <button type="button" id="btnShowDeleteConfirm"
+                            style="padding:0.65rem 1.25rem;background:none;border:1.5px solid #e2e8f0;border-radius:0.65rem;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.2s;">
                             Delete my account
                         </button>
                     </div>
@@ -1599,7 +1648,7 @@
                                 style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;margin-bottom:0.75rem;transition:border-color 0.2s;"
                                 onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#e2e8f0'">
                             <div style="display:flex;gap:0.6rem;">
-                                <button type="button" onclick="hideDeleteConfirm()"
+                                <button type="button" id="btnHideDeleteConfirm"
                                     style="flex:1;padding:0.75rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;">
                                     Cancel
                                 </button>
@@ -1619,7 +1668,7 @@
             style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
             <div
                 style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
-                <button onclick="closeChangePassword()"
+                <button id="btnCloseChangePw"
                     style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
 
                 <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Change Password</h2>
@@ -1636,8 +1685,7 @@
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">New Password</label>
                         <input type="password" id="newPasswordChg" name="newPassword" minlength="8" required
                             style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'"
-                            oninput="checkPwStrength('newPasswordChg','pw-rules-chg')">
+                            >
                         <div id="pw-rules-chg" style="display:none;margin-top:0.5rem;padding:0.65rem 0.85rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.65rem;">
                             <p data-rule="len"  style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; At least 8 characters</p>
                             <p data-rule="up"   style="font-size:0.76rem;margin:0 0 0.2rem;color:#94a3b8;">&#10007; One uppercase letter</p>
@@ -1653,7 +1701,7 @@
                             onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
                     </div>
                     <div style="display:flex;gap:0.75rem;">
-                        <button type="button" onclick="closeChangePassword()"
+                        <button type="button" id="btnCancelChangePw"
                             style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">
                             Cancel
                         </button>

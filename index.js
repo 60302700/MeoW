@@ -82,7 +82,7 @@ app.use((req, res, next) =>
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
         fontSrc: ["'self'"],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],

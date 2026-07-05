@@ -1716,7 +1716,7 @@
                 {{#if user}}
                 <li style="list-style:none;">
                     <div class="profile-menu-wrap" id="profileMenuWrap">
-                        <button class="profile-nav-btn" id="profileMenuBtn" onclick="toggleProfileMenu(event)">
+                        <button class="profile-nav-btn" id="profileMenuBtn">
                             {{#if user.photoUrl}}
                             <img src="{{user.photoUrl}}" class="profile-nav-avatar" alt="Profile">
                             {{else}}
@@ -1729,10 +1729,10 @@
                                 <div class="dropdown-header-email">{{user.email}}</div>
                             </div>
                             <div class="dropdown-divider"></div>
-                            <button class="dropdown-item" onclick="openEditProfile();closeProfileMenu()">Edit Profile</button>
-                            <button class="dropdown-item" onclick="openChangePassword();closeProfileMenu()">Change Password</button>
+                            <button class="dropdown-item" id="dropdownEditProfile">Edit Profile</button>
+                            <button class="dropdown-item" id="dropdownChangePassword">Change Password</button>
                             <div class="dropdown-divider"></div>
-                            <button class="dropdown-item dropdown-item-danger" onclick="window.location='/logout'">Logout</button>
+                            <button class="dropdown-item dropdown-item-danger" id="dropdownLogout">Logout</button>
                         </div>
                     </div>
                 </li>
@@ -1743,21 +1743,35 @@
     {{{body}}}
 
     <script nonce="{{nonce}}">
-        function toggleProfileMenu(e) {
-            e.stopPropagation();
-            const wrap = document.getElementById('profileMenuWrap');
-            if (wrap) wrap.classList.toggle('open');
-        }
-
         function closeProfileMenu() {
             const wrap = document.getElementById('profileMenuWrap');
             if (wrap) wrap.classList.remove('open');
         }
 
-        document.addEventListener('click', function (e) {
-            const wrap = document.getElementById('profileMenuWrap');
-            if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
-        });
+        (function () {
+            const btn = document.getElementById('profileMenuBtn');
+            if (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const wrap = document.getElementById('profileMenuWrap');
+                    if (wrap) wrap.classList.toggle('open');
+                });
+            }
+
+            const ep = document.getElementById('dropdownEditProfile');
+            if (ep) ep.addEventListener('click', function () { openEditProfile(); closeProfileMenu(); });
+
+            const cp = document.getElementById('dropdownChangePassword');
+            if (cp) cp.addEventListener('click', function () { openChangePassword(); closeProfileMenu(); });
+
+            const lo = document.getElementById('dropdownLogout');
+            if (lo) lo.addEventListener('click', function () { window.location = '/logout'; });
+
+            document.addEventListener('click', function (e) {
+                const wrap = document.getElementById('profileMenuWrap');
+                if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+            });
+        })();
     </script>
 
 </body>
