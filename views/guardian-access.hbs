@@ -394,5 +394,199 @@
     </div>
 
     {{/if}}
+
+    <!-- AI Chat Widget -->
+    <div id="chat-bubble" onclick="toggleChat()" title="Ask about cat care">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.03 2 11c0 2.67 1.19 5.07 3.09 6.72L4 21l3.77-1.42C9.1 20.17 10.52 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z" fill="white"/>
+        </svg>
+    </div>
+
+    <div id="chat-panel">
+        <div id="chat-header">
+            <div>
+                <div style="font-weight:700;font-size:0.95rem;">Cat Care Assistant</div>
+                <div style="font-size:0.72rem;opacity:0.8;">Ask anything about the cats</div>
+            </div>
+            <button onclick="toggleChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.2rem;line-height:1;">✕</button>
+        </div>
+        <div id="chat-messages">
+            <div class="msg msg-bot">Hi! I have access to all the care details for the cats. Ask me anything — feeding, medications, what to do in an emergency, or general cat care tips.</div>
+        </div>
+        <div id="chat-input-row">
+            <input id="chat-input" type="text" placeholder="Ask about the cats..." maxlength="400" onkeydown="if(event.key==='Enter')sendMessage()">
+            <button id="chat-send" onclick="sendMessage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        #chat-bubble {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(157,23,77,0.4);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        #chat-bubble:hover { transform: scale(1.08); }
+
+        #chat-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            width: 340px;
+            max-height: 480px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+        #chat-panel.open { display: flex; }
+
+        #chat-header {
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 10px 13px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .msg-bot {
+            background: #f1f5f9;
+            color: #1e293b;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .msg-user {
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .msg-typing {
+            background: #f1f5f9;
+            color: #94a3b8;
+            align-self: flex-start;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        #chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid #f1f5f9;
+        }
+        #chat-input {
+            flex: 1;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            outline: none;
+            font-family: inherit;
+        }
+        #chat-input:focus { border-color: #ec4899; }
+        #chat-send {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #9d174d, #ec4899);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        #chat-send:disabled { opacity: 0.5; cursor: default; }
+
+        @media (max-width: 400px) {
+            #chat-panel { right: 10px; left: 10px; width: auto; }
+        }
+    </style>
+
+    <script>
+        const TOKEN = '{{token}}';
+
+        function toggleChat() {
+            document.getElementById('chat-panel').classList.toggle('open');
+            if (document.getElementById('chat-panel').classList.contains('open')) {
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            appendMessage(msg, 'user');
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('chat-send').disabled = true;
+
+            const typing = appendMessage('Thinking...', 'typing');
+
+            try {
+                const res = await fetch(`/guardian-access/${TOKEN}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg }),
+                });
+                const data = await res.json();
+                typing.remove();
+                appendMessage(data.reply || data.error, data.error ? 'bot' : 'bot');
+            } catch {
+                typing.remove();
+                appendMessage('Something went wrong. Please try again.', 'bot');
+            } finally {
+                input.disabled = false;
+                document.getElementById('chat-send').disabled = false;
+                input.focus();
+            }
+        }
+
+        function appendMessage(text, type) {
+            const box = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `msg msg-${type}`;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            return div;
+        }
+    </script>
 </body>
 </html>

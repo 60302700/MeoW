@@ -57,6 +57,7 @@ app.set("views", "./views");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
 function getSessionCookie(req) {
@@ -647,6 +648,49 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
     res.redirect(
       `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,
     );
+  }
+});
+
+app.post("/guardian-access/:token/chat", async (req, res) => {
+  const { token } = req.params;
+  const { message } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ error: "Message is required." });
+  }
+  try {
+    const { cats, ownerName } = await getGuardianAccess(token);
+    const Groq = (await import("groq-sdk")).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const catContext = cats.map(cat => {
+      const ci = cat.careInstructions || {};
+      const lines = [`Cat: ${cat.name}${cat.breed ? ` (${cat.breed})` : ""}${cat.age ? `, ${cat.age} yrs` : ""}`];
+      if (ci.feedingSchedule) lines.push(`  Feeding: ${ci.feedingSchedule}${ci.foodBrand ? ` — ${ci.foodBrand}` : ""}`);
+      if (ci.allergies) lines.push(`  Allergies: ${ci.allergies}`);
+      if (ci.medications) lines.push(`  Medications: ${ci.medications}`);
+      if (ci.conditions) lines.push(`  Medical conditions: ${ci.conditions}`);
+      if (ci.vetName) lines.push(`  Vet: ${ci.vetName}${ci.vetPhone ? ` (${ci.vetPhone})` : ""}`);
+      if (ci.personality) lines.push(`  Personality: ${ci.personality}`);
+      if (ci.notes) lines.push(`  Notes: ${ci.notes}`);
+      if (ci.neutered) lines.push(`  Neutered: yes`);
+      return lines.join("\n");
+    }).join("\n\n");
+
+    const systemPrompt = `You are a helpful cat care assistant for a guardian looking after ${ownerName}'s cats. You have access to the following care information:\n\n${catContext}\n\nAnswer the guardian's questions based on this information. If something isn't explicitly mentioned, give practical cat care advice. Be concise, friendly, and focused on cat welfare. Do not make up specific details like vet names or phone numbers that aren't provided.`;
+
+    const completion = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message.trim() },
+      ],
+      max_tokens: 400,
+    });
+
+    res.json({ reply: completion.choices[0].message.content });
+  } catch (err) {
+    console.error("[Chat]", err.message);
+    res.status(500).json({ error: "Could not get a response. Please try again." });
   }
 });
 // ───────────────────────────────────────────────────────────────────────────
