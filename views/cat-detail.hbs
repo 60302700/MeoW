@@ -164,6 +164,21 @@
     .edit-inline-section textarea:focus,
     .edit-inline-section select:focus { border-color: #ec4899; }
 
+    .edit-inline-section .phone-wrap input,
+    .edit-inline-section .phone-wrap select {
+        border: none;
+        border-radius: 0;
+        padding: 0.65rem 0.85rem;
+        width: auto;
+    }
+    .edit-inline-section .phone-wrap .cc-select {
+        padding: 0.65rem 0.35rem 0.65rem 0.65rem;
+        min-width: 68px;
+        background: #f8fafc;
+    }
+    .edit-inline-section .phone-wrap input:focus,
+    .edit-inline-section .phone-wrap select:focus { border-color: transparent; }
+
     .edit-inline-section label.field-label {
         display: block;
         font-size: 0.75rem;
@@ -188,16 +203,102 @@
         border-top: 1px solid #f1f5f9;
         margin: 1.25rem 0;
     }
+
+    .cat-photo-wrap {
+        position: relative;
+        flex-shrink: 0;
+        width: 180px;
+        height: 180px;
+    }
+    @media (max-width: 600px) {
+        .cat-photo-wrap { width: 100%; height: 220px; }
+    }
+    .cat-photo-wrap img,
+    .cat-photo-wrap .cat-hero-photo-placeholder {
+        width: 100%;
+        height: 100%;
+    }
+    .cat-photo-overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: 1.25rem;
+        background: rgba(15,23,42,0.45);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        opacity: 0;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        color: white;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .cat-photo-wrap:hover .cat-photo-overlay { opacity: 1; }
+
+    .phone-wrap {
+        display: flex;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.65rem;
+        overflow: hidden;
+        transition: border-color 0.2s;
+    }
+    .phone-wrap:focus-within { border-color: #ec4899; }
+    .phone-wrap .cc-select {
+        padding: 0.65rem 0.35rem 0.65rem 0.65rem;
+        border: none;
+        background: #f8fafc;
+        font-size: 0.82rem;
+        color: #374151;
+        cursor: pointer;
+        outline: none;
+        min-width: 68px;
+        border-right: 1px solid #e2e8f0;
+    }
+    .phone-wrap .phone-num {
+        flex: 1;
+        padding: 0.65rem 0.85rem;
+        border: none !important;
+        outline: none !important;
+        font-size: 0.9rem;
+        color: #0f172a;
+        box-sizing: border-box;
+        background: white;
+    }
 </style>
 
 <div class="cat-detail-wrap">
 
     <div class="cat-hero">
-        {{#if cat.photoUrl}}
-        <img src="{{cat.photoUrl}}" alt="{{cat.name}}" class="cat-hero-photo">
-        {{else}}
-        <div class="cat-hero-photo-placeholder"></div>
-        {{/if}}
+        <div class="cat-photo-wrap">
+            {{#if cat.photoUrl}}
+            <img src="{{cat.photoUrl}}" alt="{{cat.name}}" class="cat-hero-photo" id="catPhotoPreview">
+            {{else}}
+            <div class="cat-hero-photo-placeholder" id="catPhotoPreview"></div>
+            {{/if}}
+            <div class="cat-photo-overlay" onclick="document.getElementById('catPhotoInput').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Change photo
+            </div>
+            <form id="catPhotoForm" method="POST" action="/cats/{{cat._id}}/photo" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <input type="file" id="catPhotoInput" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;"
+                    onchange="
+                        const f=this.files[0];
+                        if(f){
+                            const r=new FileReader();
+                            r.onload=e=>{
+                                const img=document.getElementById('catPhotoPreview');
+                                if(img.tagName==='IMG'){img.src=e.target.result;}
+                                else{const ni=document.createElement('img');ni.src=e.target.result;ni.id='catPhotoPreview';ni.className='cat-hero-photo';img.replaceWith(ni);}
+                            };
+                            r.readAsDataURL(f);
+                            document.getElementById('catPhotoForm').submit();
+                        }
+                    ">
+            </form>
+        </div>
 
         <div class="cat-hero-info">
             <h1 class="cat-hero-name">{{cat.name}}</h1>
@@ -337,7 +438,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
                     <div>
                         <label class="field-label">Age (yrs)</label>
                         <input type="number" name="age" value="{{cat.age}}" min="0">
@@ -357,14 +458,6 @@
                             <option value="yes" {{#if cat.careInstructions.neutered}}selected{{/if}}>Yes</option>
                             <option value="no" {{#unless cat.careInstructions.neutered}}selected{{/unless}}>No</option>
                         </select>
-                    </div>
-                    <div>
-                        <label class="field-label">Replace Photo</label>
-                        <label style="display:block;padding:0.6rem 0.85rem;border:2px dashed #e2e8f0;border-radius:0.65rem;font-size:0.82rem;color:#94a3b8;cursor:pointer;text-align:center;transition:border-color 0.2s;box-sizing:border-box;"
-                            onmouseover="this.style.borderColor='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0'">
-                            Choose file
-                            <input type="file" name="photo" accept="image/*" style="display:none;" onchange="this.parentElement.textContent=this.files[0]?this.files[0].name:'Choose file'">
-                        </label>
                     </div>
                 </div>
 
@@ -423,7 +516,13 @@
                     </div>
                     <div>
                         <label class="field-label">Vet Phone</label>
-                        <input type="tel" name="vetPhone" value="{{cat.careInstructions.vetPhone}}">
+                        <div class="phone-wrap">
+                            <select class="cc-select" data-phone-cc>
+                                <option value="+1">+1</option><option value="+7">+7</option><option value="+20">+20</option><option value="+27">+27</option><option value="+31">+31</option><option value="+33">+33</option><option value="+34">+34</option><option value="+39">+39</option><option value="+41">+41</option><option value="+44">+44</option><option value="+46">+46</option><option value="+49">+49</option><option value="+52">+52</option><option value="+55">+55</option><option value="+60">+60</option><option value="+61">+61</option><option value="+63">+63</option><option value="+64">+64</option><option value="+65">+65</option><option value="+81">+81</option><option value="+82">+82</option><option value="+84">+84</option><option value="+86">+86</option><option value="+90">+90</option><option value="+91">+91</option><option value="+92">+92</option><option value="+966">+966</option><option value="+971">+971</option><option value="+974" selected>+974</option><option value="+234">+234</option>
+                            </select>
+                            <input type="tel" class="phone-num" data-phone-num placeholder="e.g. 5555 1234" value="{{cat.careInstructions.vetPhone}}">
+                            <input type="hidden" name="vetPhone">
+                        </div>
                     </div>
                 </div>
 
@@ -466,4 +565,31 @@
         document.getElementById('editToggleBtn').setAttribute('onclick', 'showEditMode()');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    (function() {
+        const CODES = ['+974','+971','+966','+92','+91','+86','+84','+82','+81','+65','+64','+63','+61','+60','+55','+52','+49','+46','+44','+41','+39','+34','+33','+31','+27','+20','+7','+234','+90','+1'];
+        document.querySelectorAll('.phone-wrap').forEach(function(wrap) {
+            const sel = wrap.querySelector('[data-phone-cc]');
+            const inp = wrap.querySelector('[data-phone-num]');
+            const hid = wrap.querySelector('input[type="hidden"]');
+            if (!sel || !inp || !hid) return;
+            const val = inp.value || '';
+            if (val.startsWith('+')) {
+                const sorted = CODES.slice().sort(function(a,b){return b.length-a.length;});
+                for (const code of sorted) {
+                    if (val.startsWith(code)) {
+                        sel.value = code;
+                        inp.value = val.slice(code.length).replace(/^\s+/,'');
+                        break;
+                    }
+                }
+            }
+            const form = wrap.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    hid.value = inp.value.trim() ? sel.value + ' ' + inp.value.trim() : '';
+                });
+            }
+        });
+    })();
 </script>

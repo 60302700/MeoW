@@ -522,6 +522,26 @@ app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
 });
 
 app.post(
+  "/cats/:catId/photo",
+  requireAuth,
+  upload.single("photo"),
+  doubleCsrfProtection,
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { catId } = req.params;
+    const referrer = req.get("Referrer") || "/homepage";
+    try {
+      if (!req.file) return res.redirect(referrer);
+      const photoUrl = await uploadImageBuffer(req.file.buffer, "cats");
+      await editCat(sessionId, catId, { photoUrl, name: undefined });
+      res.redirect(referrer);
+    } catch (err) {
+      res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+    }
+  },
+);
+
+app.post(
   "/cats/:catId/edit",
   requireAuth,
   upload.single("photo"),

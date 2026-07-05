@@ -31,7 +31,10 @@ import {
   getActiveUnavailability,
   resolveUnavailability,
   getGuardianAccessToken,
+  invalidateGuardianTokensByUnavailability,
   acknowledgeGuardianToken,
+  setGuardianHasAccepted,
+  resetGuardiansHasAccepted,
   getGuardian,
   deleteCatById,
   deleteGuardianById,
@@ -268,7 +271,13 @@ async function editCat(
   if (!cat || cat.ownerId.toString() !== user._id.toString())
     throw new Error("Cat not found");
 
-  const updates = {
+  const updates = {};
+  if (photoUrl) updates.photoUrl = photoUrl;
+  if (name === undefined) {
+    await updateCatById(catId, updates);
+    return;
+  }
+  Object.assign(updates, {
     name,
     breed: breed || "",
     age: parseInt(age, 10) || 0,
@@ -286,8 +295,7 @@ async function editCat(
     "careInstructions.passportNumber": passportNumber || "",
     "careInstructions.personality": personality || "",
     "careInstructions.notes": notes || "",
-  };
-  if (photoUrl) updates.photoUrl = photoUrl;
+  });
 
   await updateCatById(catId, updates);
 }
@@ -444,6 +452,8 @@ async function setOwnerAvailable(sessionId) {
 
   await resolveUnavailability(record._id.toString());
   await signalOwnerAvailable(record._id.toString());
+  await invalidateGuardianTokensByUnavailability(record._id.toString());
+  await resetGuardiansHasAccepted(user._id.toString());
 }
 
 async function getGuardianAccess(token) {
@@ -465,6 +475,8 @@ async function acknowledgeGuardianAccess(token) {
   if (record.acknowledged) return;
   await acknowledgeGuardianToken(token);
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
+  await setGuardianHasAccepted(record.ownerId.toString(), record.guardianId.toString());
+  await invalidateGuardianTokensByUnavailability(record.unavailabilityId.toString(), token);
 
   const [guardian, owner, cats] = await Promise.all([
     getGuardian(record.ownerId.toString(), record.guardianId.toString()),

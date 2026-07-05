@@ -690,6 +690,37 @@
     .container button[type="submit"]:hover {
         background-color: #be185d;
     }
+
+    .phone-wrap {
+        display: flex;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.65rem;
+        overflow: hidden;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+    .phone-wrap:focus-within { border-color: #ec4899; }
+    .phone-wrap .cc-select {
+        padding: 0.65rem 0.35rem 0.65rem 0.65rem;
+        border: none;
+        background: #f8fafc;
+        font-size: 0.82rem;
+        color: #374151;
+        cursor: pointer;
+        outline: none;
+        min-width: 68px;
+        border-right: 1px solid #e2e8f0;
+    }
+    .phone-wrap .phone-num {
+        flex: 1;
+        padding: 0.65rem 0.85rem;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        color: #0f172a;
+        box-sizing: border-box;
+        background: white;
+    }
 </style>
 
 <div class="gh-profile">
@@ -839,11 +870,13 @@
                             <div class="repo-top-row">
                                 <span class="repo-name">{{this.name}}</span>
                                 <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    {{#if ../isUnavailable}}
                                     {{#if this.hasAccepted}}
-                                    <span class="repo-visibility" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;">✓ Accepted</span>
+                                    <span class="repo-visibility" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;">Approved</span>
                                     {{else}}
-                                    <span class="repo-visibility" style="background:#fffbeb;border-color:#fde68a;color:#92400e;">⏳ Pending</span>
+                                    <span class="repo-visibility" style="background:#fffbeb;border-color:#fde68a;color:#92400e;">Pending</span>
                                     {{/if}}
+                                {{/if}}
                                     <button onclick="openEditGuardian('{{this.Id}}')"
                                         style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
                                         onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
@@ -910,9 +943,13 @@
                             </div>
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Phone</label>
-                                <input type="tel" name="phone" value="{{this.phone}}"
-                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                <div class="phone-wrap">
+                                    <select class="cc-select" data-phone-cc>
+                                        <option value="+1">+1</option><option value="+7">+7</option><option value="+20">+20</option><option value="+27">+27</option><option value="+31">+31</option><option value="+33">+33</option><option value="+34">+34</option><option value="+39">+39</option><option value="+44">+44</option><option value="+49">+49</option><option value="+52">+52</option><option value="+55">+55</option><option value="+60">+60</option><option value="+61">+61</option><option value="+65">+65</option><option value="+81">+81</option><option value="+82">+82</option><option value="+86">+86</option><option value="+90">+90</option><option value="+91">+91</option><option value="+92">+92</option><option value="+966">+966</option><option value="+971">+971</option><option value="+974" selected>+974</option><option value="+234">+234</option>
+                                    </select>
+                                    <input type="tel" class="phone-num" data-phone-num value="{{this.phone}}" placeholder="e.g. 5555 1234">
+                                    <input type="hidden" name="phone">
+                                </div>
                             </div>
                             <div style="margin-bottom:1.5rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Priority Order</label>
@@ -1214,7 +1251,13 @@
 
                     <div class="form-group">
                         <label for="g-phone">Phone Number</label>
-                        <input type="tel" id="g-phone" name="phone" placeholder="e.g. +974 5555 1234" required>
+                        <div class="phone-wrap">
+                            <select class="cc-select" data-phone-cc>
+                                <option value="+1">+1</option><option value="+7">+7</option><option value="+20">+20</option><option value="+27">+27</option><option value="+31">+31</option><option value="+33">+33</option><option value="+34">+34</option><option value="+39">+39</option><option value="+44">+44</option><option value="+49">+49</option><option value="+52">+52</option><option value="+55">+55</option><option value="+60">+60</option><option value="+61">+61</option><option value="+65">+65</option><option value="+81">+81</option><option value="+82">+82</option><option value="+86">+86</option><option value="+90">+90</option><option value="+91">+91</option><option value="+92">+92</option><option value="+966">+966</option><option value="+971">+971</option><option value="+974" selected>+974</option><option value="+234">+234</option>
+                            </select>
+                            <input type="tel" id="g-phone" class="phone-num" data-phone-num placeholder="e.g. 5555 1234" required>
+                            <input type="hidden" name="phone">
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -1454,6 +1497,33 @@
             })();
 
             initGuardianSearch();
+
+            (function() {
+                const CODES = ['+974','+971','+966','+92','+91','+86','+82','+81','+65','+61','+60','+55','+52','+49','+44','+39','+34','+33','+31','+27','+20','+7','+234','+90','+1'];
+                document.querySelectorAll('.phone-wrap').forEach(function(wrap) {
+                    const sel = wrap.querySelector('[data-phone-cc]');
+                    const inp = wrap.querySelector('[data-phone-num]');
+                    const hid = wrap.querySelector('input[type="hidden"]');
+                    if (!sel || !inp || !hid) return;
+                    const val = inp.value || '';
+                    if (val.startsWith('+')) {
+                        const sorted = CODES.slice().sort(function(a,b){return b.length-a.length;});
+                        for (const code of sorted) {
+                            if (val.startsWith(code)) {
+                                sel.value = code;
+                                inp.value = val.slice(code.length).replace(/^\s+/,'');
+                                break;
+                            }
+                        }
+                    }
+                    const form = wrap.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', function() {
+                            hid.value = inp.value.trim() ? sel.value + ' ' + inp.value.trim() : '';
+                        });
+                    }
+                });
+            })();
         </script>
 
         <!-- ── Edit Profile Modal ─────────────────────────────────────────── -->
@@ -1476,9 +1546,13 @@
                     </div>
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">Phone</label>
-                        <input type="tel" name="phone" value="{{user.phone}}"
-                            style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                            onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                        <div class="phone-wrap" style="border-radius:0.75rem;">
+                            <select class="cc-select" data-phone-cc>
+                                <option value="+1">+1</option><option value="+7">+7</option><option value="+20">+20</option><option value="+27">+27</option><option value="+31">+31</option><option value="+33">+33</option><option value="+34">+34</option><option value="+39">+39</option><option value="+44">+44</option><option value="+49">+49</option><option value="+52">+52</option><option value="+55">+55</option><option value="+60">+60</option><option value="+61">+61</option><option value="+65">+65</option><option value="+81">+81</option><option value="+82">+82</option><option value="+86">+86</option><option value="+90">+90</option><option value="+91">+91</option><option value="+92">+92</option><option value="+966">+966</option><option value="+971">+971</option><option value="+974" selected>+974</option><option value="+234">+234</option>
+                            </select>
+                            <input type="tel" class="phone-num" data-phone-num value="{{user.phone}}" placeholder="e.g. 5555 1234">
+                            <input type="hidden" name="phone">
+                        </div>
                     </div>
                     <div style="display:flex;gap:0.75rem;">
                         <button type="button" onclick="closeEditProfile()"

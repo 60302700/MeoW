@@ -68,9 +68,18 @@
                             <p class="step-sub">We'll use these details to reach you in emergencies</p>
                         </div>
                         <div class="field-group">
-                            <div class="floating-field">
-                                <input type="tel" id="phone" name="phone" class="fancy-input" placeholder=" " autocomplete="tel" value="{{values.phone}}">
-                                <label for="phone">Phone Number</label>
+                            <div class="floating-field phone-fancy-wrap">
+                                <div style="display:flex;border:2px solid #e2e8f0;border-radius:0.75rem;overflow:hidden;transition:border-color 0.2s;" id="phone-wrap-outer">
+                                    <select id="phone-cc" style="padding:0.85rem 0.35rem 0.85rem 0.85rem;border:none;background:#f8fafc;font-size:0.82rem;color:#374151;cursor:pointer;outline:none;min-width:72px;border-right:1px solid #e2e8f0;">
+                                        <option value="+1">+1</option><option value="+7">+7</option><option value="+20">+20</option><option value="+27">+27</option><option value="+31">+31</option><option value="+33">+33</option><option value="+34">+34</option><option value="+39">+39</option><option value="+44">+44</option><option value="+49">+49</option><option value="+52">+52</option><option value="+55">+55</option><option value="+60">+60</option><option value="+61">+61</option><option value="+65">+65</option><option value="+81">+81</option><option value="+82">+82</option><option value="+86">+86</option><option value="+90">+90</option><option value="+91">+91</option><option value="+92">+92</option><option value="+966">+966</option><option value="+971">+971</option><option value="+974" selected>+974</option><option value="+234">+234</option>
+                                    </select>
+                                    <input type="tel" id="phone" class="fancy-input" placeholder="e.g. 5555 1234" autocomplete="tel"
+                                        style="flex:1;border:none;border-radius:0;outline:none;padding-left:0.75rem;"
+                                        onfocus="document.getElementById('phone-wrap-outer').style.borderColor='#ec4899'"
+                                        onblur="document.getElementById('phone-wrap-outer').style.borderColor='#e2e8f0'">
+                                </div>
+                                <input type="hidden" name="phone" id="phone-combined">
+                                <label for="phone" style="left:84px;">Phone Number</label>
                             </div>
                             <div class="floating-field">
                                 <input type="password" id="password" name="password" class="fancy-input" placeholder=" " minlength="8" oninput="checkPwStrength('password','pw-rules-reg')">
