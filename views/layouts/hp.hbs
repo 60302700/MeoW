@@ -1717,11 +1717,7 @@
                 <li style="list-style:none;">
                     <div class="profile-menu-wrap" id="profileMenuWrap">
                         <button class="profile-nav-btn" id="profileMenuBtn" onclick="toggleProfileMenu(event)">
-                            {{#if user.photoUrl}}
-                            <img src="{{user.photoUrl}}" class="profile-nav-avatar" alt="Profile">
-                            {{else}}
-                            <span class="profile-nav-initials">{{initial user.name}}</span>
-                            {{/if}}
+                            <span class="profile-nav-initials">{{initials user.name}}</span>
                         </button>
                         <div class="profile-dropdown" id="profileDropdown">
                             <div class="dropdown-header">

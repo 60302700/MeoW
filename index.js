@@ -64,6 +64,13 @@ const hbsEngine = engine({
   helpers: {
     eq: (a, b) => a === b,
     initial: (str) => (str && str.length > 0 ? str[0].toUpperCase() : "?"),
+    initials: (str) => {
+      if (!str) return "?";
+      const parts = str.trim().split(/\s+/);
+      const first = parts[0]?.[0]?.toUpperCase() || "";
+      const last = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
+      return first + last;
+    },
   },
 });
 app.engine("hbs", hbsEngine);
