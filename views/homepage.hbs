@@ -827,7 +827,7 @@
                     {{/if}}
                     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
                         <div class="repo-top-row">
-                            <span class="repo-name"><a href="/cats/{{this.name}}" target="_blank">{{this.name}}</a></span>
+                            <span class="repo-name">{{this.name}}</a></span>
                             <div style="display:flex;align-items:center;gap:0.5rem;">
                                 {{#if this.isActiveBackupProtocol}}
                                 <span class="repo-visibility">Protected</span>
@@ -1499,42 +1499,6 @@
                 </div>
                 </div>
                 <!-- ──────────────────────────────────────────────────────── -->
-
-                <div class="gh-section-title" style="margin-top: 1.5rem;">
-                    <h3>Your Current Guardians</h3>
-                </div>
-
-                {{#if hasGuardians}}
-                <div class="gh-repo-grid">
-                    {{#each guardians}}
-                    <div class="gh-repo-card" style="display:flex;flex-direction:row;gap:0.85rem;align-items:flex-start;">
-                        {{#if this.photoUrl}}
-                        <img src="{{this.photoUrl}}" alt="{{this.name}}"
-                            style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;">
-                        {{else}}
-                        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800;flex-shrink:0;">{{initial this.name}}</div>
-                        {{/if}}
-                        <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:0.35rem;">
-                        <div class="repo-top-row">
-                            <span class="repo-name">{{this.name}}</span>
-                            {{#if this.hasAccepted}}
-                            <span class="repo-visibility">Accepted</span>
-                            {{/if}}
-                        </div>
-                        <p class="repo-desc">
-                            {{#if this.phone}}📞 {{this.phone}}{{/if}}{{#if this.email}} ✉️ {{this.email}}{{/if}}
-                        </p>
-                        </div>
-                    </div>
-                    {{/each}}
-                </div>
-                {{else}}
-                <div class="gh-empty">
-                    <div class="empty-icon">🤝</div>
-                    <h4>No guardians assigned yet</h4>
-                    <p>Add a guardian above to build your emergency support network.</p>
-                </div>
-                {{/if}}
             </div>
         </div>
 
