@@ -730,8 +730,7 @@
         <h1 class="gh-display-name">{{user.name}}</h1>
         <p class="gh-username">{{user.email}}</p>
 
-        <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol. Every cat deserves a safety net.
-            🐱</p>
+        <p class="gh-bio">Keeping my cats safe with MeoW's emergency backup protocol</p>
 
         <div class="gh-stats">
             <a href="#">
@@ -760,15 +759,6 @@
             </li>
         </ul>
 
-        <div class="gh-badges">
-            <h4>Badges</h4>
-            <div class="badge-row">
-                <span class="gh-badge badge-guardian">🛡️ Guardian</span>
-                {{#if hasCats}}
-                <span class="gh-badge badge-protocol">✅ Protected</span>
-                {{/if}}
-            </div>
-        </div>
     </aside>
 
     <!-- ═══════════════════════════════════════════
@@ -779,18 +769,18 @@
         <!-- Tab bar -->
         <div class="gh-section-bar">
             <span class="gh-tab active" onclick="showOverview()">
-                <span class="tab-icon">🐱</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
                 Overview
             </span>
             <span class="gh-tab" onclick="showCats()">
-                <span class="tab-icon">📋</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg></span>
                 Cats
                 {{#if hasCats}}
                 <span class="tab-count">{{cats.length}}</span>
                 {{/if}}
             </span>
             <span class="gh-tab" onclick="showGuardians()">
-                <span class="tab-icon">🛡️</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                 Guardians
                 {{#if hasGuardians}}
                 <span class="tab-count">{{guardians.length}}</span>
@@ -799,9 +789,9 @@
         </div>
 
         {{#if error}}
-        <div
-            style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 0.88rem;">
-            ⚠️ <strong>Error:</strong> {{error}}
+        <div style="display:flex;align-items:center;gap:0.75rem;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:0.85rem 1.1rem;border-radius:0.75rem;margin-bottom:1.25rem;font-size:0.875rem;font-weight:500;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>Something went wrong:</strong> {{error}}</span>
         </div>
         {{/if}}
 
@@ -814,69 +804,25 @@
             {{#if hasCats}}
             <div class="gh-repo-grid">
                 {{#each cats}}
-                <div class="gh-repo-card"
-                    style="display: flex; flex-direction: row; gap: 1.25rem; align-items: flex-start;">
+                <div class="gh-repo-card" style="display:flex;flex-direction:row;gap:0.9rem;align-items:center;padding:0.85rem 1rem;">
                     {{#if this.photoUrl}}
-                    <img src="{{this.photoUrl}}"
-                        style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0;"
-                        alt="{{this.name}}">
+                    <img src="{{this.photoUrl}}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;" alt="{{this.name}}">
                     {{else}}
-                    <div
-                        style="width: 60px; height: 60px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0; border: 1px solid #cbd5e1;">
-                        🐈</div>
+                    <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#fce7f3,#f5f3ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e8f0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg>
+                    </div>
                     {{/if}}
-                    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
-                        <div class="repo-top-row">
-                            <span class="repo-name">{{this.name}}</a></span>
-                            <div style="display:flex;align-items:center;gap:0.5rem;">
-                                {{#if this.isActiveBackupProtocol}}
-                                <span class="repo-visibility">Protected</span>
-                                {{/if}}
-                                <button onclick="openEditCat('{{this._id}}')"
-                                    style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                    onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
-                            </div>
+                    <div style="flex-grow:1;min-width:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                            <a href="/cats/{{this.name}}" style="font-size:0.92rem;font-weight:700;color:#ec4899;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{this.name}}</a>
+                            {{#if this.isActiveBackupProtocol}}
+                            <span class="repo-visibility" style="flex-shrink:0;">Protected</span>
+                            {{/if}}
                         </div>
-
-                        <p class="repo-desc">
-                            {{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}
-                            {{#if this.careInstructions.conditions}} · {{this.careInstructions.conditions}}{{/if}}
-                        </p>
-                        {{#if this.careInstructions.personality}}
-                        <p class="repo-desc" style="font-style:italic;color:#94a3b8;">{{this.careInstructions.personality}}</p>
-                        {{/if}}
-
-                        <div class="repo-footer">
-                            {{#if this.breed}}
-                            <span class="repo-lang">
-                                <span class="lang-dot default-breed"></span>
-                                {{this.breed}}
-                            </span>
-                            {{/if}}
-
-                            {{#if this.age}}
-                            <span class="repo-meta-item">{{this.age}} yrs</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.neutered}}
-                            <span class="repo-meta-item">Neutered/Spayed</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.vetName}}
-                            <span class="repo-meta-item">Vet on file</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.microchip}}
-                            <span class="repo-meta-item">Chipped</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.vaccinations}}
-                            <span class="repo-meta-item">Vaccinated</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.allergies}}
-                            <span class="repo-meta-item" style="color:#dc2626;">⚠️ Allergies</span>
-                            {{/if}}
+                        <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.3rem;flex-wrap:wrap;">
+                            {{#if this.breed}}<span style="font-size:0.75rem;color:#64748b;">{{this.breed}}</span>{{/if}}
+                            {{#if this.gender}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.gender}}</span>{{/if}}
+                            {{#if this.age}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.age}} yrs</span>{{/if}}
                         </div>
                     </div>
                 </div>
@@ -911,12 +857,20 @@
                             </div>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
                             <div>
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Age (yrs)</label>
                                 <input type="number" name="age" value="{{this.age}}" min="0"
                                     style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
                                     onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Gender</label>
+                                <select name="gender" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;background:white;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                    <option value="">Unknown</option>
+                                    <option value="Male" {{#if (eq this.gender "Male")}}selected{{/if}}>Male</option>
+                                    <option value="Female" {{#if (eq this.gender "Female")}}selected{{/if}}>Female</option>
+                                </select>
                             </div>
                             <div>
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Neutered</label>
@@ -1050,7 +1004,7 @@
 
             {{else}}
             <div class="gh-empty">
-                <div class="empty-icon">🐱</div>
+                <div class="empty-icon"></div>
                 <h4>No cats registered yet</h4>
                 <p>Register your first cat to activate the MeoW emergency safety protocol.</p>
             </div>
@@ -1087,18 +1041,21 @@
                                 </div>
                             </div>
 
-                            <div class="repo-footer">
+                            <div style="display:flex;flex-direction:column;gap:0.3rem;margin-top:0.5rem;">
                                 {{#if this.priorityOrder}}
-                                <span class="repo-lang">
-                                    <span class="lang-dot" style="background:#94a3b8;"></span>
-                                    Priority #{{this.priorityOrder}}
-                                </span>
+                                <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Priority #{{this.priorityOrder}}</span>
                                 {{/if}}
                                 {{#if this.phone}}
-                                <span class="repo-meta-item">📞 {{this.phone}}</span>
+                                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#64748b;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    {{this.phone}}
+                                </span>
                                 {{/if}}
                                 {{#if this.email}}
-                                <span class="repo-meta-item">✉️ {{this.email}}</span>
+                                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#64748b;min-width:0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{this.email}}</span>
+                                </span>
                                 {{/if}}
                             </div>
                         </div>
@@ -1186,7 +1143,7 @@
             <div class="container">
 
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.5rem;">
-                    <h1 style="margin:0;">🐱 Cats</h1>
+                    <h1 style="margin:0;">Cats</h1>
                     <button type="button" onclick="openAddCat()"
                         style="background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;padding:0.65rem 1.2rem;font-size:0.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);white-space:nowrap;">
                         + Add Cat
@@ -1199,68 +1156,25 @@
                 </div>
                 <div class="gh-repo-grid">
                     {{#each cats}}
-                    <div class="gh-repo-card" style="display: flex; flex-direction: row; gap: 1.25rem; align-items: flex-start;">
+                    <div class="gh-repo-card" style="display:flex;flex-direction:row;gap:0.9rem;align-items:center;padding:0.85rem 1rem;">
                         {{#if this.photoUrl}}
-                        <img src="{{this.photoUrl}}"
-                            style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0;"
-                            alt="{{this.name}}">
+                        <img src="{{this.photoUrl}}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;" alt="{{this.name}}">
                         {{else}}
-                        <div
-                            style="width: 60px; height: 60px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0; border: 1px solid #cbd5e1;">
-                            🐈</div>
+                        <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#fce7f3,#f5f3ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e8f0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg>
+                        </div>
                         {{/if}}
-                        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
-                            <div class="repo-top-row">
-                                <span class="repo-name">{{this.name}}</span>
-                                <div style="display:flex;align-items:center;gap:0.5rem;">
-                                    {{#if this.isActiveBackupProtocol}}
-                                    <span class="repo-visibility">Protected</span>
-                                    {{/if}}
-                                    <button onclick="openEditCat('{{this._id}}')"
-                                        style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                        onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
-                                </div>
+                        <div style="flex-grow:1;min-width:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                                <a href="/cats/{{this.name}}" style="font-size:0.92rem;font-weight:700;color:#ec4899;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{this.name}}</a>
+                                {{#if this.isActiveBackupProtocol}}
+                                <span class="repo-visibility" style="flex-shrink:0;">Protected</span>
+                                {{/if}}
                             </div>
-
-                            <p class="repo-desc">
-                                {{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}
-                                {{#if this.careInstructions.conditions}} · {{this.careInstructions.conditions}}{{/if}}
-                            </p>
-                            {{#if this.careInstructions.personality}}
-                            <p class="repo-desc" style="font-style:italic;color:#94a3b8;">{{this.careInstructions.personality}}</p>
-                            {{/if}}
-
-                            <div class="repo-footer">
-                                {{#if this.breed}}
-                                <span class="repo-lang">
-                                    <span class="lang-dot default-breed"></span>
-                                    {{this.breed}}
-                                </span>
-                                {{/if}}
-
-                                {{#if this.age}}
-                                <span class="repo-meta-item">{{this.age}} yrs</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.neutered}}
-                                <span class="repo-meta-item">Neutered/Spayed</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.vetName}}
-                                <span class="repo-meta-item">Vet on file</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.microchip}}
-                                <span class="repo-meta-item">Chipped</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.vaccinations}}
-                                <span class="repo-meta-item">Vaccinated</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.allergies}}
-                                <span class="repo-meta-item" style="color:#dc2626;">⚠️ Allergies</span>
-                                {{/if}}
+                            <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.3rem;flex-wrap:wrap;">
+                                {{#if this.breed}}<span style="font-size:0.75rem;color:#64748b;">{{this.breed}}</span>{{/if}}
+                                {{#if this.gender}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.gender}}</span>{{/if}}
+                                {{#if this.age}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.age}} yrs</span>{{/if}}
                             </div>
                         </div>
                     </div>
@@ -1268,7 +1182,7 @@
                 </div>
                 {{else}}
                 <div class="gh-empty">
-                    <div class="empty-icon">🐱</div>
+                    <div class="empty-icon"></div>
                     <h4>No cats registered yet</h4>
                     <p>Click "Add Cat" to register your first cat.</p>
                 </div>
@@ -1298,6 +1212,14 @@
                     <div class="form-group">
                         <label>Age (years)</label>
                         <input type="number" id="age" name="age" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender">
+                            <option value="">Not specified</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Photo</label>
@@ -1390,18 +1312,11 @@
         <div id="Guardians" style="display:none">
             <div class="container">
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.5rem;">
-                    <h1 style="margin:0;">🛡️ Guardian Search</h1>
+                    <h1 style="margin:0;">Guardian Search</h1>
                     <button type="button" onclick="openAddGuardian()"
                         style="background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;padding:0.65rem 1.2rem;font-size:0.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);white-space:nowrap;">
                         + Add Guardian
                     </button>
-                </div>
-
-                <div class="gh-section-title" style="margin-bottom: 1rem;">
-                    <h3>Find account holders to add as guardians</h3>
-                    <p style="margin: 0.35rem 0 0; color: #475569; font-size: 0.92rem;">
-                        Search users who already have an account, then select the right guardian from the results.
-                    </p>
                 </div>
 
                 <div class="form-group">
@@ -1409,7 +1324,7 @@
                     <input type="text" id="guardianSearch" placeholder="Start typing a user name..." style="width:100%;padding:0.75rem 1rem;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.95rem;color:#0f172a;outline:none;box-sizing:border-box;">
                 </div>
 
-                <div id="guardianSearchInfo" style="margin-bottom: 1rem; color: #475569; font-size: 0.92rem;">Enter a name to search registered users for guardian selection.</div>
+                <div id="guardianSearchInfo" style="margin-bottom: 1rem; color: #475569; font-size: 0.85rem;">Search for a MeoW user by name to add them as a trusted emergency guardian for your cats.</div>
 
                 <div id="guardianSearchResults" style="margin-bottom: 1.5rem;">
                     {{#if hasGuardians}}
@@ -1429,9 +1344,20 @@
                                 <span class="repo-visibility">Accepted</span>
                                 {{/if}}
                             </div>
-                            <p class="repo-desc">
-                                {{#if this.phone}}📞 {{this.phone}}{{/if}}{{#if this.email}} ✉️ {{this.email}}{{/if}}
-                            </p>
+                            <div style="display:flex;flex-direction:column;gap:0.3rem;margin-top:0.2rem;">
+                                {{#if this.phone}}
+                                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#64748b;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    {{this.phone}}
+                                </span>
+                                {{/if}}
+                                {{#if this.email}}
+                                <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#64748b;min-width:0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{this.email}}</span>
+                                </span>
+                                {{/if}}
+                            </div>
                             {{#if this.priorityOrder}}
                             <span class="repo-meta-item" style="font-size:0.72rem;color:#64748b;">Priority #{{this.priorityOrder}}</span>
                             {{/if}}
@@ -1504,7 +1430,7 @@
 
 
 
-        <script>
+        <script nonce="{{nonce}}">
             // Generate the GitHub-style activity grid with random paw-print activity
             (function () {
                 const grid = document.getElementById('activityGrid');
@@ -1566,9 +1492,9 @@
                     const status = document.getElementById('guardianSearchInfo');
                     if (status) {
                         if (query === '') {
-                            status.textContent = 'Type a guardian name to filter the list below.';
+                            status.textContent = 'Search for a MeoW user by name to add them as a trusted emergency guardian for your cats.';
                         } else if (matchCount === 0) {
-                            status.textContent = 'No guardians match that search term.';
+                            status.textContent = 'No registered MeoW users match that name.';
                         } else {
                             status.textContent = `${matchCount} guardian${matchCount === 1 ? '' : 's'} found.`;
                         }
@@ -1687,17 +1613,24 @@
                 try {
                     const res = await fetch('/profile/photo', { method: 'POST', body: formData });
                     if (!res.ok) throw new Error('Upload failed');
-                    showToast('✅ Profile photo updated!', '#166534', '#22c55e');
+                    showToast('Profile photo updated.', 'success');
                 } catch (err) {
-                    showToast('❌ Could not save photo. Try again.', '#991b1b', '#ef4444');
+                    showToast('Could not save photo. Please try again.', 'error');
                 }
                 this.value = '';
             });
 
-            function showToast(msg, color, borderColor) {
+            function showToast(msg, type) {
+                const isError = type === 'error';
+                const icon = isError
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+                const color = isError ? '#991b1b' : '#166534';
+                const bg = isError ? '#fef2f2' : '#f0fdf4';
+                const border = isError ? '#fca5a5' : '#86efac';
                 const toast = document.createElement('div');
-                toast.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:white;border-radius:0.85rem;padding:0.9rem 1.5rem;box-shadow:0 8px 30px rgba(0,0,0,0.1);font-size:0.9rem;font-weight:600;color:${color};z-index:9999;border-left:4px solid ${borderColor};white-space:nowrap;`;
-                toast.textContent = msg;
+                toast.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};border:1px solid ${border};border-radius:0.85rem;padding:0.8rem 1.25rem;box-shadow:0 8px 30px rgba(0,0,0,0.1);font-size:0.875rem;font-weight:600;color:${color};z-index:9999;display:flex;align-items:center;gap:0.6rem;white-space:nowrap;max-width:90vw;`;
+                toast.innerHTML = icon + `<span>${msg}</span>`;
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3500);
             }
@@ -1706,16 +1639,16 @@
             (function () {
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('success') === 'profile') {
-                    showToast('Profile updated successfully.', '#166534', '#22c55e');
+                    showToast('Profile updated successfully.', 'success');
                     window.history.replaceState({}, '', '/homepage');
                 } else if (params.get('success') === 'password') {
-                    showToast('Password changed successfully.', '#166534', '#22c55e');
+                    showToast('Password changed successfully.', 'success');
                     window.history.replaceState({}, '', '/homepage');
                 } else if (params.get('success') === 'cat') {
-                    showToast('Cat profile updated.', '#166534', '#22c55e');
+                    showToast('Cat profile saved.', 'success');
                     window.history.replaceState({}, '', '/homepage');
                 } else if (params.get('success') === 'guardian') {
-                    showToast('Guardian updated.', '#166534', '#22c55e');
+                    showToast('Guardian updated.', 'success');
                     window.history.replaceState({}, '', '/homepage');
                 }
             })();

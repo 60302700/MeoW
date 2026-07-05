@@ -237,7 +237,7 @@ export async function sendPasswordResetEmail(toEmail, resetToken) {
     await t.sendMail({
         from: `"MeoW Safety" <${process.env.GMAIL_USER}>`,
         to: toEmail,
-        subject: '🐱 Reset your MeoW password',
+        subject: 'Reset your MeoW password',
         html: `
             <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#fdf6ff;border-radius:12px;">
                 <h2 style="color:#d946a8;margin-bottom:8px;">Password Reset</h2>

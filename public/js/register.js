@@ -134,7 +134,7 @@ function showSuccess() {
 function spawnConfetti() {
     const container = document.getElementById('confetti-container');
     if (!container) return;
-    const symbols = ['🐾','❤️','🐱','✨','🎉'];
+    const symbols = ['🐾','❤️','✨'];
     for (let i = 0; i < 25; i++) {
         setTimeout(() => {
             const el = document.createElement('span');

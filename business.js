@@ -43,7 +43,6 @@ import {
   signalGuardianAcknowledged,
 } from "./temporal/client.js";
 import bcrypt from "bcryptjs";
-import { ReturnDocument } from "mongodb";
 
 function validatePassword(password) {
   if (!password || password.length < 8)
@@ -144,6 +143,7 @@ async function addNewCat(
     name,
     breed,
     age,
+    gender,
     photoUrl,
     qrCodeId,
     feedingSchedule,
@@ -171,6 +171,7 @@ async function addNewCat(
     name,
     breed,
     age: parseInt(age, 10) || 0,
+    gender: gender || "",
     photoUrl: photoUrl || "",
     qrCodeId,
     careInstructions: {
@@ -242,6 +243,7 @@ async function editCat(
     name,
     breed,
     age,
+    gender,
     photoUrl,
     feedingSchedule,
     foodBrand,
@@ -270,6 +272,7 @@ async function editCat(
     name,
     breed: breed || "",
     age: parseInt(age, 10) || 0,
+    gender: gender || "",
     "careInstructions.feedingSchedule": feedingSchedule || "",
     "careInstructions.foodBrand": foodBrand || "",
     "careInstructions.allergies": allergies || "",
@@ -313,7 +316,7 @@ async function updateUserPhoto(sessionId, photoUrl) {
 
 async function requestPasswordReset(email) {
   const user = await findUserByEmail(email);
-  if (!user) throw new Error("No account found with that email.");
+  if (!user) return; // silently do nothing to prevent email enumeration
   const token = await createPasswordResetToken(email);
   await sendPasswordResetEmail(email, token);
 }
