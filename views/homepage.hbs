@@ -1085,7 +1085,7 @@
                         <button onclick="closeEditGuardian('{{this._id}}')"
                             style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
                         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>
-                        <form method="POST" action="/guardians/{{this._id}}/edit">
+                        <form method="POST" action="/guardians/edit/{{this._id}}">
                             <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
