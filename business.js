@@ -44,6 +44,19 @@ import {
 import bcrypt from "bcryptjs";
 import { ReturnDocument } from "mongodb";
 
+function validatePassword(password) {
+  if (!password || password.length < 8)
+    throw new Error("Password must be at least 8 characters.");
+  if (!/[A-Z]/.test(password))
+    throw new Error("Password must contain at least one uppercase letter.");
+  if (!/[a-z]/.test(password))
+    throw new Error("Password must contain at least one lowercase letter.");
+  if (!/[0-9]/.test(password))
+    throw new Error("Password must contain at least one number.");
+  if (!/[^A-Za-z0-9]/.test(password))
+    throw new Error("Password must contain at least one special character.");
+}
+
 async function getCatByNameBusinessLayer(catName) {
   return getCatByName(catName);
 }
@@ -66,6 +79,7 @@ async function registerUser({ name, email, password, phone }) {
   if (existing) {
     throw new Error("Email already registered");
   }
+  validatePassword(password);
   const passwordHash = await bcrypt.hash(password, 10);
   return createUser({ name, email, passwordHash, phone });
 }
@@ -302,6 +316,7 @@ async function requestPasswordReset(email) {
 async function resetPasswordWithToken(token, newPassword) {
   const record = await getPasswordResetToken(token);
   if (!record) throw new Error("This reset link is invalid or has expired.");
+  validatePassword(newPassword);
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(record.email, passwordHash);
   await deletePasswordResetToken(token);
@@ -341,6 +356,7 @@ async function changePassword(sessionId, currentPassword, newPassword) {
   if (!user) throw new Error("User not found");
   const valid = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!valid) throw new Error("Current password is incorrect.");
+  validatePassword(newPassword);
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await updateUserPassword(session.email, passwordHash);
 }
