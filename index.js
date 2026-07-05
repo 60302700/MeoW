@@ -64,13 +64,6 @@ const hbsEngine = engine({
   helpers: {
     eq: (a, b) => a === b,
     initial: (str) => (str && str.length > 0 ? str[0].toUpperCase() : "?"),
-    initials: (str) => {
-      if (!str) return "?";
-      const parts = str.trim().split(/\s+/);
-      const first = parts[0]?.[0]?.toUpperCase() || "";
-      const last = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
-      return first + last;
-    },
   },
 });
 app.engine("hbs", hbsEngine);
@@ -103,6 +96,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
+function nameInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0]?.toUpperCase() || "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
+  return first + last;
+}
+
 function getSessionCookie(req) {
   const cookieHeader = req.headers.cookie || "";
   const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
@@ -352,6 +353,7 @@ app.get("/homepage", async (req, res) => {
     title: `${user.name}'s Homepage`,
     isLoggedIn,
     user,
+    userInitials: nameInitials(user.name),
     cats,
     guardians,
     hasCats: cats && cats.length > 0,
@@ -737,6 +739,7 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     title: cat.name,
     cat,
     user: data.user,
+    userInitials: nameInitials(data.user.name),
     isUnavailable: data.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
