@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { doubleCsrf } from "csrf-csrf";
@@ -68,7 +69,27 @@ app.engine("handlebars", engine({ extname: ".handlebars" }));
 app.set("view engine", "hbs");
 app.set("views", "./views");
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString("base64");
+  next();
+});
+
+app.use((req, res, next) =>
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        fontSrc: ["'self'"],
+        connectSrc: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  })(req, res, next)
+);
+
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

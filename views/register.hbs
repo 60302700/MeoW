@@ -201,8 +201,8 @@
     </div>
 </div>
 
-<script src="/js/register.js"></script>
-<script>
+<script src="/js/register.js" nonce="{{nonce}}"></script>
+<script nonce="{{nonce}}">
 function checkPwStrength(inputId, rulesId) {
     const val = document.getElementById(inputId).value;
     const box = document.getElementById(rulesId);
