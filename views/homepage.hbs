@@ -770,18 +770,18 @@
         <!-- Tab bar -->
         <div class="gh-section-bar">
             <span class="gh-tab active" onclick="showOverview()">
-                <span class="tab-icon">🐱</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
                 Overview
             </span>
             <span class="gh-tab" onclick="showCats()">
-                <span class="tab-icon">📋</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7c0-2.21-3.58-4-8-4S4 4.79 4 7c0 1.12.61 2.14 1.62 2.91C4.61 10.74 4 11.79 4 13c0 1.12.61 2.14 1.62 2.91C4.61 16.74 4 17.79 4 19c0 2.21 3.58 4 8 4s8-1.79 8-4c0-1.21-.61-2.26-1.62-3.09C19.39 15.14 20 14.12 20 13c0-1.21-.61-2.26-1.62-3.09C19.39 9.14 20 8.12 20 7z"/></svg></span>
                 Cats
                 {{#if hasCats}}
                 <span class="tab-count">{{cats.length}}</span>
                 {{/if}}
             </span>
             <span class="gh-tab" onclick="showGuardians()">
-                <span class="tab-icon">🛡️</span>
+                <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                 Guardians
                 {{#if hasGuardians}}
                 <span class="tab-count">{{guardians.length}}</span>
@@ -805,60 +805,28 @@
             {{#if hasCats}}
             <div class="gh-repo-grid">
                 {{#each cats}}
-                <div class="gh-repo-card"
-                    style="display: flex; flex-direction: row; gap: 1.25rem; align-items: flex-start;">
+                <div class="gh-repo-card" style="display:flex;flex-direction:row;gap:0.9rem;align-items:center;padding:0.85rem 1rem;">
                     {{#if this.photoUrl}}
-                    <img src="{{this.photoUrl}}"
-                        style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0;"
-                        alt="{{this.name}}">
+                    <img src="{{this.photoUrl}}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;" alt="{{this.name}}">
                     {{else}}
-                    <div
-                        style="width: 60px; height: 60px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0; border: 1px solid #cbd5e1;">
-                        🐈</div>
+                    <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#fce7f3,#f5f3ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e8f0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7c0-2.21-3.58-4-8-4S4 4.79 4 7c0 1.12.61 2.14 1.62 2.91C4.61 10.74 4 11.79 4 13c0 1.12.61 2.14 1.62 2.91C4.61 16.74 4 17.79 4 19c0 2.21 3.58 4 8 4s8-1.79 8-4c0-1.21-.61-2.26-1.62-3.09C19.39 15.14 20 14.12 20 13c0-1.21-.61-2.26-1.62-3.09C19.39 9.14 20 8.12 20 7z"/></svg>
+                    </div>
                     {{/if}}
-                    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
-                        <div class="repo-top-row">
-                            <span class="repo-name">{{this.name}}</a></span>
-                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <div style="flex-grow:1;min-width:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                            <a href="/cats/{{this.name}}" style="font-size:0.92rem;font-weight:700;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{this.name}}</a>
+                            <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
                                 {{#if this.isActiveBackupProtocol}}
                                 <span class="repo-visibility">Protected</span>
                                 {{/if}}
-                                <button onclick="openEditCat('{{this._id}}')"
-                                    style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                    onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
+                                <button onclick="openEditCat('{{this._id}}')" style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.15rem 0.55rem;font-size:0.72rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
                             </div>
                         </div>
-
-                        <p class="repo-desc">
-                            {{#if this.careInstructions.personality}}{{this.careInstructions.personality}}{{else}}{{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}{{#if this.careInstructions.conditions}} &middot; {{this.careInstructions.conditions}}{{/if}}{{/if}}
-                        </p>
-
-                        <div class="repo-footer">
-                            {{#if this.breed}}
-                            <span class="repo-lang">
-                                <span class="lang-dot default-breed"></span>
-                                {{this.breed}}
-                            </span>
-                            {{/if}}
-
-                            {{#if this.age}}
-                            <span class="repo-meta-item">{{this.age}} yrs</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.neutered}}
-                            <span class="repo-meta-item">Neutered</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.vetName}}
-                            <span class="repo-meta-item">Vet on file</span>
-                            {{/if}}
-
-                            {{#if this.careInstructions.allergies}}
-                            <span class="repo-meta-item" style="color:#dc2626;display:flex;align-items:center;gap:0.25rem;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                Allergies
-                            </span>
-                            {{/if}}
+                        <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.3rem;flex-wrap:wrap;">
+                            {{#if this.breed}}<span style="font-size:0.75rem;color:#64748b;">{{this.breed}}</span>{{/if}}
+                            {{#if this.gender}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.gender}}</span>{{/if}}
+                            {{#if this.age}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.age}} yrs</span>{{/if}}
                         </div>
                     </div>
                 </div>
@@ -893,12 +861,20 @@
                             </div>
                         </div>
 
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
                             <div>
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Age (yrs)</label>
                                 <input type="number" name="age" value="{{this.age}}" min="0"
                                     style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;"
                                     onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Gender</label>
+                                <select name="gender" style="width:100%;padding:0.65rem 0.85rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;background:white;" onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                    <option value="">Unknown</option>
+                                    <option value="Male" {{#if (eq this.gender "Male")}}selected{{/if}}>Male</option>
+                                    <option value="Female" {{#if (eq this.gender "Female")}}selected{{/if}}>Female</option>
+                                </select>
                             </div>
                             <div>
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Neutered</label>
@@ -1184,64 +1160,28 @@
                 </div>
                 <div class="gh-repo-grid">
                     {{#each cats}}
-                    <div class="gh-repo-card" style="display: flex; flex-direction: row; gap: 1.25rem; align-items: flex-start;">
+                    <div class="gh-repo-card" style="display:flex;flex-direction:row;gap:0.9rem;align-items:center;padding:0.85rem 1rem;">
                         {{#if this.photoUrl}}
-                        <img src="{{this.photoUrl}}"
-                            style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0;"
-                            alt="{{this.name}}">
+                        <img src="{{this.photoUrl}}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;" alt="{{this.name}}">
                         {{else}}
-                        <div
-                            style="width: 60px; height: 60px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0; border: 1px solid #cbd5e1;">
-                            🐈</div>
+                        <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#fce7f3,#f5f3ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e8f0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7c0-2.21-3.58-4-8-4S4 4.79 4 7c0 1.12.61 2.14 1.62 2.91C4.61 10.74 4 11.79 4 13c0 1.12.61 2.14 1.62 2.91C4.61 16.74 4 17.79 4 19c0 2.21 3.58 4 8 4s8-1.79 8-4c0-1.21-.61-2.26-1.62-3.09C19.39 15.14 20 14.12 20 13c0-1.21-.61-2.26-1.62-3.09C19.39 9.14 20 8.12 20 7z"/></svg>
+                        </div>
                         {{/if}}
-                        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100%;">
-                            <div class="repo-top-row">
-                                <span class="repo-name">{{this.name}}</span>
-                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div style="flex-grow:1;min-width:0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+                                <a href="/cats/{{this.name}}" style="font-size:0.92rem;font-weight:700;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{this.name}}</a>
+                                <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
                                     {{#if this.isActiveBackupProtocol}}
                                     <span class="repo-visibility">Protected</span>
                                     {{/if}}
-                                    <button onclick="openEditCat('{{this._id}}')"
-                                        style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.2rem 0.6rem;font-size:0.75rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;"
-                                        onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
+                                    <button onclick="openEditCat('{{this._id}}')" style="background:none;border:1.5px solid #e2e8f0;border-radius:0.5rem;padding:0.15rem 0.55rem;font-size:0.72rem;font-weight:600;color:#64748b;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='#ec4899';this.style.color='#ec4899'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">Edit</button>
                                 </div>
                             </div>
-
-                            <p class="repo-desc">
-                                {{#if this.careInstructions.personality}}{{this.careInstructions.personality}}{{else}}{{#if this.careInstructions.feedingSchedule}}{{this.careInstructions.feedingSchedule}}{{/if}}{{#if this.careInstructions.conditions}} &middot; {{this.careInstructions.conditions}}{{/if}}{{/if}}
-                            </p>
-
-                            <div class="repo-footer">
-                                {{#if this.breed}}
-                                <span class="repo-lang">
-                                    <span class="lang-dot default-breed"></span>
-                                    {{this.breed}}
-                                </span>
-                                {{/if}}
-
-                                {{#if this.age}}
-                                <span class="repo-meta-item">{{this.age}} yrs</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.neutered}}
-                                <span class="repo-meta-item">Neutered/Spayed</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.vetName}}
-                                <span class="repo-meta-item">Vet on file</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.microchip}}
-                                <span class="repo-meta-item">Chipped</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.vaccinations}}
-                                <span class="repo-meta-item">Vaccinated</span>
-                                {{/if}}
-
-                                {{#if this.careInstructions.allergies}}
-                                <span class="repo-meta-item" style="color:#dc2626;">⚠️ Allergies</span>
-                                {{/if}}
+                            <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.3rem;flex-wrap:wrap;">
+                                {{#if this.breed}}<span style="font-size:0.75rem;color:#64748b;">{{this.breed}}</span>{{/if}}
+                                {{#if this.gender}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.gender}}</span>{{/if}}
+                                {{#if this.age}}<span style="font-size:0.75rem;color:#94a3b8;">·</span><span style="font-size:0.75rem;color:#64748b;">{{this.age}} yrs</span>{{/if}}
                             </div>
                         </div>
                     </div>
@@ -1279,6 +1219,14 @@
                     <div class="form-group">
                         <label>Age (years)</label>
                         <input type="number" id="age" name="age" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender">
+                            <option value="">Not specified</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Photo</label>
