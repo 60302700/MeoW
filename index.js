@@ -30,7 +30,6 @@ import {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   declineGuardianAccess,
-  changePassword,
   editCat,
   editGuardian,
   deleteAccount,

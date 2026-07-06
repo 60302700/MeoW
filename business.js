@@ -380,13 +380,6 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
-async function requestPasswordReset(email) {
-  const user = await findUserByEmail(email);
-  if (!user) return; // silently do nothing to prevent email enumeration
-  const token = await createPasswordResetToken(email);
-  await sendPasswordResetEmail(email, token);
-}
-
 async function resetPasswordWithToken(token, newPassword) {
   const record = await getPasswordResetToken(token);
   if (!record) throw new Error("This reset link is invalid or has expired.");
@@ -569,7 +562,6 @@ export {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   declineGuardianAccess,
-  changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,
