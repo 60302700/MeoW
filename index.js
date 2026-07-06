@@ -324,7 +324,7 @@ app.get("/emergency", (req, res) => {
 app.get("/", async (req, res) => {
   const isLoggedIn = await Loggedin(req);
   if (isLoggedIn) return res.redirect("/homepage");
-  res.redirect("/login");
+  res.render("landing", { title: "MeoW — Cat Safety Network", isLoggedIn: false, csrfToken: req.csrfToken() });
 });
 
 app.get("/scan", (req, res) => {

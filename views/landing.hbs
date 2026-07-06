@@ -1,0 +1,326 @@
+<style>
+    .landing-wrap {
+        width: 100%;
+        max-width: 960px;
+        padding: 3rem 1.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .landing-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #fdf2f8;
+        border: 1px solid #fbcfe8;
+        color: #be185d;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        margin-bottom: 1.5rem;
+    }
+
+    .landing-headline {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1.15;
+        margin: 0 0 1.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    .landing-headline span {
+        background: linear-gradient(135deg, #ec4899, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .landing-sub {
+        font-size: clamp(1rem, 2.5vw, 1.15rem);
+        color: #475569;
+        line-height: 1.65;
+        max-width: 600px;
+        margin: 0 auto 2.25rem;
+    }
+
+    .landing-cta-row {
+        display: flex;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 3.5rem;
+    }
+
+    .btn-primary {
+        padding: 0.85rem 2rem;
+        background: linear-gradient(135deg, #ec4899, #a855f7);
+        color: white;
+        border: none;
+        border-radius: 0.85rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(236, 72, 153, 0.35);
+        transition: transform 0.15s, box-shadow 0.15s;
+        display: inline-block;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(236, 72, 153, 0.45);
+    }
+
+    .btn-secondary {
+        padding: 0.85rem 2rem;
+        background: white;
+        color: #0f172a;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.85rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: border-color 0.15s, transform 0.15s;
+        display: inline-block;
+    }
+
+    .btn-secondary:hover {
+        border-color: #ec4899;
+        transform: translateY(-2px);
+    }
+
+    .landing-features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        width: 100%;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 1.25rem;
+        padding: 1.5rem 1.25rem;
+        text-align: left;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+        border-color: #fbcfe8;
+        transform: translateY(-3px);
+    }
+
+    .feature-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.35rem;
+    }
+
+    .feature-icon.pink  { background: #fdf2f8; }
+    .feature-icon.purple { background: #f5f3ff; }
+    .feature-icon.green { background: #f0fdf4; }
+
+    .feature-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 0.4rem;
+    }
+
+    .feature-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        line-height: 1.55;
+        margin: 0;
+    }
+
+    .landing-divider {
+        width: 100%;
+        border: none;
+        border-top: 1px solid #f1f5f9;
+        margin: 0 0 2rem;
+    }
+
+    .landing-how {
+        width: 100%;
+        margin-bottom: 3rem;
+    }
+
+    .landing-how h2 {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0 0 1.5rem;
+        text-align: center;
+    }
+
+    .how-steps {
+        display: flex;
+        gap: 0;
+        position: relative;
+    }
+
+    .how-steps::before {
+        content: '';
+        position: absolute;
+        top: 22px;
+        left: calc(100% / 6);
+        right: calc(100% / 6);
+        height: 2px;
+        background: linear-gradient(90deg, #fbcfe8, #ddd6fe);
+        z-index: 0;
+    }
+
+    .how-step {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        padding: 0 0.5rem;
+    }
+
+    .step-num {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ec4899, #a855f7);
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        flex-shrink: 0;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+
+    .step-desc {
+        font-size: 0.73rem;
+        color: #64748b;
+        line-height: 1.45;
+    }
+
+    @media (max-width: 720px) {
+        .landing-features { grid-template-columns: 1fr; }
+        .how-steps { flex-direction: column; gap: 1rem; align-items: flex-start; }
+        .how-steps::before { display: none; }
+        .how-step { flex-direction: row; text-align: left; gap: 1rem; padding: 0; }
+        .step-num { margin-bottom: 0; flex-shrink: 0; }
+    }
+
+    @media (max-width: 480px) {
+        .landing-wrap { padding: 2rem 1rem 1.5rem; }
+        .landing-features { gap: 0.85rem; }
+    }
+</style>
+
+<div class="landing-wrap">
+
+    <div class="landing-badge">Cat Safety Network</div>
+
+    <h1 class="landing-headline">
+        Your cat is safe.<br>
+        <span>Even when you're not there.</span>
+    </h1>
+
+    <p class="landing-sub">
+        MeoW lets you register your cats, assign trusted guardians, and automatically escalate care alerts when you're unavailable — so your cats are never left without a plan.
+    </p>
+
+    <div class="landing-cta-row">
+        <a href="/register" class="btn-primary">Get started free</a>
+        <a href="/login" class="btn-secondary">Sign in</a>
+    </div>
+
+    <div class="landing-features">
+        <div class="feature-card">
+            <div class="feature-icon pink">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg>
+            </div>
+            <p class="feature-title">Cat Profiles</p>
+            <p class="feature-desc">Store everything — breed, diet, medications, vet contact, and care instructions — in one place. Accessible by guardians when it matters most.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon purple">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <p class="feature-title">Trusted Guardians</p>
+            <p class="feature-desc">Assign people you trust in priority order. When you mark yourself unavailable, they're notified automatically — one by one, with a 30-minute window each.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <p class="feature-title">Auto-Escalation</p>
+            <p class="feature-desc">Powered by durable Temporal workflows. If a guardian doesn't respond, the next one is contacted automatically — no manual follow-up needed.</p>
+        </div>
+    </div>
+
+    <hr class="landing-divider">
+
+    <div class="landing-how">
+        <h2>How it works</h2>
+        <div class="how-steps">
+            <div class="how-step">
+                <div class="step-num">1</div>
+                <div>
+                    <p class="step-label">Register your cats</p>
+                    <p class="step-desc">Add profiles with care details, diet, and medical info.</p>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">2</div>
+                <div>
+                    <p class="step-label">Add guardians</p>
+                    <p class="step-desc">Assign trusted contacts in priority order.</p>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">3</div>
+                <div>
+                    <p class="step-label">Mark unavailable</p>
+                    <p class="step-desc">When you can't be there, trigger the care chain.</p>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">4</div>
+                <div>
+                    <p class="step-label">Guardians respond</p>
+                    <p class="step-desc">They get a magic link with your cat's full care instructions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p style="font-size:0.8rem;color:#94a3b8;">
+        Already have an account? <a href="/login" style="color:#ec4899;font-weight:600;text-decoration:none;">Sign in</a>
+    </p>
+
+</div>
