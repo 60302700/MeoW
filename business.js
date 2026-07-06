@@ -55,6 +55,78 @@ function decodeIdToken(idToken) {
   return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
 }
 
+// Cats store a date of birth rather than a static age, so age never goes
+// stale — it's just arithmetic between dob and "now", recomputed on every
+// read. The owner can enter age in whatever unit fits the cat (a kitten in
+// weeks, an adult in years); we convert that straight to a dob, then always
+// display age back out in whichever unit reads most naturally for its
+// current age (a 3-year-old shows "3 years", not "156 weeks").
+function ageToDob(amount, unit) {
+  const n = parseInt(amount, 10) || 0;
+  const dob = new Date();
+  switch (unit) {
+    case "days":
+      dob.setUTCDate(dob.getUTCDate() - n);
+      break;
+    case "weeks":
+      dob.setUTCDate(dob.getUTCDate() - n * 7);
+      break;
+    case "months":
+      dob.setUTCMonth(dob.getUTCMonth() - n);
+      break;
+    case "years":
+    default:
+      dob.setUTCFullYear(dob.getUTCFullYear() - n);
+      break;
+  }
+  return dob;
+}
+
+function calculateAge(dob) {
+  if (!dob) return null;
+  const now = new Date();
+  const birth = new Date(dob);
+  const diffDays = Math.max(Math.floor((now - birth) / 86400000), 0);
+
+  if (diffDays < 14) {
+    return { amount: diffDays, unit: diffDays === 1 ? "day" : "days" };
+  }
+  if (diffDays < 60) {
+    const weeks = Math.floor(diffDays / 7);
+    return { amount: weeks, unit: weeks === 1 ? "week" : "weeks" };
+  }
+  if (diffDays < 365) {
+    let months =
+      (now.getUTCFullYear() - birth.getUTCFullYear()) * 12 +
+      (now.getUTCMonth() - birth.getUTCMonth());
+    if (now.getUTCDate() < birth.getUTCDate()) months--;
+    months = Math.max(months, 1);
+    return { amount: months, unit: months === 1 ? "month" : "months" };
+  }
+  let years = now.getUTCFullYear() - birth.getUTCFullYear();
+  const hadBirthdayThisYear =
+    now.getUTCMonth() > birth.getUTCMonth() ||
+    (now.getUTCMonth() === birth.getUTCMonth() &&
+      now.getUTCDate() >= birth.getUTCDate());
+  if (!hadBirthdayThisYear) years--;
+  return { amount: years, unit: years === 1 ? "year" : "years" };
+}
+
+function withCatAge(cat) {
+  if (!cat) return cat;
+  const age = calculateAge(cat.dob);
+  return {
+    ...cat,
+    age: age ? age.amount : null,
+    ageUnit: age ? age.unit : null,
+    ageDisplay: age ? `${age.amount} ${age.unit}` : null,
+  };
+}
+
+function withCatAges(cats) {
+  return cats.map(withCatAge);
+}
+
 async function getOrCreateUser({ sub, email, name }) {
   let user = await findUserByAuthSub(sub);
   if (user) return user;
@@ -168,7 +240,7 @@ async function requestPasswordReset(email) {
 }
 
 async function getCatByNameBusinessLayer(catName, ownerId) {
-  return getCatByName(catName, ownerId);
+  return withCatAge(await getCatByName(catName, ownerId));
 }
 
 async function handleScan(qrCodeId) {
@@ -178,7 +250,7 @@ async function handleScan(qrCodeId) {
   }
   const eventId = await createEmergencyEvent({ qrCodeId, catId: cat._id });
   const guardians = await getGuardiansByOwner(cat.ownerId);
-  return { cat, eventId, guardianCount: guardians.length };
+  return { cat: withCatAge(cat), eventId, guardianCount: guardians.length };
 }
 
 async function getEmergencyView(eventId) {
@@ -188,7 +260,7 @@ async function getEmergencyView(eventId) {
   }
   const cat = await getCatById(event.catId);
   const guardians = await getGuardiansByOwner(cat.ownerId);
-  return { event, cat, guardians };
+  return { event, cat: withCatAge(cat), guardians };
 }
 
 async function claimGuardian(eventId, guardianId) {
@@ -198,7 +270,7 @@ async function claimGuardian(eventId, guardianId) {
 async function getUserHomepage(sessionId) {
   const user = await resolveUserFromSession(sessionId);
   if (!user) return null;
-  const cats = await getCatsByOwner(user._id);
+  const cats = withCatAges(await getCatsByOwner(user._id));
   const guardians = await getGuardiansByOwner(user._id);
   const unavailability = await getActiveUnavailability(user._id.toString());
   return { user, cats, guardians, isUnavailable: !!unavailability };
@@ -219,6 +291,7 @@ async function addNewCat(
     name,
     breed,
     age,
+    ageUnit,
     gender,
     photoUrl,
     qrCodeId,
@@ -244,7 +317,7 @@ async function addNewCat(
     ownerId: user._id,
     name,
     breed,
-    age: parseInt(age, 10) || 0,
+    dob: ageToDob(age, ageUnit),
     gender: gender || "",
     photoUrl: photoUrl || "",
     qrCodeId,
@@ -313,6 +386,7 @@ async function editCat(
     name,
     breed,
     age,
+    ageUnit,
     gender,
     photoUrl,
     feedingSchedule,
@@ -345,7 +419,7 @@ async function editCat(
   Object.assign(updates, {
     name,
     breed: breed || "",
-    age: parseInt(age, 10) || 0,
+    dob: ageToDob(age, ageUnit),
     gender: gender || "",
     "careInstructions.feedingSchedule": feedingSchedule || "",
     "careInstructions.foodBrand": foodBrand || "",
@@ -383,40 +457,9 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
-async function requestPasswordReset(email) {
-  const user = await findUserByEmail(email);
-  if (!user) return; // silently do nothing to prevent email enumeration
-  const token = await createPasswordResetToken(email);
-  await sendPasswordResetEmail(email, token);
-}
-
-async function resetPasswordWithToken(token, newPassword) {
-  const record = await getPasswordResetToken(token);
-  if (!record) throw new Error("This reset link is invalid or has expired.");
-  validatePassword(newPassword);
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-  await updateUserPassword(record.email, passwordHash);
-  await deletePasswordResetToken(token);
-}
-
-async function updateProfile(
-  sessionId,
-  { name, phone, location, currentPassword, newPassword },
-) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-
-  if (newPassword) {
-    const valid = await bcrypt.compare(
-      currentPassword || "",
-      user.passwordHash,
-    );
-    if (!valid) throw new Error("Current password is incorrect.");
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(session.email, passwordHash);
-  }
+async function updateProfile(sessionId, { name, phone, location }) {
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
@@ -504,7 +547,7 @@ async function getGuardianAccess(token) {
   ]);
   return {
     record,
-    cats,
+    cats: withCatAges(cats),
     ownerName: owner?.name || "Unknown",
     ownerLocation: owner?.location || "",
     guardianName: guardian?.name || "Guardian",
@@ -549,7 +592,7 @@ async function acknowledgeGuardianAccess(token) {
       guardian.email,
       guardian.name || "Guardian",
       owner,
-      cats,
+      withCatAges(cats),
       magicLink,
     );
   }
@@ -579,7 +622,6 @@ export {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   declineGuardianAccess,
-  changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,

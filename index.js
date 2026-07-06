@@ -30,7 +30,6 @@ import {
   getGuardianAccess,
   acknowledgeGuardianAccess,
   declineGuardianAccess,
-  changePassword,
   editCat,
   editGuardian,
   deleteAccount,
@@ -415,6 +414,7 @@ app.post(
       name,
       breed,
       age,
+      ageUnit,
       gender,
       photo,
       feedingSchedule,
@@ -450,7 +450,8 @@ app.post(
       await addNewCat(sessionId, {
         name,
         breed,
-        age: Number(age),
+        age,
+        ageUnit,
         gender,
         photoUrl: photoString,
         qrCodeId: uuidv4(),
@@ -603,6 +604,7 @@ app.post(
       name,
       breed,
       age,
+      ageUnit,
       gender,
       feedingSchedule,
       foodBrand,
@@ -627,6 +629,7 @@ app.post(
         name,
         breed,
         age,
+        ageUnit,
         gender,
         photoUrl,
         feedingSchedule,
@@ -681,27 +684,9 @@ app.post(
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const {
-    name,
-    phone,
-    location,
-    currentPassword,
-    newPassword,
-    confirmNewPassword,
-  } = req.body;
-  if (newPassword && newPassword !== confirmNewPassword) {
-    return res.redirect(
-      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
-    );
-  }
+  const { name, phone, location } = req.body;
   try {
-    await updateProfile(sessionId, {
-      name,
-      phone,
-      location,
-      currentPassword,
-      newPassword: newPassword || null,
-    });
+    await updateProfile(sessionId, { name, phone, location });
     res.redirect("/homepage?success=profile");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
@@ -848,7 +833,7 @@ app.post("/guardian-access/:token/chat", chatLimiter, async (req, res) => {
       .map((cat) => {
         const ci = cat.careInstructions || {};
         const lines = [
-          `Cat: ${sanitizeForPrompt(cat.name)}${cat.breed ? ` (${sanitizeForPrompt(cat.breed)})` : ""}${cat.age ? `, ${cat.age} yrs` : ""}`,
+          `Cat: ${sanitizeForPrompt(cat.name)}${cat.breed ? ` (${sanitizeForPrompt(cat.breed)})` : ""}${cat.ageDisplay ? `, ${cat.ageDisplay} old` : ""}`,
         ];
         if (ci.feedingSchedule)
           lines.push(

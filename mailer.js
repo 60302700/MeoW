@@ -92,7 +92,7 @@ function buildWalletCardSvg(guardianName, owner, cats, qrDataUri) {
     rightH += 20;                            // "CATS" label
     for (const cat of cats) {
         rightH += 20;                        // cat name
-        if (cat.breed || cat.age) rightH += 18;
+        if (cat.breed || cat.ageDisplay) rightH += 18;
         rightH += 6;
     }
 
@@ -160,7 +160,7 @@ function buildWalletCardSvg(guardianName, owner, cats, qrDataUri) {
     ry += 20;
 
     for (const cat of cats) {
-        const meta = [cat.breed, cat.age ? `${cat.age} yrs` : null].filter(Boolean).join(', ');
+        const meta = [cat.breed, cat.ageDisplay].filter(Boolean).join(', ');
         p.push(`<text x="${RIGHT_X}" y="${ry}" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700" fill="#0f172a">${xmlEsc(trunc(cat.name, 20))}</text>`);
         ry += 20;
         if (meta) {

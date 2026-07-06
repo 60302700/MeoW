@@ -20,7 +20,8 @@
     "worker": "node temporal/worker.js",
     "start": "node index.js",
     "migrate:images": "node migrate-images-to-cloudinary.js",
-    "migrate:users": "node migrate-users-to-auth0.js"
+    "migrate:users": "node migrate-users-to-auth0.js",
+    "migrate:cats": "node migrate-cats-age-to-dob.js"
   },
   "dependencies": {
     "@temporalio/activity": "^1.19.0",
