@@ -141,6 +141,14 @@ async function getCatByQrCode(qrCodeId) {
   return Cats.findOne({ qrCodeId });
 }
 
+async function getCatsWithQrCode() {
+  const { Cats } = collections();
+  return Cats.find(
+    { qrCodeId: { $exists: true, $ne: null } },
+    { projection: { name: 1, photoUrl: 1, qrCodeId: 1 } }
+  ).toArray();
+}
+
 async function getCatById(catId) {
   const { Cats } = collections();
   return Cats.findOne({ _id: new ObjectId(catId) });
@@ -405,6 +413,7 @@ export {
   deleteSession,
   createCat,
   getCatByQrCode,
+  getCatsWithQrCode,
   getCatById,
   getCatsByOwner,
   getCatByName,

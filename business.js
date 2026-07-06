@@ -11,6 +11,7 @@ import {
   deleteSession,
   deleteUserAccount,
   getCatByQrCode,
+  getCatsWithQrCode,
   getCatById,
   getCatsByOwner,
   getCatByName,
@@ -249,6 +250,31 @@ async function getCatInfoForScan(qrCodeId) {
   if (!cat) return null;
   const owner = await findUserById(cat.ownerId.toString());
   return { cat: withCatAge(cat), owner };
+}
+
+// Demo helper: lists registered cats with a scannable QR image + a direct link
+// to their finder page, so the scan flow can be tested without a physical tag.
+async function getQrSimulatorData() {
+  const cats = await getCatsWithQrCode();
+  const baseUrl = process.env.APP_URL || "http://localhost:3000";
+  const QRCode = (await import("qrcode")).default;
+  return Promise.all(
+    cats.map(async (cat) => {
+      const scanUrl = `${baseUrl}/scan?qr=${encodeURIComponent(cat.qrCodeId)}`;
+      const qrImage = await QRCode.toDataURL(scanUrl, {
+        margin: 1,
+        width: 220,
+        color: { dark: "#0f172a", light: "#ffffff" },
+      });
+      return {
+        name: cat.name,
+        photoUrl: cat.photoUrl,
+        qrCodeId: cat.qrCodeId,
+        scanUrl,
+        qrImage,
+      };
+    })
+  );
 }
 
 async function handleScan(qrCodeId, finderInfo = {}) {
@@ -649,6 +675,7 @@ export {
   logout,
   requestPasswordReset,
   getCatInfoForScan,
+  getQrSimulatorData,
   handleScan,
   acknowledgeOwnerScanBusiness,
   getEmergencyView,
