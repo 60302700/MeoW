@@ -1037,7 +1037,14 @@ app.use((err, req, res, next) => {
     if (referer) {
       try {
         const refUrl = new URL(referer);
-        if (refUrl.origin === `${req.protocol}://${req.get("host")}`) {
+        // Reject paths like "//evil.com" or "/\evil.com" — browsers treat a
+        // Location header starting with "//" as scheme-relative and will
+        // navigate off-site even though the string looks like a local path.
+        const isSafeLocalPath = /^\/[^/\\]/.test(refUrl.pathname);
+        if (
+          refUrl.origin === `${req.protocol}://${req.get("host")}` &&
+          isSafeLocalPath
+        ) {
           redirectTo = refUrl.pathname;
         }
       } catch {

@@ -40,10 +40,10 @@ export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerNam
       <h1 style="margin:6px 0 0;color:#ffffff;font-size:1.4rem;font-weight:800;">Guardian Alert</h1>
     </div>
     <div style="padding:28px 28px 20px;">
-      <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${guardianName},</p>
+      <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${xmlEsc(guardianName)},</p>
       <p style="margin:0 0 16px;font-size:0.9rem;color:#475569;line-height:1.6;">
-        <strong style="color:#0f172a;">${ownerName}</strong> has marked themselves as unavailable.
-        You are their next guardian for <strong style="color:#9d174d;">${catList}</strong>.
+        <strong style="color:#0f172a;">${xmlEsc(ownerName)}</strong> has marked themselves as unavailable.
+        You are their next guardian for <strong style="color:#9d174d;">${xmlEsc(catList)}</strong>.
         Please respond within <strong>30 minutes</strong> or the next guardian will be contacted.
       </p>
       ${ownerLocation ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:0.85rem;color:#475569;">

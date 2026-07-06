@@ -27,6 +27,12 @@ async function connectDB() {
   return db;
 }
 
+// Wraps a value in `$eq` so a caller can never smuggle a query operator
+// (e.g. `{ $ne: null }`) through a field that is supposed to be a plain string.
+function eq(value) {
+  return { $eq: value };
+}
+
 function collections() {
   return {
     Users: db.collection("Users"),
@@ -55,7 +61,7 @@ async function createUser({ name, email, phone, authSub }) {
 
 async function findUserByEmail(email) {
   const { Users } = collections();
-  return Users.findOne({ email });
+  return Users.findOne({ email: eq(email) });
 }
 
 async function findUserById(userId) {
@@ -65,7 +71,7 @@ async function findUserById(userId) {
 
 async function findUserByAuthSub(authSub) {
   const { Users } = collections();
-  return Users.findOne({ authSub });
+  return Users.findOne({ authSub: eq(authSub) });
 }
 
 async function linkAuthSub(userId, authSub) {
@@ -95,19 +101,19 @@ async function createSession(userId) {
 async function touchSession(sessionId) {
   const { Sessions } = collections();
   await Sessions.updateOne(
-    { sessionId },
+    { sessionId: eq(sessionId) },
     { $set: { lastActivity: new Date() } },
   );
 }
 
 async function getSessionBySessionId(sessionId) {
   const { Sessions } = collections();
-  return Sessions.findOne({ sessionId });
+  return Sessions.findOne({ sessionId: eq(sessionId) });
 }
 
 async function deleteSession(sessionId) {
   const { Sessions } = collections();
-  await Sessions.deleteOne({ sessionId });
+  await Sessions.deleteOne({ sessionId: eq(sessionId) });
 }
 // ---- Cats ----
 
@@ -138,7 +144,7 @@ async function createCat({
 
 async function getCatByQrCode(qrCodeId) {
   const { Cats } = collections();
-  return Cats.findOne({ qrCodeId });
+  return Cats.findOne({ qrCodeId: eq(qrCodeId) });
 }
 
 async function getCatById(catId) {
@@ -153,7 +159,7 @@ async function getCatsByOwner(ownerId) {
 
 async function getCatByName(catName, ownerId) {
   const { Cats } = collections();
-  const query = { name: catName };
+  const query = { name: eq(catName) };
   if (ownerId) query.ownerId = new ObjectId(ownerId);
   return Cats.findOne(query);
 }
@@ -316,7 +322,7 @@ async function resolveUnavailability(unavailabilityId) {
 
 async function getGuardianAccessToken(token) {
   const { GuardianAccessTokens } = collections();
-  const record = await GuardianAccessTokens.findOne({ token });
+  const record = await GuardianAccessTokens.findOne({ token: eq(token) });
   if (!record) return null;
   if (record.invalidated) return null;
   const ageHours = (Date.now() - new Date(record.createdAt).getTime()) / 36e5;
@@ -350,7 +356,7 @@ async function resetGuardiansHasAccepted(ownerId) {
 async function declineGuardianToken(token) {
   const { GuardianAccessTokens } = collections();
   await GuardianAccessTokens.updateOne(
-    { token },
+    { token: eq(token) },
     { $set: { invalidated: true, declined: true, declinedAt: new Date() } },
   );
 }
@@ -358,7 +364,7 @@ async function declineGuardianToken(token) {
 async function acknowledgeGuardianToken(token) {
   const { GuardianAccessTokens } = collections();
   return GuardianAccessTokens.findOneAndUpdate(
-    { token },
+    { token: eq(token) },
     { $set: { acknowledged: true, acknowledgedAt: new Date() } },
     { returnDocument: "after" },
   );
