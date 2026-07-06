@@ -11,7 +11,7 @@
         grid-template-columns: 296px 1fr;
         gap: 2rem;
         align-items: start;
-        height: 900px;
+        min-height: 900px;
     }
 
     .gh-profile > * {
@@ -23,7 +23,7 @@
             grid-template-columns: 1fr;
             margin: 1rem;
             padding: 0;
-            height: auto;
+            min-height: 0;
         }
     }
 
@@ -990,7 +990,7 @@
                 {{#each guardians}}
                 <div id="editGuardianModal-{{this.Id}}" class="js-guardian-backdrop" data-id="{{this.Id}}"
                     style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;">
-                    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;">
+                    <div style="background:white;border-radius:1.5rem;padding:2rem;width:90%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.15);position:relative;max-height:85vh;overflow-y:auto;">
                         <button class="js-close-guardian" data-id="{{this.Id}}"
                             style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;line-height:1;">&#10005;</button>
                         <h2 style="font-size:1.2rem;font-weight:800;color:#0f172a;margin:0 0 1.5rem;">Edit Guardian</h2>

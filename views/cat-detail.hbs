@@ -275,6 +275,14 @@
         box-sizing: border-box;
         background: white;
     }
+
+    .edit-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem; }
+    .edit-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem; align-items:start; }
+    @media (max-width:600px) {
+        .edit-grid-2, .edit-grid-3 { grid-template-columns:1fr; }
+        .cat-detail-wrap { padding: 0 1rem 4rem; }
+        .cat-hero-name { font-size: 1.5rem; }
+    }
 </style>
 
 <div class="cat-detail-wrap">
@@ -422,7 +430,7 @@
 
                 <p class="edit-section-heading">Basic Info</p>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div class="edit-grid-2">
                     <div>
                         <label class="field-label">Name</label>
                         <input type="text" name="name" value="{{cat.name}}" required>
@@ -433,7 +441,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;align-items:start;">
+                <div class="edit-grid-3">
                     <div>
                         <label class="field-label">Age</label>
                         <div style="display:flex;gap:0.4rem;align-items:center;">
@@ -464,7 +472,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div class="edit-grid-2">
                     <div>
                         <label class="field-label">Microchip</label>
                         <input type="text" name="microchip" value="{{cat.careInstructions.microchip}}">
@@ -482,7 +490,7 @@
                     <label class="field-label">Feeding Schedule</label>
                     <input type="text" name="feedingSchedule" value="{{cat.careInstructions.feedingSchedule}}">
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div class="edit-grid-2">
                     <div>
                         <label class="field-label">Food Brand / Type</label>
                         <input type="text" name="foodBrand" value="{{cat.careInstructions.foodBrand}}">
@@ -512,7 +520,7 @@
                 <hr class="edit-divider">
                 <p class="edit-section-heading">Veterinarian</p>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div class="edit-grid-2">
                     <div>
                         <label class="field-label">Vet Name / Clinic</label>
                         <input type="text" name="vetName" value="{{cat.careInstructions.vetName}}">
