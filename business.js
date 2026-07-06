@@ -28,7 +28,11 @@ import {
   getActiveUnavailability,
   resolveUnavailability,
   getGuardianAccessToken,
+  invalidateGuardianTokensByUnavailability,
+  declineGuardianToken,
   acknowledgeGuardianToken,
+  setGuardianHasAccepted,
+  resetGuardiansHasAccepted,
   getGuardian,
   deleteCatById,
   deleteGuardianById,
@@ -38,6 +42,7 @@ import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
   signalGuardianAcknowledged,
+  signalGuardianDeclined,
 } from "./temporal/client.js";
 
 const AUTH0_ISSUER = process.env.AUTH0_ISSUER_BASE_URL;
@@ -328,7 +333,13 @@ async function editCat(
   if (!cat || cat.ownerId.toString() !== user._id.toString())
     throw new Error("Cat not found");
 
-  const updates = {
+  const updates = {};
+  if (photoUrl) updates.photoUrl = photoUrl;
+  if (name === undefined) {
+    await updateCatById(catId, updates);
+    return;
+  }
+  Object.assign(updates, {
     name,
     breed: breed || "",
     age: parseInt(age, 10) || 0,
@@ -346,8 +357,7 @@ async function editCat(
     "careInstructions.passportNumber": passportNumber || "",
     "careInstructions.personality": personality || "",
     "careInstructions.notes": notes || "",
-  };
-  if (photoUrl) updates.photoUrl = photoUrl;
+  });
 
   await updateCatById(catId, updates);
 }
@@ -370,13 +380,51 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
+<<<<<<< HEAD
 async function updateProfile(sessionId, { name, phone }) {
   const user = await resolveUserFromSession(sessionId);
   if (!user) throw new Error("Unauthorized");
+=======
+async function requestPasswordReset(email) {
+  const user = await findUserByEmail(email);
+  if (!user) return; // silently do nothing to prevent email enumeration
+  const token = await createPasswordResetToken(email);
+  await sendPasswordResetEmail(email, token);
+}
+
+async function resetPasswordWithToken(token, newPassword) {
+  const record = await getPasswordResetToken(token);
+  if (!record) throw new Error("This reset link is invalid or has expired.");
+  validatePassword(newPassword);
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await updateUserPassword(record.email, passwordHash);
+  await deletePasswordResetToken(token);
+}
+
+async function updateProfile(
+  sessionId,
+  { name, phone, location, currentPassword, newPassword },
+) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) throw new Error("Unauthorized");
+  const user = await findUserByEmail(session.email);
+  if (!user) throw new Error("User not found");
+
+  if (newPassword) {
+    const valid = await bcrypt.compare(
+      currentPassword || "",
+      user.passwordHash,
+    );
+    if (!valid) throw new Error("Current password is incorrect.");
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await updateUserPassword(session.email, passwordHash);
+  }
+>>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
   if (phone !== undefined) updates.phone = phone.trim();
+  if (location !== undefined) updates.location = location.trim();
   if (Object.keys(updates).length > 0) {
     await updateUserProfile(user._id, updates);
   }
@@ -445,19 +493,34 @@ async function setOwnerAvailable(sessionId) {
 
   await resolveUnavailability(record._id.toString());
   await signalOwnerAvailable(record._id.toString());
+  await invalidateGuardianTokensByUnavailability(record._id.toString());
+  await resetGuardiansHasAccepted(user._id.toString());
 }
 
 async function getGuardianAccess(token) {
   const record = await getGuardianAccessToken(token);
   if (!record) throw new Error("This link is invalid or has expired.");
-  const cats = await getCatsByOwner(record.ownerId.toString());
-  const owner = await findUserById(record.ownerId.toString());
+  const [cats, owner, guardian] = await Promise.all([
+    getCatsByOwner(record.ownerId.toString()),
+    findUserById(record.ownerId.toString()),
+    getGuardian(record.ownerId.toString(), record.guardianId.toString()),
+  ]);
   return {
     record,
     cats,
     ownerName: owner?.name || "Unknown",
+    ownerLocation: owner?.location || "",
+    guardianName: guardian?.name || "Guardian",
     alreadyAcknowledged: record.acknowledged,
   };
+}
+
+async function declineGuardianAccess(token) {
+  const record = await getGuardianAccessToken(token);
+  if (!record) throw new Error("This link is invalid or has expired.");
+  if (record.acknowledged) throw new Error("You have already accepted this request.");
+  await declineGuardianToken(token);
+  await signalGuardianDeclined(record.unavailabilityId.toString());
 }
 
 async function acknowledgeGuardianAccess(token) {
@@ -466,6 +529,8 @@ async function acknowledgeGuardianAccess(token) {
   if (record.acknowledged) return;
   await acknowledgeGuardianToken(token);
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
+  await setGuardianHasAccepted(record.ownerId.toString(), record.guardianId.toString());
+  await invalidateGuardianTokensByUnavailability(record.unavailabilityId.toString(), token);
 
   const [guardian, owner, cats] = await Promise.all([
     getGuardian(record.ownerId.toString(), record.guardianId.toString()),
@@ -509,6 +574,11 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+<<<<<<< HEAD
+=======
+  declineGuardianAccess,
+  changePassword,
+>>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,

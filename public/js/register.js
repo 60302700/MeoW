@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', updatePreview);
     });
+    const phoneCC = document.getElementById('phone-cc');
+    if (phoneCC) phoneCC.addEventListener('change', updatePreview);
+
+    /* Combine country code + number into hidden field on submit */
+    document.getElementById('register-form').addEventListener('submit', () => {
+        const cc  = document.getElementById('phone-cc');
+        const num = document.getElementById('phone');
+        const hid = document.getElementById('phone-combined');
+        if (cc && num && hid) {
+            hid.value = num.value.trim() ? cc.value + ' ' + num.value.trim() : '';
+        }
+    });
 
     /* Allow Enter to advance step */
     document.getElementById('register-form').addEventListener('keydown', (e) => {
@@ -100,21 +112,30 @@ function shakeField(id) {
     return false;
 }
 
+function getFullPhone() {
+    const cc  = document.getElementById('phone-cc');
+    const num = document.getElementById('phone');
+    if (!num) return '—';
+    const numVal = num.value.trim();
+    if (!numVal) return '—';
+    return cc ? cc.value + ' ' + numVal : numVal;
+}
+
 /* ── Review summary ── */
 function fillReview() {
     document.getElementById('rv-name').textContent  = document.getElementById('name').value  || '—';
     document.getElementById('rv-email').textContent = document.getElementById('email').value || '—';
-    document.getElementById('rv-phone').textContent = document.getElementById('phone').value || '—';
+    document.getElementById('rv-phone').textContent = getFullPhone();
 }
 
 /* ── Live card preview ── */
 function updatePreview() {
     const name  = document.getElementById('name').value  || '—';
     const email = document.getElementById('email').value || '—';
-    const phone = document.getElementById('phone').value || '—';
+    const phone = getFullPhone();
     setPreview('ec-name',  'Owner: ' + name);
-    setPreview('ec-email', '✉️ ' + email);
-    setPreview('ec-phone', '📞 ' + phone);
+    setPreview('ec-email', 'Email: ' + email);
+    setPreview('ec-phone', 'Phone: ' + phone);
 }
 
 function setPreview(id, val) {

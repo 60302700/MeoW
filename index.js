@@ -29,6 +29,8 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
+  declineGuardianAccess,
+  changePassword,
   editCat,
   editGuardian,
   deleteAccount,
@@ -83,9 +85,23 @@ app.use((req, res, next) =>
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
         scriptSrcAttr: ["'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://fonts.googleapis.com",
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://res.cloudinary.com",
+          "https://res.cloudinary.com",
+        ],
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://fonts.gstatic.com",
+        ],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],
       },
@@ -98,6 +114,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
+function nameInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0]?.toUpperCase() || "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
+  return first + last;
+}
+
 // Credentials themselves are verified by Auth0 (see authenticateUser /
 // registerUser in business.js, which call Auth0's Authentication API
 // directly). This is just our own thin session-cookie layer on top, since
@@ -369,6 +393,7 @@ app.get("/homepage", requireAuth, async (req, res) => {
     title: `${user.name}'s Homepage`,
     isLoggedIn: true,
     user,
+    userInitials: nameInitials(user.name),
     cats,
     guardians,
     hasCats: cats && cats.length > 0,
@@ -547,6 +572,26 @@ app.post("/cats/toggle-protocol", requireAuth, async (req, res) => {
 });
 
 app.post(
+  "/cats/:catId/photo",
+  requireAuth,
+  upload.single("photo"),
+  doubleCsrfProtection,
+  async (req, res) => {
+    const sessionId = getSessionCookie(req);
+    const { catId } = req.params;
+    const referrer = req.get("Referrer") || "/homepage";
+    try {
+      if (!req.file) return res.redirect(referrer);
+      const photoUrl = await uploadImageBuffer(req.file.buffer, "cats");
+      await editCat(sessionId, catId, { photoUrl, name: undefined });
+      res.redirect(referrer);
+    } catch (err) {
+      res.redirect("/homepage?error=" + encodeURIComponent(err.message));
+    }
+  },
+);
+
+app.post(
   "/cats/:catId/edit",
   requireAuth,
   upload.single("photo"),
@@ -636,9 +681,27 @@ app.post(
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { name, phone } = req.body;
+  const {
+    name,
+    phone,
+    location,
+    currentPassword,
+    newPassword,
+    confirmNewPassword,
+  } = req.body;
+  if (newPassword && newPassword !== confirmNewPassword) {
+    return res.redirect(
+      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
+    );
+  }
   try {
-    await updateProfile(sessionId, { name, phone });
+    await updateProfile(sessionId, {
+      name,
+      phone,
+      location,
+      currentPassword,
+      newPassword: newPassword || null,
+    });
     res.redirect("/homepage?success=profile");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
@@ -661,6 +724,7 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     title: cat.name,
     cat,
     user: data.user,
+    userInitials: nameInitials(data.user.name),
     isUnavailable: data.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
@@ -693,13 +757,22 @@ app.get("/guardian-access", async (req, res) => {
   const { token } = req.query;
   if (!token) return res.redirect("/");
   try {
-    const { record, cats, ownerName, alreadyAcknowledged } =
-      await getGuardianAccess(token);
+    const {
+      record,
+      cats,
+      ownerName,
+      ownerLocation,
+      guardianName,
+      alreadyAcknowledged,
+    } = await getGuardianAccess(token);
     res.render("guardian-access", {
       title: "Guardian Access",
+      csrfToken: res.locals.csrfToken,
       token,
       cats,
       ownerName,
+      ownerLocation,
+      guardianName,
       alreadyAcknowledged,
       acked: req.query.acked === "1",
       layout: false,
@@ -707,6 +780,7 @@ app.get("/guardian-access", async (req, res) => {
   } catch (err) {
     res.render("guardian-access", {
       title: "Guardian Access",
+      csrfToken: res.locals.csrfToken,
       error: err.message,
       layout: false,
     });
@@ -718,6 +792,23 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
   try {
     await acknowledgeGuardianAccess(token);
     res.redirect(`/guardian-access?token=${token}&acked=1`);
+  } catch (err) {
+    res.redirect(
+      `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,
+    );
+  }
+});
+
+app.post("/guardian-access/:token/decline", async (req, res) => {
+  const { token } = req.params;
+  try {
+    await declineGuardianAccess(token);
+    res.render("guardian-access", {
+      title: "Request Declined",
+      csrfToken: res.locals.csrfToken,
+      declined: true,
+      layout: false,
+    });
   } catch (err) {
     res.redirect(
       `/guardian-access?token=${token}&error=${encodeURIComponent(err.message)}`,

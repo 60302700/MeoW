@@ -19,7 +19,7 @@ function getTransporter() {
     return transporter;
 }
 
-export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerName, catNames, magicLink) {
+export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerName, catNames, magicLink, ownerLocation) {
     const t = getTransporter();
     if (!t) {
         console.warn(`[Mailer] Would send guardian link to ${toEmail} — mailer disabled`);
@@ -41,14 +41,18 @@ export async function sendGuardianMagicLinkEmail(toEmail, guardianName, ownerNam
     </div>
     <div style="padding:28px 28px 20px;">
       <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${guardianName},</p>
-      <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
+      <p style="margin:0 0 16px;font-size:0.9rem;color:#475569;line-height:1.6;">
         <strong style="color:#0f172a;">${ownerName}</strong> has marked themselves as unavailable.
         You are their next guardian for <strong style="color:#9d174d;">${catList}</strong>.
-        Please acknowledge within <strong>30 minutes</strong> or the next guardian will be contacted.
+        Please respond within <strong>30 minutes</strong> or the next guardian will be contacted.
       </p>
+      ${ownerLocation ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:0.85rem;color:#475569;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span><strong style="color:#0f172a;">Cats are located at:</strong> ${xmlEsc(ownerLocation)}</span>
+      </div>` : ''}
       <a href="${magicLink}"
          style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
-        View Cats &amp; Acknowledge
+        View Care Details &amp; Respond
       </a>
     </div>
     <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">

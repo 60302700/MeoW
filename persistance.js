@@ -319,9 +319,41 @@ async function getGuardianAccessToken(token) {
   const { GuardianAccessTokens } = collections();
   const record = await GuardianAccessTokens.findOne({ token });
   if (!record) return null;
+  if (record.invalidated) return null;
   const ageHours = (Date.now() - new Date(record.createdAt).getTime()) / 36e5;
   if (ageHours > 48) return null;
   return record;
+}
+
+async function invalidateGuardianTokensByUnavailability(unavailabilityId, excludeToken = null) {
+  const { GuardianAccessTokens } = collections();
+  const filter = { unavailabilityId: new ObjectId(unavailabilityId) };
+  if (excludeToken) filter.token = { $ne: excludeToken };
+  await GuardianAccessTokens.updateMany(filter, { $set: { invalidated: true } });
+}
+
+async function setGuardianHasAccepted(ownerId, guardianId) {
+  const { Guardians } = collections();
+  await Guardians.updateOne(
+    { _id: new ObjectId(guardianId), ownerId: new ObjectId(ownerId) },
+    { $set: { hasAccepted: true } },
+  );
+}
+
+async function resetGuardiansHasAccepted(ownerId) {
+  const { Guardians } = collections();
+  await Guardians.updateMany(
+    { ownerId: new ObjectId(ownerId) },
+    { $set: { hasAccepted: false } },
+  );
+}
+
+async function declineGuardianToken(token) {
+  const { GuardianAccessTokens } = collections();
+  await GuardianAccessTokens.updateOne(
+    { token },
+    { $set: { invalidated: true, declined: true, declinedAt: new Date() } },
+  );
 }
 
 async function acknowledgeGuardianToken(token) {
@@ -392,7 +424,11 @@ export {
   resolveUnavailability,
   createGuardianAccessToken,
   getGuardianAccessToken,
+  invalidateGuardianTokensByUnavailability,
+  declineGuardianToken,
   acknowledgeGuardianToken,
+  setGuardianHasAccepted,
+  resetGuardiansHasAccepted,
   getGuardian,
   deleteCatById,
   deleteGuardianById,

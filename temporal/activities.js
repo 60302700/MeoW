@@ -56,9 +56,11 @@ export async function sendGuardianMagicLink(unavailabilityId, ownerId, guardian,
         acknowledged: false,
         createdAt: new Date(),
     });
+    const owner = await db.collection('Users').findOne({ _id: new ObjectId(ownerId) });
+    const ownerLocation = owner?.location || '';
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
     const magicLink = `${baseUrl}/guardian-access?token=${token}`;
-    await sendGuardianMagicLinkEmail(guardian.email, guardian.name, ownerName, catNames, magicLink);
+    await sendGuardianMagicLinkEmail(guardian.email, guardian.name, ownerName, catNames, magicLink, ownerLocation);
     console.log(`[Temporal] Sent guardian magic link to ${guardian.email} for unavailability ${unavailabilityId}`);
 }
 

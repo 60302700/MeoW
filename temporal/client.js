@@ -71,3 +71,14 @@ export async function signalGuardianAcknowledged(unavailabilityId) {
         console.warn('[Temporal] signalGuardianAcknowledged — workflow may have already completed:', err.message);
     }
 }
+
+export async function signalGuardianDeclined(unavailabilityId) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    try {
+        const handle = client.workflow.getHandle(`unavailable-${unavailabilityId}`);
+        await handle.signal('guardianDeclined');
+    } catch (err) {
+        console.warn('[Temporal] signalGuardianDeclined — workflow may have already completed:', err.message);
+    }
+}
