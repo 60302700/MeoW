@@ -1760,6 +1760,9 @@
                             <button class="dropdown-item" id="dropdownEditProfile">Edit Profile</button>
                             <div class="dropdown-divider"></div>
                             <button class="dropdown-item dropdown-item-danger" id="dropdownLogout">Logout</button>
+                            <form method="POST" action="/logout" id="logoutForm" style="display:none;">
+                                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                            </form>
                         </div>
                     </div>
                 </li>
@@ -1798,7 +1801,7 @@
             if (ep) ep.addEventListener('click', function () { openEditProfile(); closeProfileMenu(); });
 
             const lo = document.getElementById('dropdownLogout');
-            if (lo) lo.addEventListener('click', function () { window.location = '/logout'; });
+            if (lo) lo.addEventListener('click', function () { document.getElementById('logoutForm').submit(); });
 
             document.addEventListener('click', function (e) {
                 const wrap = document.getElementById('profileMenuWrap');

@@ -160,6 +160,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Global CSRF gate for standard form posts. Two content types are skipped here:
+//   - multipart/form-data: the token isn't parsed until multer runs, so every
+//     multipart route MUST re-apply `doubleCsrfProtection` after `upload.*`
+//     (see /cats, /guardians, /cats/:catId/edit, /profile/photo, etc.).
+//   - application/json: not forgeable cross-site by a browser form (would need
+//     a CORS preflight we never grant), and used only by same-origin fetch.
 app.use((req, res, next) => {
   if (req.is("multipart/form-data")) return next();
   if (req.is("application/json")) return next();
@@ -172,6 +178,16 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: "Too many attempts, please try again in 15 minutes.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Public finder endpoint: creates an event, emails the owner, and starts a
+// workflow — so cap submissions per IP to prevent email-bombing / spam.
+const scanLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 8,
+  message: "Too many alerts sent from this device. Please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -201,6 +217,13 @@ function checkTokenChatLimit(token) {
   return true;
 }
 // ──────────────────────────────────────────────────────────────────────���────
+
+// Guard against non-string body fields (e.g. JSON `{"email":{"$ne":null}}`)
+// reaching any downstream query. Express only produces string values for
+// urlencoded forms, but express.json() is enabled globally, so coerce here.
+function allStrings(...vals) {
+  return vals.every((v) => v === undefined || typeof v === "string");
+}
 
 // Strip newlines and control chars from any string going into the AI system prompt
 function sanitizeForPrompt(str) {
@@ -240,6 +263,9 @@ app.get("/register", async (req, res) => {
 app.post("/register", authLimiter, async (req, res) => {
   const { name, email, phone, password } = req.body;
   try {
+    if (!allStrings(name, email, phone, password)) {
+      throw new Error("Invalid input.");
+    }
     await registerUser({ name, email, phone, password });
     res.redirect("/register?success=1");
   } catch (err) {
@@ -265,6 +291,9 @@ app.get("/login", async (req, res) => {
 app.post("/login", authLimiter, async (req, res) => {
   const { email, password } = req.body;
   try {
+    if (!allStrings(email, password)) {
+      throw new Error("Invalid email or password");
+    }
     const session = await authenticateUser(email, password);
     if (!session) {
       res.render("login", {
@@ -302,6 +331,9 @@ app.get("/forgot-password", async (req, res) => {
 app.post("/forgot-password", authLimiter, async (req, res) => {
   const { email } = req.body;
   try {
+    if (!allStrings(email)) {
+      throw new Error("Invalid input.");
+    }
     await requestPasswordReset(email);
     res.redirect("/forgot-password?sent=1");
   } catch (err) {
@@ -313,7 +345,9 @@ app.post("/forgot-password", authLimiter, async (req, res) => {
   }
 });
 
-app.get("/logout", async (req, res) => {
+// POST + CSRF so a cross-site page can't force-logout a user. The global CSRF
+// middleware covers this urlencoded route automatically.
+app.post("/logout", async (req, res) => {
   res.clearCookie("session");
   await logoutUser(getSessionCookie(req));
   res.redirect("/");
@@ -368,7 +402,7 @@ app.get("/scan", async (req, res) => {
 });
 
 // POST /scan — finder submits their info
-app.post("/scan", doubleCsrfProtection, async (req, res) => {
+app.post("/scan", scanLimiter, doubleCsrfProtection, async (req, res) => {
   const qrCodeId = String(req.body.qrCodeId || "").trim();
   const finderName     = String(req.body.finderName     || "").trim().slice(0, 100);
   const finderPhone    = String(req.body.finderPhone    || "").trim().slice(0, 30);
@@ -976,7 +1010,10 @@ app.post("/account/delete", requireAuth, doubleCsrfProtection, async (req, res) 
   const sessionId = getSessionCookie(req);
   try {
     await deleteAccount(sessionId);
-    res.redirect("/logout");
+    // Account (and its sessions) are gone — clear the cookie inline rather than
+    // bouncing through the logout route.
+    res.clearCookie("session");
+    res.redirect("/");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }

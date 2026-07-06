@@ -307,6 +307,18 @@ async function acknowledgeOwnerScanBusiness(eventId, token) {
 }
 
 async function claimGuardian(eventId, guardianId) {
+  // Public endpoint — verify the event exists and the guardian actually
+  // belongs to that event's cat owner before assigning, so an arbitrary
+  // guardianId can't be used to hijack or prematurely stop an escalation.
+  const event = await getEmergencyEventById(eventId);
+  if (!event) throw new Error("Emergency event not found.");
+  const cat = await getCatById(event.catId);
+  if (!cat) throw new Error("Emergency event not found.");
+  const guardians = await getGuardiansByOwner(cat.ownerId);
+  const isValidGuardian = guardians.some(
+    (g) => g._id.toString() === guardianId,
+  );
+  if (!isValidGuardian) throw new Error("Not an authorized guardian for this cat.");
   return assignGuardianToEvent(eventId, guardianId);
 }
 

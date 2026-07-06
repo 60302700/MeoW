@@ -1327,8 +1327,13 @@
         <nav class="navbar-links">
             <ul>
                 {{#if isLoggedIn}}
-                <li><a href="/logout">LogOut</a></li>
-                <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
+                <li>
+                    <form method="POST" action="/logout" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                        <button type="submit" style="background:none;border:none;cursor:pointer;font-family:inherit;color:#fce7f3;font-size:0.875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:0.25rem 0;">LogOut</button>
+                    </form>
+                </li>
+                <li><a href="/emergency" class="nav-emergency">Emergency</a></li>
                 {{else}}
                 <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
