@@ -81,9 +81,9 @@ app.use((req, res, next) =>
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],
       },
@@ -766,6 +766,7 @@ app.get("/guardian-access", async (req, res) => {
       await getGuardianAccess(token);
     res.render("guardian-access", {
       title: "Guardian Access",
+      csrfToken: res.locals.csrfToken,
       token,
       cats,
       ownerName,
@@ -778,6 +779,7 @@ app.get("/guardian-access", async (req, res) => {
   } catch (err) {
     res.render("guardian-access", {
       title: "Guardian Access",
+      csrfToken: res.locals.csrfToken,
       error: err.message,
       layout: false,
     });
@@ -796,12 +798,13 @@ app.post("/guardian-access/:token/acknowledge", async (req, res) => {
   }
 });
 
-app.post("/guardian-access/:token/decline", doubleCsrfProtection, async (req, res) => {
+app.post("/guardian-access/:token/decline", async (req, res) => {
   const { token } = req.params;
   try {
     await declineGuardianAccess(token);
     res.render("guardian-access", {
       title: "Request Declined",
+      csrfToken: res.locals.csrfToken,
       declined: true,
       layout: false,
     });

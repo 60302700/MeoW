@@ -270,6 +270,7 @@
             font-size: 0.75rem;
             color: #94a3b8;
         }
+        #btn-decline:hover { border-color: #ef4444; color: #ef4444; }
     </style>
 </head>
 <body>
@@ -334,9 +335,7 @@
                 <div style="display:flex;gap:0.75rem;">
                     <form method="POST" action="/guardian-access/{{token}}/decline" style="flex:1;">
                         <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                        <button type="submit" style="width:100%;padding:1rem;background:none;border:2px solid #e2e8f0;border-radius:0.875rem;font-size:0.95rem;font-weight:700;color:#64748b;cursor:pointer;transition:all 0.2s;"
-                            onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';"
-                            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b';">
+                        <button type="submit" id="btn-decline" style="width:100%;padding:1rem;background:none;border:2px solid #e2e8f0;border-radius:0.875rem;font-size:0.95rem;font-weight:700;color:#64748b;cursor:pointer;transition:all 0.2s;">
                             Decline
                         </button>
                     </form>
@@ -443,7 +442,7 @@
 
     {{#unless declined}}
     <!-- AI Chat Widget -->
-    <div id="chat-bubble" onclick="toggleChat()" title="Ask about cat care">
+    <div id="chat-bubble" title="Ask about cat care">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2C6.48 2 2 6.03 2 11c0 2.67 1.19 5.07 3.09 6.72L4 21l3.77-1.42C9.1 20.17 10.52 20.5 12 20.5c5.52 0 10-4.03 10-9s-4.48-9-10-9z" fill="white"/>
         </svg>
@@ -455,14 +454,14 @@
                 <div style="font-weight:700;font-size:0.95rem;">Cat Care Assistant</div>
                 <div style="font-size:0.72rem;opacity:0.8;">Ask anything about the cats</div>
             </div>
-            <button onclick="toggleChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.2rem;line-height:1;">✕</button>
+            <button id="chat-close" style="background:none;border:none;color:white;cursor:pointer;font-size:1.2rem;line-height:1;">✕</button>
         </div>
         <div id="chat-messages">
             <div class="msg msg-bot">Hi! I have access to all the care details for the cats. Ask me anything — feeding, medications, what to do in an emergency, or general cat care tips.</div>
         </div>
         <div id="chat-input-row">
-            <input id="chat-input" type="text" placeholder="Ask about the cats..." maxlength="400" onkeydown="if(event.key==='Enter')sendMessage()">
-            <button id="chat-send" onclick="sendMessage()">
+            <input id="chat-input" type="text" placeholder="Ask about the cats..." maxlength="400">
+            <button id="chat-send">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
         </div>
@@ -586,6 +585,17 @@
 
     <script nonce="{{nonce}}">
         const TOKEN = '{{token}}';
+
+        (function () {
+            var bubble = document.getElementById('chat-bubble');
+            var closeBtn = document.getElementById('chat-close');
+            var sendBtn = document.getElementById('chat-send');
+            var inputEl = document.getElementById('chat-input');
+            if (bubble) bubble.addEventListener('click', toggleChat);
+            if (closeBtn) closeBtn.addEventListener('click', toggleChat);
+            if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+            if (inputEl) inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMessage(); });
+        })();
 
         function toggleChat() {
             document.getElementById('chat-panel').classList.toggle('open');
