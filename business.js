@@ -122,7 +122,10 @@ async function authenticateUser(email, password) {
   });
   const data = await tokenRes.json();
   if (!tokenRes.ok) {
-    if (data.error === "unauthorized_client" || data.error === "access_denied") {
+    if (
+      data.error === "unauthorized_client" ||
+      data.error === "access_denied"
+    ) {
       throw new Error(
         "Login is not enabled for this Auth0 application yet (Password grant type must be turned on).",
       );
@@ -380,11 +383,6 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
-<<<<<<< HEAD
-async function updateProfile(sessionId, { name, phone }) {
-  const user = await resolveUserFromSession(sessionId);
-  if (!user) throw new Error("Unauthorized");
-=======
 async function requestPasswordReset(email) {
   const user = await findUserByEmail(email);
   if (!user) return; // silently do nothing to prevent email enumeration
@@ -419,7 +417,6 @@ async function updateProfile(
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await updateUserPassword(session.email, passwordHash);
   }
->>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
@@ -518,7 +515,8 @@ async function getGuardianAccess(token) {
 async function declineGuardianAccess(token) {
   const record = await getGuardianAccessToken(token);
   if (!record) throw new Error("This link is invalid or has expired.");
-  if (record.acknowledged) throw new Error("You have already accepted this request.");
+  if (record.acknowledged)
+    throw new Error("You have already accepted this request.");
   await declineGuardianToken(token);
   await signalGuardianDeclined(record.unavailabilityId.toString());
 }
@@ -529,8 +527,14 @@ async function acknowledgeGuardianAccess(token) {
   if (record.acknowledged) return;
   await acknowledgeGuardianToken(token);
   await signalGuardianAcknowledged(record.unavailabilityId.toString());
-  await setGuardianHasAccepted(record.ownerId.toString(), record.guardianId.toString());
-  await invalidateGuardianTokensByUnavailability(record.unavailabilityId.toString(), token);
+  await setGuardianHasAccepted(
+    record.ownerId.toString(),
+    record.guardianId.toString(),
+  );
+  await invalidateGuardianTokensByUnavailability(
+    record.unavailabilityId.toString(),
+    token,
+  );
 
   const [guardian, owner, cats] = await Promise.all([
     getGuardian(record.ownerId.toString(), record.guardianId.toString()),
@@ -574,11 +578,8 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-<<<<<<< HEAD
-=======
   declineGuardianAccess,
   changePassword,
->>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,
