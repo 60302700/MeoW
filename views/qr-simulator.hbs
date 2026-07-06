@@ -1,7 +1,7 @@
 <style>
     .sim-wrap {
         width: 100%;
-        max-width: 940px;
+        max-width: 460px;
         padding: 1rem;
     }
 
@@ -40,9 +40,7 @@
     }
 
     .sim-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 1.25rem;
+        display: block;
     }
 
     .sim-card {
@@ -135,7 +133,7 @@
     <div class="sim-head">
         <span class="sim-badge">Demo Tool</span>
         <h1>QR Code Simulator</h1>
-        <p>These are the QR codes printed on each cat's MeoW tag. On a phone that can reach this server, scan a code. On a laptop, just click "Open finder page" to simulate someone scanning the tag after finding the cat.</p>
+        <p>This is the QR code printed on the cat's MeoW tag. On a phone that can reach this server, scan the code. On a laptop, just click "Open finder page" to simulate someone scanning the tag after finding the cat.</p>
     </div>
 
     {{#if cats.length}}

@@ -252,29 +252,32 @@ async function getCatInfoForScan(qrCodeId) {
   return { cat: withCatAge(cat), owner };
 }
 
-// Demo helper: lists registered cats with a scannable QR image + a direct link
-// to their finder page, so the scan flow can be tested without a physical tag.
+// Demo helper: shows a single sample cat (Luna if present, otherwise the first
+// registered cat) with a scannable QR image + a direct link to its finder page,
+// so the scan flow can be tested without a physical tag.
 async function getQrSimulatorData() {
   const cats = await getCatsWithQrCode();
+  if (!cats.length) return [];
+  const cat =
+    cats.find((c) => c.name && c.name.toLowerCase() === "luna") || cats[0];
+
   const baseUrl = process.env.APP_URL || "http://localhost:3000";
   const QRCode = (await import("qrcode")).default;
-  return Promise.all(
-    cats.map(async (cat) => {
-      const scanUrl = `${baseUrl}/scan?qr=${encodeURIComponent(cat.qrCodeId)}`;
-      const qrImage = await QRCode.toDataURL(scanUrl, {
-        margin: 1,
-        width: 220,
-        color: { dark: "#0f172a", light: "#ffffff" },
-      });
-      return {
-        name: cat.name,
-        photoUrl: cat.photoUrl,
-        qrCodeId: cat.qrCodeId,
-        scanUrl,
-        qrImage,
-      };
-    })
-  );
+  const scanUrl = `${baseUrl}/scan?qr=${encodeURIComponent(cat.qrCodeId)}`;
+  const qrImage = await QRCode.toDataURL(scanUrl, {
+    margin: 1,
+    width: 220,
+    color: { dark: "#0f172a", light: "#ffffff" },
+  });
+  return [
+    {
+      name: cat.name,
+      photoUrl: cat.photoUrl,
+      qrCodeId: cat.qrCodeId,
+      scanUrl,
+      qrImage,
+    },
+  ];
 }
 
 async function handleScan(qrCodeId, finderInfo = {}) {
