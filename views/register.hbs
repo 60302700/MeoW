@@ -91,6 +91,11 @@
                                 <p data-rule="num"  style="font-size:0.78rem;margin:0 0 0.25rem;color:#94a3b8;">&#10007; One number</p>
                                 <p data-rule="spec" style="font-size:0.78rem;margin:0;color:#94a3b8;">&#10007; One special character</p>
                             </div>
+                            <div class="floating-field" style="margin-top:0.75rem;">
+                                <input type="password" id="confirmPassword" class="fancy-input" placeholder=" " minlength="8">
+                                <label for="confirmPassword">Confirm Password</label>
+                            </div>
+                            <div id="confirm-pw-error" style="display:none;margin-top:0.35rem;font-size:0.78rem;color:#ef4444;font-weight:600;">Passwords do not match</div>
                         </div>
                         <div class="btn-row">
                             <button type="button" class="btn-step-back" id="back-2">← Back</button>
@@ -236,6 +241,33 @@ function checkPwStrength(inputId, rulesId) {
         phoneInput.addEventListener('blur',  function() { phoneWrap.style.borderColor = '#e2e8f0'; });
     }
     var pwInput = document.getElementById('password');
-    if (pwInput) pwInput.addEventListener('input', function() { checkPwStrength('password', 'pw-rules-reg'); });
+    if (pwInput) pwInput.addEventListener('input', function() {
+        checkPwStrength('password', 'pw-rules-reg');
+        validateConfirm();
+    });
+    var confirmInput = document.getElementById('confirmPassword');
+    if (confirmInput) confirmInput.addEventListener('input', validateConfirm);
+
+    function validateConfirm() {
+        var pw = document.getElementById('password').value;
+        var cpw = document.getElementById('confirmPassword').value;
+        var err = document.getElementById('confirm-pw-error');
+        if (!err) return;
+        err.style.display = (cpw.length > 0 && pw !== cpw) ? 'block' : 'none';
+    }
+
+    var next2 = document.getElementById('next-2');
+    if (next2) {
+        var origNext2Click = next2.onclick;
+        next2.addEventListener('click', function(e) {
+            var pw = document.getElementById('password').value;
+            var cpw = document.getElementById('confirmPassword') && document.getElementById('confirmPassword').value;
+            if (pw !== cpw) {
+                document.getElementById('confirm-pw-error').style.display = 'block';
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        }, true);
+    }
 })();
 </script>
