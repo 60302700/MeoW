@@ -71,6 +71,16 @@
         color: #ec4899;
     }
 
+    .cat-delete-btn {
+        border-color: #fecdd3;
+        color: #e11d48;
+    }
+    .cat-delete-btn:hover {
+        background: #fff1f2;
+        border-color: #e11d48;
+        color: #e11d48;
+    }
+
     .cat-sections {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -223,19 +233,18 @@
         inset: 0;
         border-radius: 1.25rem;
         background: rgba(15,23,42,0.45);
-        display: flex;
+        display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 0.4rem;
-        opacity: 0;
         cursor: pointer;
         transition: opacity 0.2s;
         color: white;
         font-size: 0.78rem;
         font-weight: 700;
     }
-    .cat-photo-wrap:hover .cat-photo-overlay { opacity: 1; }
+    .cat-photo-wrap.edit-active .cat-photo-overlay { display: flex; }
 
     .phone-wrap {
         display: flex;
@@ -270,6 +279,11 @@
 
 <div class="cat-detail-wrap">
 
+    <a href="/homepage" style="display:inline-flex;align-items:center;gap:0.4rem;margin-bottom:1.25rem;font-size:0.85rem;font-weight:600;color:#64748b;text-decoration:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+    </a>
+
     <div class="cat-hero">
         <div class="cat-photo-wrap">
             {{#if cat.photoUrl}}
@@ -277,40 +291,20 @@
             {{else}}
             <div class="cat-hero-photo-placeholder" id="catPhotoPreview"></div>
             {{/if}}
-            <div class="cat-photo-overlay" onclick="document.getElementById('catPhotoInput').click()">
+            <div class="cat-photo-overlay" id="catPhotoOverlay">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 Change photo
             </div>
-            <form id="catPhotoForm" method="POST" action="/cats/{{cat._id}}/photo" enctype="multipart/form-data">
-                <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                <input type="file" id="catPhotoInput" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;"
-                    onchange="
-                        const f=this.files[0];
-                        if(f){
-                            const r=new FileReader();
-                            r.onload=e=>{
-                                const img=document.getElementById('catPhotoPreview');
-                                if(img.tagName==='IMG'){img.src=e.target.result;}
-                                else{const ni=document.createElement('img');ni.src=e.target.result;ni.id='catPhotoPreview';ni.className='cat-hero-photo';img.replaceWith(ni);}
-                            };
-                            r.readAsDataURL(f);
-                            document.getElementById('catPhotoForm').submit();
-                        }
-                    ">
-            </form>
         </div>
 
         <div class="cat-hero-info">
             <h1 class="cat-hero-name">{{cat.name}}</h1>
             <p class="cat-hero-breed">{{#if cat.breed}}{{cat.breed}}{{else}}Unknown breed{{/if}}{{#if cat.gender}} · {{cat.gender}}{{/if}}{{#if cat.ageDisplay}} · {{cat.ageDisplay}}{{/if}}</p>
             <div style="display:flex;gap:0.6rem;margin-top:0.75rem;flex-wrap:wrap;">
-                <button id="editToggleBtn" class="edit-cat-btn" style="margin-top:0;" onclick="showEditMode()">Edit profile</button>
-                <form method="POST" action="/cats/{{cat._id}}/delete" style="margin:0;"
-                    onsubmit="return confirm('Permanently delete {{cat.name}}? This cannot be undone.')">
+                <button id="editToggleBtn" class="edit-cat-btn" style="margin-top:0;">Edit profile</button>
+                <form id="catDeleteForm" method="POST" action="/cats/{{cat._id}}/delete" style="margin:0;">
                     <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                    <button type="submit" class="edit-cat-btn" style="margin-top:0;border-color:#fecdd3;color:#e11d48;"
-                        onmouseover="this.style.background='#fff1f2';this.style.borderColor='#e11d48';"
-                        onmouseout="this.style.background='none';this.style.borderColor='#fecdd3';">Delete cat</button>
+                    <button type="submit" class="edit-cat-btn cat-delete-btn" style="margin-top:0;">Delete cat</button>
                 </form>
             </div>
         </div>
@@ -422,8 +416,9 @@
     <!-- ── Inline edit form (hidden by default) ──────────────────────────── -->
     <div id="catEditSection" style="display:none;">
         <div class="edit-inline-section">
-            <form method="POST" action="/cats/{{cat._id}}/edit" enctype="multipart/form-data">
+            <form id="catEditForm" method="POST" action="/cats/{{cat._id}}/edit" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <input type="file" id="catPhotoInput" name="photo" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
 
                 <p class="edit-section-heading">Basic Info</p>
 
@@ -547,7 +542,7 @@
                 </div>
 
                 <div style="display:flex;gap:0.75rem;">
-                    <button type="button" onclick="showViewMode()"
+                    <button type="button" id="cancelEditBtn"
                         style="flex:1;padding:0.85rem;background:none;border:2px solid #e2e8f0;border-radius:0.75rem;font-size:0.9rem;font-weight:600;color:#64748b;cursor:pointer;">Cancel</button>
                     <button type="submit"
                         style="flex:2;padding:0.85rem;background:linear-gradient(135deg,#ec4899,#a855f7);color:white;border:none;border-radius:0.75rem;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(236,72,153,0.3);">Save Changes</button>
@@ -559,18 +554,23 @@
 </div>
 
 <script nonce="{{nonce}}">
+    var _catEditMode = false;
     function showEditMode() {
+        _catEditMode = true;
         document.getElementById('catViewSections').style.display = 'none';
         document.getElementById('catEditSection').style.display = 'block';
         document.getElementById('editToggleBtn').textContent = 'Cancel editing';
-        document.getElementById('editToggleBtn').setAttribute('onclick', 'showViewMode()');
+        var pw = document.querySelector('.cat-photo-wrap');
+        if (pw) pw.classList.add('edit-active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     function showViewMode() {
+        _catEditMode = false;
         document.getElementById('catEditSection').style.display = 'none';
         document.getElementById('catViewSections').style.display = 'block';
         document.getElementById('editToggleBtn').textContent = 'Edit profile';
-        document.getElementById('editToggleBtn').setAttribute('onclick', 'showEditMode()');
+        var pw = document.querySelector('.cat-photo-wrap');
+        if (pw) pw.classList.remove('edit-active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -598,6 +598,44 @@
                     hid.value = inp.value.trim() ? sel.value + ' ' + inp.value.trim() : '';
                 });
             }
+        });
+    })();
+
+    (function() {
+        var toggleBtn = document.getElementById('editToggleBtn');
+        if (toggleBtn) toggleBtn.addEventListener('click', function() {
+            _catEditMode ? showViewMode() : showEditMode();
+        });
+
+        var cancelBtn = document.getElementById('cancelEditBtn');
+        if (cancelBtn) cancelBtn.addEventListener('click', showViewMode);
+
+        var overlay = document.getElementById('catPhotoOverlay');
+        var photoInput = document.getElementById('catPhotoInput');
+        if (overlay && photoInput) overlay.addEventListener('click', function() { photoInput.click(); });
+
+        if (photoInput) photoInput.addEventListener('change', function() {
+            var f = this.files[0];
+            if (!f) return;
+            var r = new FileReader();
+            r.onload = function(e) {
+                var img = document.getElementById('catPhotoPreview');
+                if (img.tagName === 'IMG') {
+                    img.src = e.target.result;
+                } else {
+                    var ni = document.createElement('img');
+                    ni.src = e.target.result;
+                    ni.id = 'catPhotoPreview';
+                    ni.className = 'cat-hero-photo';
+                    img.replaceWith(ni);
+                }
+            };
+            r.readAsDataURL(f);
+        });
+
+        var deleteForm = document.getElementById('catDeleteForm');
+        if (deleteForm) deleteForm.addEventListener('submit', function(e) {
+            if (!confirm('Permanently delete this cat? This cannot be undone.')) e.preventDefault();
         });
     })();
 </script>

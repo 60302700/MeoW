@@ -457,37 +457,13 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
-async function resetPasswordWithToken(token, newPassword) {
-  const record = await getPasswordResetToken(token);
-  if (!record) throw new Error("This reset link is invalid or has expired.");
-  validatePassword(newPassword);
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-  await updateUserPassword(record.email, passwordHash);
-  await deletePasswordResetToken(token);
-}
-
-async function updateProfile(
-  sessionId,
-  { name, phone, location, currentPassword, newPassword },
-) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-
-  if (newPassword) {
-    const valid = await bcrypt.compare(
-      currentPassword || "",
-      user.passwordHash,
-    );
-    if (!valid) throw new Error("Current password is incorrect.");
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(session.email, passwordHash);
-  }
+async function updateProfile(sessionId, { name, phone, location }) {
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
-  if (phone !== undefined) updates.phone = phone.trim();
+  if (phone) updates.phone = phone.trim();
   if (location !== undefined) updates.location = location.trim();
   if (Object.keys(updates).length > 0) {
     await updateUserProfile(user._id, updates);

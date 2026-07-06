@@ -1760,7 +1760,6 @@
                             </div>
                             <div class="dropdown-divider"></div>
                             <button class="dropdown-item" id="dropdownEditProfile">Edit Profile</button>
-                            <button class="dropdown-item" id="dropdownChangePassword">Change Password</button>
                             <div class="dropdown-divider"></div>
                             <button class="dropdown-item dropdown-item-danger" id="dropdownLogout">Logout</button>
                         </div>
@@ -1790,9 +1789,6 @@
 
             const ep = document.getElementById('dropdownEditProfile');
             if (ep) ep.addEventListener('click', function () { openEditProfile(); closeProfileMenu(); });
-
-            const cp = document.getElementById('dropdownChangePassword');
-            if (cp) cp.addEventListener('click', function () { openChangePassword(); closeProfileMenu(); });
 
             const lo = document.getElementById('dropdownLogout');
             if (lo) lo.addEventListener('click', function () { window.location = '/logout'; });

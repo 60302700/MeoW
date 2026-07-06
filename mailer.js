@@ -218,10 +218,6 @@ export async function sendWalletCardEmail(toEmail, guardianName, owner, cats, ma
          style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
         Open Guardian Page
       </a>
-      <p style="margin:12px 0 0;font-size:0.78rem;color:#64748b;">
-        Can't scan the QR? Use this link:<br>
-        <a href="${magicLink}" style="color:#9d174d;word-break:break-all;">${magicLink}</a>
-      </p>
     </div>
     <p style="margin:0;text-align:center;font-size:0.72rem;color:#94a3b8;">
       MeoW — Cat Safety Network &nbsp;·&nbsp; Keep this email safe for reference
