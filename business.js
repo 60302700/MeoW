@@ -1,9 +1,14 @@
 import {
   connectDB,
-  Authenticate,
   createUser,
   findUserByEmail,
   findUserById,
+  findUserByAuthSub,
+  linkAuthSub,
+  createSession,
+  touchSession,
+  getSessionBySessionId,
+  deleteSession,
   deleteUserAccount,
   getCatByQrCode,
   getCatById,
@@ -13,20 +18,12 @@ import {
   getEmergencyEventById,
   getGuardiansByOwner,
   assignGuardianToEvent,
-  createSession,
-  deleteSession,
-  getSessionBySessionId,
   createCat,
   addGuardian,
   updateCatById,
   updateGuardianByObjectId,
   setActiveBackupProtocol,
-  updateUserPassword,
   updateUserProfile,
-  touchSession,
-  createPasswordResetToken,
-  getPasswordResetToken,
-  deletePasswordResetToken,
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,
@@ -36,48 +33,134 @@ import {
   deleteCatById,
   deleteGuardianById,
 } from "./persistance.js";
-import { sendPasswordResetEmail, sendWalletCardEmail } from "./mailer.js";
+import { sendWalletCardEmail } from "./mailer.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
   signalGuardianAcknowledged,
 } from "./temporal/client.js";
-import bcrypt from "bcryptjs";
 
-function validatePassword(password) {
-  if (!password || password.length < 8)
-    throw new Error("Password must be at least 8 characters.");
-  if (!/[A-Z]/.test(password))
-    throw new Error("Password must contain at least one uppercase letter.");
-  if (!/[a-z]/.test(password))
-    throw new Error("Password must contain at least one lowercase letter.");
-  if (!/[0-9]/.test(password))
-    throw new Error("Password must contain at least one number.");
-  if (!/[^A-Za-z0-9]/.test(password))
-    throw new Error("Password must contain at least one special character.");
+const AUTH0_ISSUER = process.env.AUTH0_ISSUER_BASE_URL;
+const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
+const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
+const AUTH0_CONNECTION = "Username-Password-Authentication";
+
+function decodeIdToken(idToken) {
+  const payload = idToken.split(".")[1];
+  return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+}
+
+async function getOrCreateUser({ sub, email, name }) {
+  let user = await findUserByAuthSub(sub);
+  if (user) return user;
+
+  if (email) {
+    user = await findUserByEmail(email);
+    if (user) {
+      await linkAuthSub(user._id, sub);
+      return { ...user, authSub: sub };
+    }
+  }
+
+  const userId = await createUser({
+    name: name || email || "New User",
+    email: email || "",
+    phone: "",
+    authSub: sub,
+  });
+  return findUserById(userId.toString());
+}
+
+async function resolveUserFromSession(sessionId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) return null;
+  return findUserById(session.userId.toString());
+}
+
+async function registerUser({ name, email, password, phone }) {
+  const signupRes = await fetch(`${AUTH0_ISSUER}/dbconnections/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: AUTH0_CLIENT_ID,
+      email,
+      password,
+      connection: AUTH0_CONNECTION,
+      name,
+    }),
+  });
+  const data = await signupRes.json();
+  if (!signupRes.ok) {
+    throw new Error(
+      data.description || data.error_description || "Registration failed.",
+    );
+  }
+
+  const sub = `auth0|${data._id}`;
+  const user = await getOrCreateUser({ sub, email, name });
+  if (phone) await updateUserProfile(user._id, { phone });
+}
+
+async function authenticateUser(email, password) {
+  const tokenRes = await fetch(`${AUTH0_ISSUER}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "http://auth0.com/oauth/grant-type/password-realm",
+      username: email,
+      password,
+      realm: AUTH0_CONNECTION,
+      client_id: AUTH0_CLIENT_ID,
+      client_secret: AUTH0_CLIENT_SECRET,
+      scope: "openid profile email",
+    }),
+  });
+  const data = await tokenRes.json();
+  if (!tokenRes.ok) {
+    if (data.error === "unauthorized_client" || data.error === "access_denied") {
+      throw new Error(
+        "Login is not enabled for this Auth0 application yet (Password grant type must be turned on).",
+      );
+    }
+    return null;
+  }
+
+  const claims = decodeIdToken(data.id_token);
+  const user = await getOrCreateUser({
+    sub: claims.sub,
+    email: claims.email,
+    name: claims.name,
+  });
+  return createSession(user._id.toString());
+}
+
+async function checkSession(sessionId) {
+  const session = await getSessionBySessionId(sessionId);
+  if (!session) return false;
+  await touchSession(sessionId);
+  return true;
+}
+
+async function logout(sessionId) {
+  return await deleteSession(sessionId);
+}
+
+async function requestPasswordReset(email) {
+  await fetch(`${AUTH0_ISSUER}/dbconnections/change_password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: AUTH0_CLIENT_ID,
+      email,
+      connection: AUTH0_CONNECTION,
+    }),
+  });
+  // Auth0 always replies 200 here regardless of whether the email exists,
+  // so there's no account-enumeration signal to guard against ourselves.
 }
 
 async function getCatByNameBusinessLayer(catName, ownerId) {
   return getCatByName(catName, ownerId);
-}
-
-async function login(email, password) {
-  const result = await Authenticate(email, password);
-  if (result) {
-    return await createSession(email);
-  } else {
-    return null;
-  }
-}
-
-async function registerUser({ name, email, password, phone }) {
-  const existing = await findUserByEmail(email);
-  if (existing) {
-    throw new Error("Email already registered");
-  }
-  validatePassword(password);
-  const passwordHash = await bcrypt.hash(password, 10);
-  return createUser({ name, email, passwordHash, phone });
 }
 
 async function handleScan(qrCodeId) {
@@ -104,21 +187,8 @@ async function claimGuardian(eventId, guardianId) {
   return assignGuardianToEvent(eventId, guardianId);
 }
 
-async function checkSession(sessionId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) return false;
-  await touchSession(sessionId);
-  return true;
-}
-
-async function logout(sessionId) {
-  return await deleteSession(sessionId);
-}
-
 async function getUserHomepage(sessionId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) return null;
-  const user = await findUserByEmail(session.email);
+  const user = await resolveUserFromSession(sessionId);
   if (!user) return null;
   const cats = await getCatsByOwner(user._id);
   const guardians = await getGuardiansByOwner(user._id);
@@ -127,10 +197,8 @@ async function getUserHomepage(sessionId) {
 }
 
 async function getGuardianForOwnerBusinessLayer(sessionId, guardianId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const guardian = await getGuardian(user._id.toString(), guardianId);
   if (!guardian) throw new Error("Guardian not found or unauthorized");
@@ -161,10 +229,8 @@ async function addNewCat(
     notes,
   },
 ) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   return await createCat({
     ownerId: user._id,
@@ -196,10 +262,8 @@ async function addNewGuardian(
   sessionId,
   { name, email, phone, priorityOrder, Id, photoUrl },
 ) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   return await addGuardian({
     ownerId: user._id,
@@ -217,10 +281,8 @@ async function editGuardian(
   guardianId,
   { name, email, phone, priorityOrder, photoUrl },
 ) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const guardian = await getGuardian(user._id.toString(), guardianId);
   if (!guardian) throw new Error("Guardian not found or unauthorized");
@@ -260,10 +322,8 @@ async function editCat(
     notes,
   },
 ) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
   const cat = await getCatById(catId);
   if (!cat || cat.ownerId.toString() !== user._id.toString())
     throw new Error("Cat not found");
@@ -293,10 +353,8 @@ async function editCat(
 }
 
 async function toggleCatBackupProtocol(sessionId, catId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
   const cat = await getCatById(catId);
   if (!cat || cat.ownerId.toString() !== user._id.toString())
     throw new Error("Cat not found");
@@ -307,47 +365,14 @@ async function toggleCatBackupProtocol(sessionId, catId) {
 }
 
 async function updateUserPhoto(sessionId, photoUrl) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
   await updateUserProfile(user._id, { photoUrl });
 }
 
-async function requestPasswordReset(email) {
-  const user = await findUserByEmail(email);
-  if (!user) return; // silently do nothing to prevent email enumeration
-  const token = await createPasswordResetToken(email);
-  await sendPasswordResetEmail(email, token);
-}
-
-async function resetPasswordWithToken(token, newPassword) {
-  const record = await getPasswordResetToken(token);
-  if (!record) throw new Error("This reset link is invalid or has expired.");
-  validatePassword(newPassword);
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-  await updateUserPassword(record.email, passwordHash);
-  await deletePasswordResetToken(token);
-}
-
-async function updateProfile(
-  sessionId,
-  { name, phone, currentPassword, newPassword },
-) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-
-  if (newPassword) {
-    const valid = await bcrypt.compare(
-      currentPassword || "",
-      user.passwordHash,
-    );
-    if (!valid) throw new Error("Current password is incorrect.");
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await updateUserPassword(session.email, passwordHash);
-  }
+async function updateProfile(sessionId, { name, phone }) {
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
@@ -357,23 +382,9 @@ async function updateProfile(
   }
 }
 
-async function changePassword(sessionId, currentPassword, newPassword) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!valid) throw new Error("Current password is incorrect.");
-  validatePassword(newPassword);
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-  await updateUserPassword(session.email, passwordHash);
-}
-
 async function deleteCat(sessionId, catId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
   const cat = await getCatById(catId);
   if (!cat || cat.ownerId.toString() !== user._id.toString())
     throw new Error("Cat not found");
@@ -381,30 +392,22 @@ async function deleteCat(sessionId, catId) {
 }
 
 async function deleteGuardian(sessionId, guardianId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
   const guardian = await getGuardian(user._id.toString(), guardianId);
   if (!guardian) throw new Error("Guardian not found or unauthorized");
   await deleteGuardianById(guardianId, user._id.toString());
 }
 
-async function deleteAccount(sessionId, password) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) throw new Error("Incorrect password.");
-  await deleteUserAccount(user._id.toString(), user.email);
+async function deleteAccount(sessionId) {
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
+  await deleteUserAccount(user._id.toString());
 }
 
 async function setOwnerUnavailable(sessionId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const existing = await getActiveUnavailability(user._id.toString());
   if (existing) throw new Error("You are already marked as unavailable.");
@@ -434,10 +437,8 @@ async function setOwnerUnavailable(sessionId) {
 }
 
 async function setOwnerAvailable(sessionId) {
-  const session = await getSessionBySessionId(sessionId);
-  if (!session) throw new Error("Unauthorized");
-  const user = await findUserByEmail(session.email);
-  if (!user) throw new Error("User not found");
+  const user = await resolveUserFromSession(sessionId);
+  if (!user) throw new Error("Unauthorized");
 
   const record = await getActiveUnavailability(user._id.toString());
   if (!record) return;
@@ -485,24 +486,22 @@ async function acknowledgeGuardianAccess(token) {
   }
 }
 
-
 export {
   connectDB,
-  logout,
-  login,
   registerUser,
+  authenticateUser,
+  checkSession,
+  logout,
+  requestPasswordReset,
   handleScan,
   getEmergencyView,
   claimGuardian,
-  checkSession,
   getUserHomepage,
   addNewCat,
   addNewGuardian,
   editCat,
   editGuardian,
   toggleCatBackupProtocol,
-  requestPasswordReset,
-  resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
   getCatByNameBusinessLayer,
@@ -510,7 +509,6 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-  changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,

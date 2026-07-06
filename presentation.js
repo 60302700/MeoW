@@ -1,20 +1,19 @@
 import {
   connectDB,
-  logout,
-  login,
   registerUser,
+  authenticateUser,
+  checkSession,
+  logout,
+  requestPasswordReset,
   handleScan,
   getEmergencyView,
   claimGuardian,
-  checkSession,
   getUserHomepage,
   addNewCat,
   editCat,
   editGuardian,
   addNewGuardian,
   toggleCatBackupProtocol,
-  requestPasswordReset,
-  resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
   getCatByNameBusinessLayer,
@@ -22,7 +21,6 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-  changePassword,
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,
@@ -32,10 +30,6 @@ import { engine } from "express-handlebars";
 
 async function getCatByNamePresentationLayer(catName, ownerId) {
   return getCatByNameBusinessLayer(catName, ownerId);
-}
-
-async function authenticateUser(email, password) {
-  return await login(email, password);
 }
 
 async function checkSessionMiddleware(sessionId) {
@@ -53,21 +47,20 @@ async function getGuardianForOwnerPresentation(OId, guardianId) {
 export {
   connectDB,
   engine,
-  authenticateUser,
   registerUser,
+  authenticateUser,
+  checkSessionMiddleware,
+  logoutUser,
+  requestPasswordReset,
   handleScan,
   getEmergencyView,
   claimGuardian,
-  checkSessionMiddleware,
-  logoutUser,
   getUserHomepage,
   addNewCat,
   editCat,
   editGuardian,
   addNewGuardian,
   toggleCatBackupProtocol,
-  requestPasswordReset,
-  resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
@@ -75,7 +68,6 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-  changePassword,
   deleteAccount,
   getGuardianForOwnerPresentation,
   deleteCat,

@@ -21,7 +21,6 @@ import {
   addNewGuardian,
   toggleCatBackupProtocol,
   requestPasswordReset,
-  resetPasswordWithToken,
   updateProfile,
   updateUserPhoto,
   getCatByNamePresentationLayer,
@@ -30,7 +29,6 @@ import {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-  changePassword,
   editCat,
   editGuardian,
   deleteAccount,
@@ -42,6 +40,10 @@ import multer from "multer";
 import { uploadImageBuffer, uploadImageDataUri } from "./cloudinary.js";
 
 const app = express();
+// Trust exactly one hop of reverse proxy (e.g. the platform's load balancer)
+// so express-rate-limit reads the real client IP from X-Forwarded-For
+// instead of refusing to start up over a spoofing concern.
+app.set("trust proxy", 1);
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const storage = multer.memoryStorage();
@@ -80,9 +82,10 @@ app.use((req, res, next) =>
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:"],
-        fontSrc: ["'self'"],
+        scriptSrcAttr: ["'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         connectSrc: ["'self'"],
         frameAncestors: ["'none'"],
       },
@@ -95,6 +98,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
+// Credentials themselves are verified by Auth0 (see authenticateUser /
+// registerUser in business.js, which call Auth0's Authentication API
+// directly). This is just our own thin session-cookie layer on top, since
+// that's decoupled from Auth0's redirect-based login flow.
 function getSessionCookie(req) {
   const cookieHeader = req.headers.cookie || "";
   const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
@@ -216,21 +223,6 @@ app.get("/register", async (req, res) => {
   res.render("register", { title: "Register", isLoggedIn });
 });
 
-app.get("/login", async (req, res) => {
-  const isLoggedIn = await Loggedin(req);
-  res.render("login", {
-    title: "Login",
-    isLoggedIn,
-    expired: req.query.expired === "1",
-    reset: req.query.reset === "1",
-    deleted: req.query.deleted === "1",
-  });
-});
-
-app.get("/emergency", (req, res) => {
-  res.redirect("/scan");
-});
-
 app.post("/register", authLimiter, async (req, res) => {
   const { name, email, phone, password } = req.body;
   try {
@@ -245,7 +237,7 @@ app.post("/register", authLimiter, async (req, res) => {
   }
 });
 
-app.get("/", async (req, res) => {
+app.get("/login", async (req, res) => {
   const isLoggedIn = await Loggedin(req);
   res.render("login", {
     title: "Login",
@@ -267,15 +259,14 @@ app.post("/login", authLimiter, async (req, res) => {
         values: { email: email },
       });
       return;
-    } else {
-      res.cookie("session", session, {
-        maxAge: 5 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: "strict",
-        secure: isProduction,
-      });
-      res.redirect("/homepage");
     }
+    res.cookie("session", session, {
+      maxAge: 5 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "strict",
+      secure: isProduction,
+    });
+    res.redirect("/homepage");
   } catch (err) {
     res.render("login", {
       title: "Login",
@@ -283,6 +274,45 @@ app.post("/login", authLimiter, async (req, res) => {
       values: { email: email },
     });
   }
+});
+
+app.get("/forgot-password", async (req, res) => {
+  const isLoggedIn = await Loggedin(req);
+  res.render("forgot-password", {
+    title: "Reset Password",
+    isLoggedIn,
+    sent: req.query.sent === "1",
+  });
+});
+
+app.post("/forgot-password", authLimiter, async (req, res) => {
+  const { email } = req.body;
+  try {
+    await requestPasswordReset(email);
+    res.redirect("/forgot-password?sent=1");
+  } catch (err) {
+    res.render("forgot-password", {
+      title: "Reset Password",
+      error: err.message,
+      values: { email },
+    });
+  }
+});
+
+app.get("/logout", async (req, res) => {
+  res.clearCookie("session");
+  await logoutUser(getSessionCookie(req));
+  res.redirect("/");
+});
+
+app.get("/emergency", (req, res) => {
+  res.redirect("/scan");
+});
+
+app.get("/", async (req, res) => {
+  const isLoggedIn = await Loggedin(req);
+  if (isLoggedIn) return res.redirect("/homepage");
+  res.redirect("/login");
 });
 
 app.get("/scan", (req, res) => {
@@ -330,19 +360,14 @@ app.post("/scan/:eventId/claim", async (req, res) => {
   }
 });
 
-app.get("/homepage", async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const isLoggedIn = await Loggedin(req);
-  if (!isLoggedIn) {
-    if (sessionId) res.clearCookie("session");
-    return res.redirect(sessionId ? "/?expired=1" : "/");
-  }
-  const data = await getUserHomepage(sessionId);
+app.get("/homepage", requireAuth, async (req, res) => {
+  const userId = getSessionCookie(req);
+  const data = await getUserHomepage(userId);
   if (!data) return res.redirect("/");
   const { user, cats, guardians, isUnavailable } = data;
   res.render("homepage", {
     title: `${user.name}'s Homepage`,
-    isLoggedIn,
+    isLoggedIn: true,
     user,
     cats,
     guardians,
@@ -591,67 +616,6 @@ app.post("/cats/:catId/delete", requireAuth, async (req, res) => {
   }
 });
 
-app.get("/forgot-password", async (req, res) => {
-  const isLoggedIn = await Loggedin(req);
-  res.render("forgot-password", {
-    title: "Reset Password",
-    isLoggedIn,
-    sent: req.query.sent === "1",
-  });
-});
-
-app.post("/forgot-password", authLimiter, async (req, res) => {
-  const { email } = req.body;
-  try {
-    await requestPasswordReset(email);
-    res.redirect("/forgot-password?sent=1");
-  } catch (err) {
-    res.render("forgot-password", {
-      title: "Reset Password",
-      error: err.message,
-      values: { email },
-    });
-  }
-});
-
-app.get("/reset-password", async (req, res) => {
-  const { token, success } = req.query;
-  if (!token && !success) return res.redirect("/forgot-password");
-  res.render("reset-password", {
-    title: "Set New Password",
-    token,
-    success: success === "1",
-  });
-});
-
-app.post("/reset-password", async (req, res) => {
-  const { token, newPassword, confirmPassword } = req.body;
-  if (newPassword !== confirmPassword) {
-    return res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: "Passwords do not match.",
-    });
-  }
-  if (newPassword.length < 6) {
-    return res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: "Password must be at least 6 characters.",
-    });
-  }
-  try {
-    await resetPasswordWithToken(token, newPassword);
-    res.redirect("/login?reset=1");
-  } catch (err) {
-    res.render("reset-password", {
-      title: "Set New Password",
-      token,
-      error: err.message,
-    });
-  }
-});
-
 app.post(
   "/profile/photo",
   requireAuth,
@@ -672,20 +636,9 @@ app.post(
 
 app.post("/profile/edit", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { name, phone, currentPassword, newPassword, confirmNewPassword } =
-    req.body;
-  if (newPassword && newPassword !== confirmNewPassword) {
-    return res.redirect(
-      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
-    );
-  }
+  const { name, phone } = req.body;
   try {
-    await updateProfile(sessionId, {
-      name,
-      phone,
-      currentPassword,
-      newPassword: newPassword || null,
-    });
+    await updateProfile(sessionId, { name, phone });
     res.redirect("/homepage?success=profile");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
@@ -795,11 +748,9 @@ app.post("/guardian-access/:token/chat", chatLimiter, async (req, res) => {
     const { cats, ownerName, alreadyAcknowledged } =
       await getGuardianAccess(token);
     if (!alreadyAcknowledged) {
-      return res
-        .status(403)
-        .json({
-          error: "Please acknowledge your guardian role before using the chat.",
-        });
+      return res.status(403).json({
+        error: "Please acknowledge your guardian role before using the chat.",
+      });
     }
 
     const catContext = cats
@@ -865,49 +816,15 @@ Answer only cat care questions based on this data. Be concise and focused on the
 });
 // ───────────────────────────────────────────────────────────────────────────
 
-// ── Change password ────────────────────────────────────────────────────────
-app.post("/profile/password", requireAuth, async (req, res) => {
-  const sessionId = getSessionCookie(req);
-  const { currentPassword, newPassword, confirmNewPassword } = req.body;
-  if (newPassword !== confirmNewPassword) {
-    return res.redirect(
-      "/homepage?error=" + encodeURIComponent("New passwords do not match."),
-    );
-  }
-  if (newPassword.length < 6) {
-    return res.redirect(
-      "/homepage?error=" +
-        encodeURIComponent("Password must be at least 6 characters."),
-    );
-  }
-  try {
-    await changePassword(sessionId, currentPassword, newPassword);
-    res.redirect("/homepage?success=password");
-  } catch (err) {
-    res.redirect("/homepage?error=" + encodeURIComponent(err.message));
-  }
-});
-// ───────────────────────────────────────────────────────────────────────────
-
 // ── Delete account ─────────────────────────────────────────────────────────
 app.post("/account/delete", requireAuth, async (req, res) => {
   const sessionId = getSessionCookie(req);
-  const { password } = req.body;
   try {
-    await deleteAccount(sessionId, password);
-    res.clearCookie("session");
-    res.redirect("/?deleted=1");
+    await deleteAccount(sessionId);
+    res.redirect("/logout");
   } catch (err) {
     res.redirect("/homepage?error=" + encodeURIComponent(err.message));
   }
-});
-// ───────────────────────────────────────────────────────────────────────────
-
-// ── Logout ─────────────────────────────────────────────────────────────────
-app.get("/logout", async (req, res) => {
-  res.clearCookie("session");
-  await logoutUser(getSessionCookie(req));
-  res.redirect("/");
 });
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -918,11 +835,27 @@ app.use((req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.code === "EBADCSRFTOKEN") {
-    return res
-      .status(403)
-      .send(
-        "Forbidden: invalid or expired form submission. Please go back and try again.",
-      );
+    // A stale/mismatched CSRF token (long-idle tab, multiple tabs, a session
+    // that rotated underneath the page, etc.) used to dump raw text and
+    // strand the user on the POST url with no way back. Bounce back to
+    // wherever the form was submitted from instead, so a fresh page (with a
+    // fresh token) loads and the action can just be retried.
+    let redirectTo = "/";
+    const referer = req.get("Referer");
+    if (referer) {
+      try {
+        const refUrl = new URL(referer);
+        if (refUrl.origin === `${req.protocol}://${req.get("host")}`) {
+          redirectTo = refUrl.pathname;
+        }
+      } catch {
+        // ignore malformed Referer, fall back to "/"
+      }
+    }
+    const sep = redirectTo.includes("?") ? "&" : "?";
+    return res.redirect(
+      `${redirectTo}${sep}error=${encodeURIComponent("That took too long and your session needs a refresh. Please try again.")}`,
+    );
   }
   console.error("[unhandled error]", err);
   res.status(err.status || 500).send("Something went wrong. Please try again.");

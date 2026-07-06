@@ -345,6 +345,7 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
+            white-space: nowrap;
             transition: transform 0.3s ease;
         }
 
@@ -432,6 +433,33 @@
             transform: translateY(-2px) scale(1.04);
             background: linear-gradient(135deg, #b91c1c, #dc2626);
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 6px 20px rgba(220, 38, 38, 0.55);
+        }
+
+        @media (max-width: 480px) {
+            .global-navbar {
+                padding: 0.6rem 0.85rem;
+            }
+            .navbar-brand h3 {
+                font-size: 1.1rem;
+                white-space: nowrap;
+            }
+            .navbar-links ul {
+                gap: 0.55rem;
+            }
+            .navbar-links a {
+                font-size: 0.68rem;
+                letter-spacing: 0.03em;
+            }
+            .navbar-links a.nav-emergency {
+                padding: 0.4rem 0.6rem;
+                gap: 0.2rem;
+            }
+            /* Decorative mascots are wide enough to overlap form content
+               on narrow screens, so hide them below the tablet breakpoint. */
+            .peeking-cat,
+            .peeking-cat-top {
+                display: none;
+            }
         }
 
         /* ==========================================
@@ -781,6 +809,8 @@
             font-weight: 900;
             color: white;
             letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .ec-paw {
@@ -1316,13 +1346,12 @@
         </div>
         <nav class="navbar-links">
             <ul>
-                <li><a href="/register">Register</a></li>
                 {{#if isLoggedIn}}
                 <li><a href="/logout">LogOut</a></li>
-                {{/if}}
-                {{#unless isLoggedIn}}
+                {{else}}
+                <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
-                {{/unless}}
+                {{/if}}
                 <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
             </ul>
         </nav>

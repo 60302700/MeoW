@@ -46,12 +46,12 @@
         const cx = window.innerWidth  / 2;
         const cy = window.innerHeight / 2;
 
-        if (orangeWrap && oPL && oPR) {
+        if (orangeWrap && oPL && oPR && orangeWrap.offsetParent !== null) {
             const coords = svgCoords(orangeWrap, 120, 90, cx, cy);
             movePupil(oPL, parseFloat(oPL.dataset.cx), parseFloat(oPL.dataset.cy), coords.x, coords.y);
             movePupil(oPR, parseFloat(oPR.dataset.cx), parseFloat(oPR.dataset.cy), coords.x, coords.y);
         }
-        if (blackWrap && bPL && bPR) {
+        if (blackWrap && bPL && bPR && blackWrap.offsetParent !== null) {
             const coords = svgCoords(blackWrap, 120, 130, cx, cy);
             movePupil(bPL, parseFloat(bPL.dataset.cx), parseFloat(bPL.dataset.cy), coords.x, coords.y);
             movePupil(bPR, parseFloat(bPR.dataset.cx), parseFloat(bPR.dataset.cy), coords.x, coords.y);
@@ -78,12 +78,12 @@
     });
 
     function trackLoop() {
-        if (orangeWrap && oPL && oPR) {
+        if (orangeWrap && oPL && oPR && orangeWrap.offsetParent !== null) {
             const c = svgCoords(orangeWrap, 120, 90, mouse.x, mouse.y);
             movePupil(oPL, parseFloat(oPL.dataset.cx), parseFloat(oPL.dataset.cy), c.x, c.y);
             movePupil(oPR, parseFloat(oPR.dataset.cx), parseFloat(oPR.dataset.cy), c.x, c.y);
         }
-        if (blackWrap && bPL && bPR) {
+        if (blackWrap && bPL && bPR && blackWrap.offsetParent !== null) {
             const c = svgCoords(blackWrap, 120, 130, mouse.x, mouse.y);
             movePupil(bPL, parseFloat(bPL.dataset.cx), parseFloat(bPL.dataset.cy), c.x, c.y);
             movePupil(bPR, parseFloat(bPR.dataset.cx), parseFloat(bPR.dataset.cy), c.x, c.y);

@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { MongoClient, ObjectId } from "mongodb";
-import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 
 const uri = process.env.MONGODB_URI;
@@ -21,9 +20,6 @@ async function connectDB() {
       .collection("Sessions")
       .createIndex({ lastActivity: 1 }, { expireAfterSeconds: 30 * 60 });
     await db
-      .collection("PasswordResetTokens")
-      .createIndex({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 });
-    await db
       .collection("GuardianAccessTokens")
       .createIndex({ createdAt: 1 }, { expireAfterSeconds: 48 * 60 * 60 });
     console.log("Connected to MongoDB");
@@ -38,7 +34,6 @@ function collections() {
     Guardians: db.collection("Guardians"),
     EmergencyEvents: db.collection("EmergencyEvents"),
     Sessions: db.collection("Sessions"),
-    PasswordResetTokens: db.collection("PasswordResetTokens"),
     GuardianAccessTokens: db.collection("GuardianAccessTokens"),
     OwnerUnavailability: db.collection("OwnerUnavailability"),
   };
@@ -46,13 +41,13 @@ function collections() {
 
 // ---- Users ----
 
-async function createUser({ name, email, passwordHash, phone }) {
+async function createUser({ name, email, phone, authSub }) {
   const { Users } = collections();
   const result = await Users.insertOne({
     name,
     email,
-    passwordHash,
     phone,
+    authSub,
     createdAt: new Date(),
   });
   return result.insertedId;
@@ -68,9 +63,14 @@ async function findUserById(userId) {
   return Users.findOne({ _id: new ObjectId(userId) });
 }
 
-async function updateUserPassword(email, passwordHash) {
+async function findUserByAuthSub(authSub) {
   const { Users } = collections();
-  await Users.updateOne({ email }, { $set: { passwordHash } });
+  return Users.findOne({ authSub });
+}
+
+async function linkAuthSub(userId, authSub) {
+  const { Users } = collections();
+  await Users.updateOne({ _id: new ObjectId(userId) }, { $set: { authSub } });
 }
 
 async function updateUserProfile(userId, updates) {
@@ -78,13 +78,36 @@ async function updateUserProfile(userId, updates) {
   await Users.updateOne({ _id: new ObjectId(userId) }, { $set: updates });
 }
 
-async function Authenticate(email, password) {
-  const { Users } = collections();
-  const user = await Users.findOne({ email: email });
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return false;
-  }
-  return true;
+// ---- Sessions ----
+
+async function createSession(userId) {
+  const { Sessions } = collections();
+  const sessionValue = uuidv4();
+  await Sessions.insertOne({
+    userId: new ObjectId(userId),
+    sessionId: sessionValue,
+    createdAt: new Date(),
+    lastActivity: new Date(),
+  });
+  return sessionValue;
+}
+
+async function touchSession(sessionId) {
+  const { Sessions } = collections();
+  await Sessions.updateOne(
+    { sessionId },
+    { $set: { lastActivity: new Date() } },
+  );
+}
+
+async function getSessionBySessionId(sessionId) {
+  const { Sessions } = collections();
+  return Sessions.findOne({ sessionId });
+}
+
+async function deleteSession(sessionId) {
+  const { Sessions } = collections();
+  await Sessions.deleteOne({ sessionId });
 }
 // ---- Cats ----
 
@@ -213,44 +236,13 @@ async function assignGuardianToEvent(eventId, guardianId) {
   );
 }
 
-async function createSession(email) {
-  const { Sessions } = collections();
-  const sessionValue = uuidv4();
-  await Sessions.insertOne({
-    email,
-    sessionId: sessionValue,
-    createdAt: new Date(),
-    lastActivity: new Date(),
-  });
-  return sessionValue;
-}
-
-async function touchSession(sessionId) {
-  const { Sessions } = collections();
-  await Sessions.updateOne(
-    { sessionId },
-    { $set: { lastActivity: new Date() } },
-  );
-}
-
-async function getSessionBySessionId(sessionId) {
-  const { Sessions } = collections();
-  return Sessions.findOne({ sessionId: sessionId });
-}
-
-async function deleteSession(sessionId) {
-  const { Sessions } = collections();
-  await Sessions.deleteOne({ sessionId: sessionId });
-}
-
-async function deleteUserAccount(userId, email) {
+async function deleteUserAccount(userId) {
   const {
     Users,
     Cats,
     Guardians,
     EmergencyEvents,
     Sessions,
-    PasswordResetTokens,
     GuardianAccessTokens,
     OwnerUnavailability,
   } = collections();
@@ -265,8 +257,7 @@ async function deleteUserAccount(userId, email) {
     Cats.deleteMany({ ownerId: oid }),
     Guardians.deleteMany({ ownerId: oid }),
     EmergencyEvents.deleteMany({ catId: { $in: catIds } }),
-    Sessions.deleteMany({ email }),
-    PasswordResetTokens.deleteMany({ email }),
+    Sessions.deleteMany({ userId: oid }),
     GuardianAccessTokens.deleteMany({ ownerId: oid }),
     OwnerUnavailability.deleteMany({ ownerId: oid }),
   ]);
@@ -342,26 +333,6 @@ async function acknowledgeGuardianToken(token) {
   );
 }
 
-// ---- Password Reset Tokens ----
-
-async function createPasswordResetToken(email) {
-  const { PasswordResetTokens } = collections();
-  await PasswordResetTokens.deleteMany({ email }); // clear any old tokens
-  const token = uuidv4();
-  await PasswordResetTokens.insertOne({ email, token, createdAt: new Date() });
-  return token;
-}
-
-async function getPasswordResetToken(token) {
-  const { PasswordResetTokens } = collections();
-  return PasswordResetTokens.findOne({ token });
-}
-
-async function deletePasswordResetToken(token) {
-  const { PasswordResetTokens } = collections();
-  await PasswordResetTokens.deleteOne({ token });
-}
-
 
 async function updateGuardianByObjectId(guardianId, updates) {
   const { Guardians } = collections();
@@ -395,6 +366,12 @@ export {
   createUser,
   findUserByEmail,
   findUserById,
+  findUserByAuthSub,
+  linkAuthSub,
+  createSession,
+  touchSession,
+  getSessionBySessionId,
+  deleteSession,
   createCat,
   getCatByQrCode,
   getCatById,
@@ -408,16 +385,7 @@ export {
   createEmergencyEvent,
   getEmergencyEventById,
   assignGuardianToEvent,
-  Authenticate,
-  createSession,
-  touchSession,
-  deleteSession,
-  getSessionBySessionId,
-  updateUserPassword,
   updateUserProfile,
-  createPasswordResetToken,
-  getPasswordResetToken,
-  deletePasswordResetToken,
   deleteUserAccount,
   createOwnerUnavailability,
   getActiveUnavailability,
