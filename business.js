@@ -380,11 +380,6 @@ async function updateUserPhoto(sessionId, photoUrl) {
   await updateUserProfile(user._id, { photoUrl });
 }
 
-<<<<<<< HEAD
-async function updateProfile(sessionId, { name, phone }) {
-  const user = await resolveUserFromSession(sessionId);
-  if (!user) throw new Error("Unauthorized");
-=======
 async function requestPasswordReset(email) {
   const user = await findUserByEmail(email);
   if (!user) return; // silently do nothing to prevent email enumeration
@@ -419,7 +414,6 @@ async function updateProfile(
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await updateUserPassword(session.email, passwordHash);
   }
->>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
 
   const updates = {};
   if (name && name.trim()) updates.name = name.trim();
@@ -574,11 +568,8 @@ export {
   setOwnerAvailable,
   getGuardianAccess,
   acknowledgeGuardianAccess,
-<<<<<<< HEAD
-=======
   declineGuardianAccess,
   changePassword,
->>>>>>> a54e54caa92ee5aa2bfc08900332ca146cc64a23
   deleteAccount,
   getGuardianForOwnerBusinessLayer,
   deleteCat,
