@@ -5,9 +5,16 @@
         padding: 1rem;
     }
 
-    .sim-head {
-        text-align: center;
-        margin-bottom: 2rem;
+    .sim-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+        overflow: hidden;
+    }
+
+    .sim-header {
+        background: linear-gradient(135deg, #9d174d, #ec4899);
+        padding: 1.5rem 1.75rem 1.25rem;
     }
 
     .sim-badge {
@@ -16,145 +23,138 @@
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #be185d;
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 0.4rem;
+    }
+
+    .sim-header h1 {
+        margin: 0;
+        color: white;
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .sim-body {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .sim-body p.intro {
+        font-size: 0.88rem;
+        color: #475569;
+        line-height: 1.65;
+        margin: 0 0 1.35rem;
+    }
+
+    .sim-steps {
         background: #fdf2f8;
         border: 1px solid #fbcfe8;
-        padding: 0.3rem 0.85rem;
-        border-radius: 999px;
-        margin-bottom: 0.9rem;
+        border-radius: 0.85rem;
+        padding: 0.9rem 1rem 0.9rem 1.1rem;
+        margin-bottom: 1.35rem;
     }
 
-    .sim-head h1 {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 0.5rem;
+    .sim-step {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        font-size: 0.8rem;
+        color: #831843;
+        line-height: 1.5;
+        padding: 0.2rem 0;
     }
 
-    .sim-head p {
-        font-size: 0.9rem;
-        color: #64748b;
-        line-height: 1.6;
-        max-width: 560px;
-        margin: 0 auto;
-    }
-
-    .sim-grid {
-        display: block;
-    }
-
-    .sim-card {
-        background: white;
-        border: 1px solid #f1f5f9;
-        border-radius: 1.25rem;
-        padding: 1.5rem;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-        text-align: center;
-        transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .sim-card:hover {
-        border-color: #fbcfe8;
-        transform: translateY(-3px);
-    }
-
-    .sim-cat-row {
+    .sim-step-num {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #ec4899;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.7rem;
-        margin-bottom: 1.1rem;
+        flex-shrink: 0;
+        margin-top: 1px;
     }
 
-    .sim-cat-photo {
-        width: 40px;
-        height: 40px;
-        border-radius: 0.6rem;
-        object-fit: cover;
-        border: 1px solid #fbcfe8;
-    }
-
-    .sim-cat-name {
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #0f172a;
-    }
-
-    .sim-qr {
-        width: 180px;
-        height: 180px;
-        border: 2px solid #1e293b;
-        border-radius: 0.5rem;
+    .field-label {
         display: block;
-        margin: 0 auto 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.35rem;
     }
 
-    .sim-id {
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.7rem;
-        color: #94a3b8;
-        word-break: break-all;
-        margin-bottom: 1rem;
-    }
-
-    .sim-open-btn {
-        display: inline-block;
+    .sim-input {
         width: 100%;
-        box-sizing: border-box;
-        padding: 0.75rem;
-        background: linear-gradient(135deg, #ec4899, #a855f7);
-        color: white;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
         border-radius: 0.75rem;
         font-size: 0.9rem;
+        color: #0f172a;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        background: #f8fafc;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: 0.03em;
+    }
+
+    .sim-input:focus { border-color: #ec4899; background: white; }
+
+    .sim-btn {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #9d174d, #ec4899);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
         font-weight: 700;
-        text-decoration: none;
+        cursor: pointer;
         transition: opacity 0.15s;
+        margin-top: 0.9rem;
     }
 
-    .sim-open-btn:hover { opacity: 0.92; }
+    .sim-btn:hover { opacity: 0.92; }
 
-    .sim-empty {
+    .sim-hint {
+        font-size: 0.75rem;
+        color: #94a3b8;
         text-align: center;
-        background: white;
-        border: 1px solid #f1f5f9;
-        border-radius: 1.25rem;
-        padding: 3rem 2rem;
-        color: #64748b;
+        margin-top: 1rem;
+        line-height: 1.5;
     }
 
-    .sim-empty a { color: #ec4899; font-weight: 700; text-decoration: none; }
-
-    @media (max-width: 480px) {
-        .sim-head h1 { font-size: 1.4rem; }
-    }
+    .sim-hint a { color: #ec4899; font-weight: 600; text-decoration: none; }
+    .sim-hint a:hover { text-decoration: underline; }
 </style>
 
 <div class="sim-wrap">
-    <div class="sim-head">
+<div class="sim-card">
+    <div class="sim-header">
         <span class="sim-badge">Demo Tool</span>
         <h1>QR Code Simulator</h1>
-        <p>This is the QR code printed on the cat's MeoW tag. On a phone that can reach this server, scan the code. On a laptop, just click "Open finder page" to simulate someone scanning the tag after finding the cat.</p>
     </div>
+    <div class="sim-body">
+        <p class="intro">Simulate someone finding a cat and scanning its MeoW tag. Paste the cat's QR code below to open its finder page.</p>
 
-    {{#if cats.length}}
-    <div class="sim-grid">
-        {{#each cats}}
-        <div class="sim-card">
-            <div class="sim-cat-row">
-                {{#if this.photoUrl}}
-                <img src="{{this.photoUrl}}" class="sim-cat-photo" alt="{{this.name}}">
-                {{/if}}
-                <span class="sim-cat-name">{{this.name}}</span>
-            </div>
-            <img src="{{this.qrImage}}" class="sim-qr" alt="QR code for {{this.name}}">
-            <div class="sim-id">{{this.qrCodeId}}</div>
-            <a href="{{this.scanUrl}}" class="sim-open-btn">Open finder page</a>
+        <div class="sim-steps">
+            <div class="sim-step"><span class="sim-step-num">1</span><span>Open a cat's profile in the owner dashboard and copy its <strong>QR Code ID</strong>.</span></div>
+            <div class="sim-step"><span class="sim-step-num">2</span><span>Paste it below and press <strong>Simulate scan</strong>.</span></div>
+            <div class="sim-step"><span class="sim-step-num">3</span><span>You'll land on that cat's finder page, exactly as a real scanner would.</span></div>
         </div>
-        {{/each}}
+
+        <form method="GET" action="/scan">
+            <label class="field-label">Cat's QR Code ID</label>
+            <input type="text" name="qr" class="sim-input" placeholder="e.g. a1b2c3d4-..." required maxlength="64" autofocus>
+            <button type="submit" class="sim-btn">Simulate scan</button>
+        </form>
+
+        <p class="sim-hint">The QR Code ID is shown on each cat's profile page. <a href="/login">Sign in</a> to view it.</p>
     </div>
-    {{else}}
-    <div class="sim-empty">
-        <p>No cats have been registered yet. <a href="/register">Create an account</a> and add a cat to generate its QR code.</p>
-    </div>
-    {{/if}}
+</div>
 </div>

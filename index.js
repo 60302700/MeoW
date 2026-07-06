@@ -12,7 +12,6 @@ import {
   registerUser,
   authenticateUser,
   getCatInfoForScan,
-  getQrSimulatorData,
   handleScan,
   acknowledgeOwnerScanBusiness,
   getEmergencyView,
@@ -324,16 +323,10 @@ app.get("/emergency", (req, res) => {
   res.redirect("/scan");
 });
 
-// Demo tool: shows each registered cat's QR code and a direct link to its
-// finder page, so the scan flow can be tested without a physical tag.
-app.get("/qr-simulator", async (req, res) => {
-  try {
-    const cats = await getQrSimulatorData();
-    res.render("qr-simulator", { title: "QR Code Simulator — MeoW", cats });
-  } catch (err) {
-    console.error("[QR Simulator] Failed to load:", err.message);
-    res.render("qr-simulator", { title: "QR Code Simulator — MeoW", cats: [], error: "Could not load cats." });
-  }
+// Demo tool: paste a cat's QR code ID to open its finder page, so the scan
+// flow can be tested without a physical tag.
+app.get("/qr-simulator", (req, res) => {
+  res.render("qr-simulator", { title: "QR Code Simulator — MeoW" });
 });
 
 app.get("/", async (req, res) => {
