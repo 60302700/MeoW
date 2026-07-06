@@ -297,24 +297,6 @@ async function resolveUnavailability(unavailabilityId) {
 
 // ---- Guardian Access Tokens ----
 
-async function createGuardianAccessToken(
-  unavailabilityId,
-  guardianId,
-  ownerId,
-) {
-  const { GuardianAccessTokens } = collections();
-  const token = uuidv4();
-  await GuardianAccessTokens.insertOne({
-    token,
-    unavailabilityId: new ObjectId(unavailabilityId),
-    guardianId: new ObjectId(guardianId),
-    ownerId: new ObjectId(ownerId),
-    acknowledged: false,
-    createdAt: new Date(),
-  });
-  return token;
-}
-
 async function getGuardianAccessToken(token) {
   const { GuardianAccessTokens } = collections();
   const record = await GuardianAccessTokens.findOne({ token });
@@ -422,7 +404,6 @@ export {
   createOwnerUnavailability,
   getActiveUnavailability,
   resolveUnavailability,
-  createGuardianAccessToken,
   getGuardianAccessToken,
   invalidateGuardianTokensByUnavailability,
   declineGuardianToken,

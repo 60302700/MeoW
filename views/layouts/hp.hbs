@@ -1727,16 +1727,14 @@
                     {{#if isUnavailable}}
                     <form method="POST" action="/owner/available" style="margin:0;">
                         <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                        <button type="submit" class="nav-emergency"
-                            onclick="return confirm('Mark yourself as available? This will stop the guardian alert chain.')">
+                        <button type="submit" class="nav-emergency" id="btnCancelAlert">
                             🚨 Cancel Alert
                         </button>
                     </form>
                     {{else}}
                     <form method="POST" action="/owner/unavailable" style="margin:0;">
                         <input type="hidden" name="_csrf" value="{{csrfToken}}">
-                        <button type="submit" class="nav-emergency"
-                            onclick="return confirm('This will send emergency alerts to your guardians in priority order. Continue?')">
+                        <button type="submit" class="nav-emergency" id="btnAlertGuardians">
                             🚨 Alert Guardians
                         </button>
                     </form>
@@ -1772,6 +1770,15 @@
     {{{body}}}
 
     <script nonce="{{nonce}}">
+        var btnCancelAlert = document.getElementById('btnCancelAlert');
+        if (btnCancelAlert) btnCancelAlert.form.addEventListener('submit', function(e) {
+            if (!confirm('Mark yourself as available? This will stop the guardian alert chain.')) e.preventDefault();
+        });
+        var btnAlertGuardians = document.getElementById('btnAlertGuardians');
+        if (btnAlertGuardians) btnAlertGuardians.form.addEventListener('submit', function(e) {
+            if (!confirm('This will send emergency alerts to your guardians in priority order. Continue?')) e.preventDefault();
+        });
+
         function closeProfileMenu() {
             const wrap = document.getElementById('profileMenuWrap');
             if (wrap) wrap.classList.remove('open');

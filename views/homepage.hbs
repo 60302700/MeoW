@@ -784,6 +784,9 @@
         box-sizing: border-box;
         background: white;
     }
+    .guardian-edit-input:focus {
+        border-color: #ec4899 !important;
+    }
 </style>
 
 <div class="gh-profile">
@@ -1003,15 +1006,13 @@
                             </div>
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Name</label>
-                                <input type="text" name="name" value="{{this.name}}" required
-                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                <input type="text" name="name" value="{{this.name}}" required class="guardian-edit-input"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;">
                             </div>
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Email</label>
-                                <input type="email" name="email" value="{{this.email}}"
-                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                <input type="email" name="email" value="{{this.email}}" class="guardian-edit-input"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;">
                             </div>
                             <div style="margin-bottom:0.85rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Phone</label>
@@ -1025,9 +1026,8 @@
                             </div>
                             <div style="margin-bottom:1.5rem;">
                                 <label style="display:block;font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.3rem;">Priority Order</label>
-                                <input type="number" name="priorityOrder" value="{{this.priorityOrder}}" min="1"
-                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
-                                    onfocus="this.style.borderColor='#ec4899'" onblur="this.style.borderColor='#e2e8f0'">
+                                <input type="number" name="priorityOrder" value="{{this.priorityOrder}}" min="1" class="guardian-edit-input"
+                                    style="width:100%;padding:0.7rem 0.9rem;border:2px solid #e2e8f0;border-radius:0.65rem;font-size:0.9rem;color:#0f172a;outline:none;box-sizing:border-box;transition:border-color 0.2s;">
                             </div>
                             <div style="display:flex;gap:0.75rem;">
                                 <button type="button" class="js-close-guardian" data-id="{{this.Id}}"

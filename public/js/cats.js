@@ -65,7 +65,6 @@
 
     // Cursor eye tracking via rAF
     let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    let rafId = null;
     let tracking = false;
 
     document.addEventListener('mousemove', e => {
@@ -73,7 +72,7 @@
         mouse.y = e.clientY;
         if (!tracking) {
             tracking = true;
-            rafId = requestAnimationFrame(trackLoop);
+            requestAnimationFrame(trackLoop);
         }
     });
 
@@ -89,7 +88,6 @@
             movePupil(bPR, parseFloat(bPR.dataset.cx), parseFloat(bPR.dataset.cy), c.x, c.y);
         }
         tracking = false;
-        rafId = null;
     }
 
     // Black cat peeks up when any input is focused

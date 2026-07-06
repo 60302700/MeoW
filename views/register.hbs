@@ -75,14 +75,13 @@
                                     </select>
                                     <input type="tel" id="phone" class="fancy-input" placeholder="e.g. 5555 1234" autocomplete="tel"
                                         style="flex:1;border:none;border-radius:0;outline:none;padding-left:0.75rem;"
-                                        onfocus="document.getElementById('phone-wrap-outer').style.borderColor='#ec4899'"
-                                        onblur="document.getElementById('phone-wrap-outer').style.borderColor='#e2e8f0'">
+                                        >
                                 </div>
                                 <input type="hidden" name="phone" id="phone-combined">
                                 <label for="phone" style="left:84px;">Phone Number</label>
                             </div>
                             <div class="floating-field">
-                                <input type="password" id="password" name="password" class="fancy-input" placeholder=" " minlength="8" oninput="checkPwStrength('password','pw-rules-reg')">
+                                <input type="password" id="password" name="password" class="fancy-input" placeholder=" " minlength="8">
                                 <label for="password">Password</label>
                             </div>
                             <div id="pw-rules-reg" style="display:none;margin-top:0.5rem;padding:0.75rem 1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.65rem;">
@@ -229,4 +228,14 @@ function checkPwStrength(inputId, rulesId) {
         el.innerHTML = (ok ? '&#10003;' : '&#10007;') + ' ' + el.textContent.slice(2);
     });
 }
+(function() {
+    var phoneInput = document.getElementById('phone');
+    var phoneWrap  = document.getElementById('phone-wrap-outer');
+    if (phoneInput && phoneWrap) {
+        phoneInput.addEventListener('focus', function() { phoneWrap.style.borderColor = '#ec4899'; });
+        phoneInput.addEventListener('blur',  function() { phoneWrap.style.borderColor = '#e2e8f0'; });
+    }
+    var pwInput = document.getElementById('password');
+    if (pwInput) pwInput.addEventListener('input', function() { checkPwStrength('password', 'pw-rules-reg'); });
+})();
 </script>

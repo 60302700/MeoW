@@ -31,11 +31,18 @@
         /* Centering main wrapper area for form cards under the navbar */
         .main-content {
             flex: 1;
-            /* Takes up all remaining screen space */
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
+        }
+        .cats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            padding: 0 2rem;
+            box-sizing: border-box;
         }
 
         /* ==========================================
@@ -1118,57 +1125,30 @@
    10. PEEKING CAT DECORATION
    ========================================== */
         .peeking-cat {
-            position: fixed;
-            bottom: 0;
-            right: 2.5rem;
             width: 160px;
             height: 119px;
             overflow: hidden;
-            pointer-events: all;
-            z-index: 500;
+            flex-shrink: 0;
             cursor: pointer;
-            animation: blackCatBob 5s ease-in-out 0.5s infinite;
             transition: filter 0.3s ease;
         }
         .peeking-cat svg { display: block; width: 160px; height: 174px; }
         .peeking-cat:hover {
-            animation: none;
-            transform: translateY(-8px) scale(1.05);
             filter: drop-shadow(0 0 14px rgba(236,72,153,0.38));
         }
-        .peeking-cat.cat-focused {
-            animation: none !important;
-            transform: translateY(-10px) !important;
-            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1) !important;
-        }
-        @keyframes blackCatBob {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-5px); }
-        }
 
-        /* Orange upside-down cat */
+        /* Gray cat peeking from bottom-left */
         .peeking-cat-top {
-            position: fixed;
-            top: 47px;
-            left: 2.5rem;
             width: 160px;
-            height: 110px;
+            height: 119px;
             overflow: hidden;
-            pointer-events: all;
-            z-index: 500;
+            flex-shrink: 0;
             cursor: pointer;
-            animation: orangeCatBob 5.5s ease-in-out infinite;
             transition: filter 0.3s ease;
         }
-        .peeking-cat-top svg { display: block; width: 160px; }
+        .peeking-cat-top svg { display: block; width: 160px; height: 174px; }
         .peeking-cat-top:hover {
-            animation: none;
-            transform: translateY(8px) scale(1.05);
-            filter: drop-shadow(0 0 14px rgba(234,88,12,0.38));
-        }
-        @keyframes orangeCatBob {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(6px); }
+            filter: drop-shadow(0 0 14px rgba(100,116,139,0.5));
         }
 
         /* Hover particles */
@@ -1348,11 +1328,11 @@
             <ul>
                 {{#if isLoggedIn}}
                 <li><a href="/logout">LogOut</a></li>
+                <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
                 {{else}}
                 <li><a href="/register">Register</a></li>
                 <li><a href="/login">Login</a></li>
                 {{/if}}
-                <li><a href="/emergency" class="nav-emergency">🚨 Emergency</a></li>
             </ul>
         </nav>
     </header>
@@ -1360,14 +1340,15 @@
         {{{body}}}
     </div>
 
-    <!-- Orange upside-down cat peeking from header -->
+    <div class="cats-row">
+    <!-- Gray cat peeking from bottom-left -->
     <div class="peeking-cat-top" aria-hidden="true">
-        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 120 130" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <radialGradient id="oFur" cx="42%" cy="40%" r="60%">
-                    <stop offset="0%"   stop-color="#fdba74"/>
-                    <stop offset="55%"  stop-color="#f97316"/>
-                    <stop offset="100%" stop-color="#c2410c"/>
+                <radialGradient id="oFur" cx="40%" cy="36%" r="60%">
+                    <stop offset="0%"   stop-color="#94a3b8"/>
+                    <stop offset="50%"  stop-color="#64748b"/>
+                    <stop offset="100%" stop-color="#475569"/>
                 </radialGradient>
                 <radialGradient id="oIrisL" cx="35%" cy="30%" r="68%" gradientUnits="objectBoundingBox">
                     <stop offset="0%"   stop-color="#fffbeb"/>
@@ -1383,77 +1364,81 @@
                 </radialGradient>
             </defs>
 
+            <!-- Body -->
+            <ellipse cx="60" cy="123" rx="32" ry="22" fill="#475569"/>
+
             <!-- Left paw -->
-            <ellipse cx="14" cy="18" rx="14" ry="10" fill="#f97316" stroke="#b84000" stroke-width="1.2"/>
-            <ellipse cx="6"  cy="12" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="14" cy="10" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="22" cy="12" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="6"  cy="13.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.9"/>
-            <ellipse cx="14" cy="12"   rx="2.5" ry="1.8" fill="#fda4af" opacity="0.9"/>
-            <ellipse cx="22" cy="13.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.9"/>
+            <ellipse cx="14" cy="87" rx="14" ry="10" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+            <!-- Pink pads -->
+            <ellipse cx="6"  cy="84.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="14" cy="83"   rx="2.5" ry="1.8" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="22" cy="84.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.85"/>
+            <!-- Toes at/below screen edge -->
+            <ellipse cx="6"  cy="91" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
+            <ellipse cx="14" cy="94" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
+            <ellipse cx="22" cy="91" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
 
             <!-- Right paw -->
-            <ellipse cx="106" cy="18" rx="14" ry="10" fill="#f97316" stroke="#b84000" stroke-width="1.2"/>
-            <ellipse cx="98"  cy="12" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="106" cy="10" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="114" cy="12" rx="5"  ry="4"  fill="#ea580c" stroke="#b84000" stroke-width="1"/>
-            <ellipse cx="98"  cy="13.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.9"/>
-            <ellipse cx="106" cy="12"   rx="2.5" ry="1.8" fill="#fda4af" opacity="0.9"/>
-            <ellipse cx="114" cy="13.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.9"/>
+            <ellipse cx="106" cy="87" rx="14" ry="10" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+            <ellipse cx="98"  cy="84.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="106" cy="83"   rx="2.5" ry="1.8" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="114" cy="84.5" rx="2"   ry="1.5" fill="#fda4af" opacity="0.85"/>
+            <ellipse cx="98"  cy="91" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
+            <ellipse cx="106" cy="94" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
+            <ellipse cx="114" cy="91" rx="5"  ry="4"  fill="#475569" stroke="#334155" stroke-width="1"/>
 
             <!-- Head -->
-            <ellipse cx="60" cy="38" rx="38" ry="34" fill="url(#oFur)" stroke="#b84000" stroke-width="1.5"/>
+            <ellipse cx="60" cy="62" rx="38" ry="34" fill="url(#oFur)" stroke="#334155" stroke-width="1.5"/>
 
-            <!-- Left ear (pointing down — cat peeking upside-down) -->
-            <polygon points="28,58 18,83 42,64" fill="#ea580c" stroke="#b84000" stroke-width="1.2" class="o-ear-l"/>
-            <polygon points="30,60 22,79 40,65" fill="#fda4af" opacity="0.8"/>
+            <!-- Fur sheen highlight -->
+            <ellipse cx="46" cy="48" rx="14" ry="9" fill="#94a3b8" opacity="0.45"/>
+
+            <!-- Left ear (pointing up) -->
+            <polygon points="28,42 18,18 42,36" fill="#475569" stroke="#334155" stroke-width="1.2" class="o-ear-l"/>
+            <polygon points="30,40 23,22 40,36" fill="#fda4af" opacity="0.72"/>
 
             <!-- Right ear -->
-            <polygon points="92,58 102,83 78,64" fill="#ea580c" stroke="#b84000" stroke-width="1.2" class="o-ear-r"/>
-            <polygon points="90,60 98,79 80,65" fill="#fda4af" opacity="0.8"/>
-
-            <!-- Tabby forehead stripes (below eyes on screen = forehead for inverted cat) -->
-            <path d="M49,46 Q60,43 71,46" stroke="#c2410c" stroke-width="2"   fill="none" stroke-linecap="round" opacity="0.45"/>
-            <path d="M46,52 Q60,49 74,52" stroke="#c2410c" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.32"/>
+            <polygon points="92,42 102,18 78,36" fill="#475569" stroke="#334155" stroke-width="1.2" class="o-ear-r"/>
+            <polygon points="90,40 97,22 80,36" fill="#fda4af" opacity="0.72"/>
 
             <!-- Blush cheeks -->
-            <ellipse cx="35" cy="42" rx="8.5" ry="5" fill="#fb7185" opacity="0.28"/>
-            <ellipse cx="85" cy="42" rx="8.5" ry="5" fill="#fb7185" opacity="0.28"/>
+            <ellipse cx="35" cy="66" rx="8.5" ry="5" fill="#fb7185" opacity="0.24"/>
+            <ellipse cx="85" cy="66" rx="8.5" ry="5" fill="#fb7185" opacity="0.24"/>
 
-            <!-- Eyebrows (just below eyes on screen = above eyes from face perspective) -->
-            <path d="M34,43 Q43,46 52,43" stroke="#b84000" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.55"/>
-            <path d="M68,43 Q77,46 86,43" stroke="#b84000" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.55"/>
+            <!-- Eyebrows -->
+            <path d="M34,51 Q43,48 52,51" stroke="#334155" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.6"/>
+            <path d="M68,51 Q77,48 86,51" stroke="#334155" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.6"/>
 
             <!-- Muzzle patch -->
-            <ellipse cx="60" cy="32" rx="14" ry="8" fill="#fdba74" opacity="0.4"/>
+            <ellipse cx="60" cy="68" rx="14" ry="8" fill="#94a3b8" opacity="0.55"/>
 
             <!-- Left eye -->
-            <circle cx="44" cy="38" r="11.5" fill="url(#oIrisL)" stroke="#78350f" stroke-width="0.8"/>
-            <circle cx="44" cy="38" r="7.5"  fill="#111" id="o-pupil-l" data-cx="44" data-cy="38" class="cat-eye-blink"/>
-            <circle cx="40" cy="34" r="3.2"  fill="white"/>
-            <circle cx="46" cy="42" r="1.3"  fill="white" opacity="0.7"/>
+            <circle cx="44" cy="62" r="11.5" fill="url(#oIrisL)" stroke="#78350f" stroke-width="0.8"/>
+            <circle cx="44" cy="62" r="7.5"  fill="#111" id="o-pupil-l" data-cx="44" data-cy="62" class="cat-eye-blink"/>
+            <circle cx="40" cy="58" r="3.2"  fill="white"/>
+            <circle cx="46" cy="66" r="1.3"  fill="white" opacity="0.7"/>
 
             <!-- Right eye -->
-            <circle cx="76" cy="38" r="11.5" fill="url(#oIrisR)" stroke="#78350f" stroke-width="0.8"/>
-            <circle cx="76" cy="38" r="7.5"  fill="#111" id="o-pupil-r" data-cx="76" data-cy="38" class="cat-eye-blink"/>
-            <circle cx="72" cy="34" r="3.2"  fill="white"/>
-            <circle cx="78" cy="42" r="1.3"  fill="white" opacity="0.7"/>
+            <circle cx="76" cy="62" r="11.5" fill="url(#oIrisR)" stroke="#78350f" stroke-width="0.8"/>
+            <circle cx="76" cy="62" r="7.5"  fill="#111" id="o-pupil-r" data-cx="76" data-cy="62" class="cat-eye-blink"/>
+            <circle cx="72" cy="58" r="3.2"  fill="white"/>
+            <circle cx="78" cy="66" r="1.3"  fill="white" opacity="0.7"/>
 
-            <!-- Mouth (at nose tip y=26, U shape opening upward) -->
-            <path d="M60,26 Q55,22.5 52,23.5" stroke="#c2410c" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.7"/>
-            <path d="M60,26 Q65,22.5 68,23.5" stroke="#c2410c" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.7"/>
+            <!-- Nose -->
+            <path d="M57.5,71.5 L60,74 L62.5,71.5 Q60,69 57.5,71.5Z" fill="#fda4af" stroke="#f9a8d4" stroke-width="0.5"/>
 
-            <!-- Nose (tip at y=26, curved base at y=30) -->
-            <path d="M57.5,30 L60,26 L62.5,30 Q60,32.5 57.5,30Z" fill="#fda4af" stroke="#f9a8d4" stroke-width="0.5"/>
+            <!-- Smile -->
+            <path d="M60,75 Q55,79 52,77.5" stroke="#334155" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.85"/>
+            <path d="M60,75 Q65,79 68,77.5" stroke="#334155" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.85"/>
 
-            <!-- Whiskers left (moved up, away from eyes) -->
-            <line x1="19" y1="22" x2="52" y2="23" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
-            <line x1="17" y1="26" x2="52" y2="26" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
-            <line x1="19" y1="30" x2="52" y2="29" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
+            <!-- Whiskers left -->
+            <line x1="19" y1="68" x2="52" y2="70" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
+            <line x1="17" y1="73" x2="52" y2="73" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
+            <line x1="19" y1="78" x2="52" y2="76" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
             <!-- Whiskers right -->
-            <line x1="101" y1="22" x2="68" y2="23" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
-            <line x1="103" y1="26" x2="68" y2="26" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
-            <line x1="101" y1="30" x2="68" y2="29" stroke="rgba(255,245,200,0.85)" stroke-width="0.9"/>
+            <line x1="101" y1="68" x2="68" y2="70" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
+            <line x1="103" y1="73" x2="68" y2="73" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
+            <line x1="101" y1="78" x2="68" y2="76" stroke="rgba(203,213,225,0.85)" stroke-width="0.9"/>
         </svg>
     </div>
 
@@ -1559,6 +1544,7 @@
             <line x1="101" y1="78" x2="68" y2="76" stroke="rgba(200,200,200,0.85)" stroke-width="0.9"/>
         </svg>
     </div>
+    </div> <!-- end cats-row -->
     <script src="/js/cats.js" defer nonce="{{nonce}}"></script>
 </body>
 

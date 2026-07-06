@@ -83,22 +83,19 @@ app.use((req, res, next) =>
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", `'nonce-${res.locals.nonce}'`],
-        scriptSrcAttr: ["'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
-          "https://fonts.googleapis.com",
           "https://fonts.googleapis.com",
         ],
         imgSrc: [
           "'self'",
           "data:",
           "https://res.cloudinary.com",
-          "https://res.cloudinary.com",
         ],
         fontSrc: [
           "'self'",
-          "https://fonts.gstatic.com",
           "https://fonts.gstatic.com",
         ],
         connectSrc: ["'self'"],
@@ -113,14 +110,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ── Session middleware ──────────────────────────────────────────────────────
-function nameInitials(name) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0]?.toUpperCase() || "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0].toUpperCase() : "";
-  return first + last;
-}
-
 // Credentials themselves are verified by Auth0 (see authenticateUser /
 // registerUser in business.js, which call Auth0's Authentication API
 // directly). This is just our own thin session-cookie layer on top, since
@@ -376,10 +365,14 @@ app.get("/scan/:eventId", async (req, res) => {
 
 app.post("/scan/:eventId/claim", async (req, res) => {
   const { guardianId } = req.body;
+  const eventId = req.params.eventId;
+  if (!guardianId || !/^[0-9a-fA-F]{24}$/.test(guardianId)) {
+    return res.redirect(`/scan/${eventId}`);
+  }
   try {
-    await claimGuardian(req.params.eventId, guardianId);
+    await claimGuardian(eventId, guardianId);
   } finally {
-    res.redirect(`/scan/${req.params.eventId}`);
+    res.redirect(`/scan/${eventId}`);
   }
 });
 
@@ -392,7 +385,6 @@ app.get("/homepage", requireAuth, async (req, res) => {
     title: `${user.name}'s Homepage`,
     isLoggedIn: true,
     user,
-    userInitials: nameInitials(user.name),
     cats,
     guardians,
     hasCats: cats && cats.length > 0,
@@ -580,12 +572,11 @@ app.post(
   async (req, res) => {
     const sessionId = getSessionCookie(req);
     const { catId } = req.params;
-    const referrer = req.get("Referrer") || "/homepage";
     try {
-      if (!req.file) return res.redirect(referrer);
+      if (!req.file) return res.redirect(`/cats/${catId}`);
       const photoUrl = await uploadImageBuffer(req.file.buffer, "cats");
       await editCat(sessionId, catId, { photoUrl, name: undefined });
-      res.redirect(referrer);
+      res.redirect(`/cats/${catId}`);
     } catch (err) {
       res.redirect("/homepage?error=" + encodeURIComponent(err.message));
     }
@@ -709,7 +700,6 @@ app.get("/cats/:catName", requireAuth, async (req, res) => {
     title: cat.name,
     cat,
     user: data.user,
-    userInitials: nameInitials(data.user.name),
     isUnavailable: data.isUnavailable,
     isLoggedIn: true,
     layout: "hp",
@@ -893,7 +883,7 @@ Answer only cat care questions based on this data. Be concise and focused on the
 // ───────────────────────────────────────────────────────────────────────────
 
 // ── Delete account ─────────────────────────────────────────────────────────
-app.post("/account/delete", requireAuth, async (req, res) => {
+app.post("/account/delete", requireAuth, doubleCsrfProtection, async (req, res) => {
   const sessionId = getSessionCookie(req);
   try {
     await deleteAccount(sessionId);

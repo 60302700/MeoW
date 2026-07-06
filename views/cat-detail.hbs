@@ -433,12 +433,12 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;align-items:start;">
                     <div>
                         <label class="field-label">Age</label>
-                        <div style="display:flex;gap:0.4rem;">
-                            <input type="number" name="age" value="{{cat.age}}" min="0" style="flex:1;min-width:0;">
-                            <select name="ageUnit" style="flex:0 0 auto;">
+                        <div style="display:flex;gap:0.4rem;align-items:center;">
+                            <input type="number" name="age" value="{{cat.age}}" min="0" style="flex:1;min-width:0;max-width:5rem;">
+                            <select name="ageUnit" style="flex:1;min-width:0;">
                                 <option value="days" {{#if (eq cat.ageUnit "days")}}selected{{/if}}>Days</option>
                                 <option value="weeks" {{#if (eq cat.ageUnit "weeks")}}selected{{/if}}>Weeks</option>
                                 <option value="months" {{#if (eq cat.ageUnit "months")}}selected{{/if}}>Months</option>
