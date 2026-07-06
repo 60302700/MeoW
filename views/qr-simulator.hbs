@@ -17,16 +17,6 @@
         padding: 1.5rem 1.75rem 1.25rem;
     }
 
-    .sim-badge {
-        display: inline-block;
-        font-size: 0.68rem;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.75);
-        margin-bottom: 0.4rem;
-    }
-
     .sim-header h1 {
         margin: 0;
         color: white;
@@ -43,39 +33,6 @@
         color: #475569;
         line-height: 1.65;
         margin: 0 0 1.35rem;
-    }
-
-    .sim-steps {
-        background: #fdf2f8;
-        border: 1px solid #fbcfe8;
-        border-radius: 0.85rem;
-        padding: 0.9rem 1rem 0.9rem 1.1rem;
-        margin-bottom: 1.35rem;
-    }
-
-    .sim-step {
-        display: flex;
-        gap: 0.6rem;
-        align-items: flex-start;
-        font-size: 0.8rem;
-        color: #831843;
-        line-height: 1.5;
-        padding: 0.2rem 0;
-    }
-
-    .sim-step-num {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: #ec4899;
-        color: white;
-        font-size: 0.65rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin-top: 1px;
     }
 
     .field-label {
@@ -120,41 +77,21 @@
     }
 
     .sim-btn:hover { opacity: 0.92; }
-
-    .sim-hint {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        text-align: center;
-        margin-top: 1rem;
-        line-height: 1.5;
-    }
-
-    .sim-hint a { color: #ec4899; font-weight: 600; text-decoration: none; }
-    .sim-hint a:hover { text-decoration: underline; }
 </style>
 
 <div class="sim-wrap">
 <div class="sim-card">
     <div class="sim-header">
-        <span class="sim-badge">Demo Tool</span>
         <h1>QR Code Simulator</h1>
     </div>
     <div class="sim-body">
         <p class="intro">Simulate someone finding a cat and scanning its MeoW tag. Paste the cat's QR code below to open its finder page.</p>
-
-        <div class="sim-steps">
-            <div class="sim-step"><span class="sim-step-num">1</span><span>Open a cat's profile in the owner dashboard and copy its <strong>QR Code ID</strong>.</span></div>
-            <div class="sim-step"><span class="sim-step-num">2</span><span>Paste it below and press <strong>Simulate scan</strong>.</span></div>
-            <div class="sim-step"><span class="sim-step-num">3</span><span>You'll land on that cat's finder page, exactly as a real scanner would.</span></div>
-        </div>
 
         <form method="GET" action="/scan">
             <label class="field-label">Cat's QR Code ID</label>
             <input type="text" name="qr" class="sim-input" placeholder="e.g. a1b2c3d4-..." required maxlength="64" autofocus>
             <button type="submit" class="sim-btn">Simulate scan</button>
         </form>
-
-        <p class="sim-hint">The QR Code ID is shown on each cat's profile page. <a href="/login">Sign in</a> to view it.</p>
     </div>
 </div>
 </div>

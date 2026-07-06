@@ -1,7 +1,7 @@
 <style>
     .landing-wrap {
         width: 100%;
-        max-width: 960px;
+        max-width: 980px;
         padding: 3rem 1.5rem 2rem;
         display: flex;
         flex-direction: column;
@@ -45,7 +45,7 @@
         font-size: clamp(1rem, 2.5vw, 1.15rem);
         color: #475569;
         line-height: 1.65;
-        max-width: 600px;
+        max-width: 640px;
         margin: 0 auto 2.25rem;
     }
 
@@ -96,6 +96,152 @@
         transform: translateY(-2px);
     }
 
+    /* ── Two scenarios ─────────────────────────────────────────── */
+    .scenarios-heading {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0 0 0.5rem;
+    }
+
+    .scenarios-subheading {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0 0 2rem;
+        max-width: 520px;
+    }
+
+    .scenarios {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        width: 100%;
+        margin-bottom: 3.5rem;
+    }
+
+    .scenario-card {
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 1.5rem;
+        padding: 1.75rem;
+        text-align: left;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .scenario-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        margin-bottom: 1.1rem;
+    }
+
+    .scenario-tag.pink { background: #fdf2f8; color: #be185d; }
+    .scenario-tag.purple { background: #f5f3ff; color: #7c3aed; }
+
+    .scenario-head {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .scenario-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .scenario-icon.pink { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+    .scenario-icon.purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+
+    .scenario-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .scenario-lead {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.55;
+        margin: 0 0 1.4rem;
+    }
+
+    .scenario-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .scenario-steps li {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+        position: relative;
+        padding-bottom: 1.15rem;
+    }
+
+    .scenario-steps li:last-child { padding-bottom: 0; }
+
+    /* Vertical connector line between step dots */
+    .scenario-steps li:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 13px;
+        top: 28px;
+        bottom: 0;
+        width: 2px;
+        background: #f1f5f9;
+    }
+
+    .scenario-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        color: white;
+        font-size: 0.78rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+
+    .scenario-dot.pink { background: linear-gradient(135deg, #ec4899, #f472b6); }
+    .scenario-dot.purple { background: linear-gradient(135deg, #a855f7, #c084fc); }
+
+    .scenario-step-text {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.5;
+        padding-top: 0.28rem;
+    }
+
+    .scenario-step-text strong { color: #0f172a; font-weight: 700; }
+
+    /* ── Feature strip ─────────────────────────────────────────── */
+    .landing-divider {
+        width: 100%;
+        border: none;
+        border-top: 1px solid #f1f5f9;
+        margin: 0 0 2.5rem;
+    }
+
     .landing-features {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -127,7 +273,6 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 1rem;
-        font-size: 1.35rem;
     }
 
     .feature-icon.pink  { background: #fdf2f8; }
@@ -148,94 +293,14 @@
         margin: 0;
     }
 
-    .landing-divider {
-        width: 100%;
-        border: none;
-        border-top: 1px solid #f1f5f9;
-        margin: 0 0 2rem;
-    }
-
-    .landing-how {
-        width: 100%;
-        margin-bottom: 3rem;
-    }
-
-    .landing-how h2 {
-        font-size: 1.4rem;
-        font-weight: 900;
-        color: #0f172a;
-        margin: 0 0 1.5rem;
-        text-align: center;
-    }
-
-    .how-steps {
-        display: flex;
-        gap: 0;
-        position: relative;
-    }
-
-    .how-steps::before {
-        content: '';
-        position: absolute;
-        top: 22px;
-        left: calc(100% / 6);
-        right: calc(100% / 6);
-        height: 2px;
-        background: linear-gradient(90deg, #fbcfe8, #ddd6fe);
-        z-index: 0;
-    }
-
-    .how-step {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        position: relative;
-        z-index: 1;
-        padding: 0 0.5rem;
-    }
-
-    .step-num {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ec4899, #a855f7);
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 0.75rem;
-        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
-        flex-shrink: 0;
-    }
-
-    .step-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 0.25rem;
-    }
-
-    .step-desc {
-        font-size: 0.73rem;
-        color: #64748b;
-        line-height: 1.45;
-    }
-
-    @media (max-width: 720px) {
+    @media (max-width: 760px) {
+        .scenarios { grid-template-columns: 1fr; }
         .landing-features { grid-template-columns: 1fr; }
-        .how-steps { flex-direction: column; gap: 1rem; align-items: flex-start; }
-        .how-steps::before { display: none; }
-        .how-step { flex-direction: row; text-align: left; gap: 1rem; padding: 0; }
-        .step-num { margin-bottom: 0; flex-shrink: 0; }
     }
 
     @media (max-width: 480px) {
         .landing-wrap { padding: 2rem 1rem 1.5rem; }
-        .landing-features { gap: 0.85rem; }
+        .scenario-card { padding: 1.35rem; }
     }
 </style>
 
@@ -249,7 +314,7 @@
     </h1>
 
     <p class="landing-sub">
-        MeoW lets you register your cats, assign trusted guardians, and automatically escalate care alerts when you're unavailable — so your cats are never left without a plan.
+        Whether a stranger finds your cat blocks from home or you're simply unreachable, MeoW makes sure the right person is contacted — instantly, and automatically.
     </p>
 
     <div class="landing-cta-row">
@@ -258,13 +323,82 @@
         <a href="/qr-simulator" class="btn-secondary">Try the QR Simulator</a>
     </div>
 
+    <h2 class="scenarios-heading">Two ways MeoW protects your cat</h2>
+    <p class="scenarios-subheading">Every cat gets a QR tag and a chain of trusted guardians. Here's what happens in each situation.</p>
+
+    <div class="scenarios">
+
+        {{!-- ── Scenario 1: Someone finds the cat ─────────────────── --}}
+        <div class="scenario-card">
+            <span class="scenario-tag pink">Someone finds your cat</span>
+            <div class="scenario-head">
+                <div class="scenario-icon pink">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="14" y1="21" x2="21" y2="21"/><line x1="17.5" y1="17.5" x2="17.5" y2="17.51"/></svg>
+                </div>
+                <p class="scenario-title">The QR tag flow</p>
+            </div>
+            <p class="scenario-lead">Your cat wanders off and a kind stranger finds them.</p>
+            <ul class="scenario-steps">
+                <li>
+                    <div class="scenario-dot pink">1</div>
+                    <p class="scenario-step-text">They <strong>scan the QR tag</strong> on your cat's collar with any phone.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot pink">2</div>
+                    <p class="scenario-step-text">They see <strong>your contact details</strong> and leave their name, phone, and where they found your cat.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot pink">3</div>
+                    <p class="scenario-step-text"><strong>You're alerted instantly</strong> by email with the finder's info so you can reach them directly.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot pink">4</div>
+                    <p class="scenario-step-text">No response in <strong>10 minutes?</strong> Your guardians are contacted automatically, in priority order.</p>
+                </li>
+            </ul>
+        </div>
+
+        {{!-- ── Scenario 2: Owner triggers the alert ──────────────── --}}
+        <div class="scenario-card">
+            <span class="scenario-tag purple">You trigger the alert</span>
+            <div class="scenario-head">
+                <div class="scenario-icon purple">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <p class="scenario-title">The guardian chain</p>
+            </div>
+            <p class="scenario-lead">You're travelling, in hospital, or simply unreachable.</p>
+            <ul class="scenario-steps">
+                <li>
+                    <div class="scenario-dot purple">1</div>
+                    <p class="scenario-step-text">You <strong>mark yourself unavailable</strong> from your dashboard in one tap.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot purple">2</div>
+                    <p class="scenario-step-text">Your <strong>first guardian is notified</strong> and given a 30-minute window to accept.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot purple">3</div>
+                    <p class="scenario-step-text">If they don't respond, the <strong>next guardian is contacted</strong> automatically — no manual chasing.</p>
+                </li>
+                <li>
+                    <div class="scenario-dot purple">4</div>
+                    <p class="scenario-step-text">Whoever accepts gets a <strong>secure link to full care instructions</strong> — diet, meds, and vet contact.</p>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <hr class="landing-divider">
+
     <div class="landing-features">
         <div class="feature-card">
             <div class="feature-icon pink">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="3.5" r="1.5"/><circle cx="15" cy="3.5" r="1.5"/><circle cx="4.5" cy="8.5" r="1.5"/><circle cx="19.5" cy="8.5" r="1.5"/><path d="M9 12c-2.5 0-5 2-5 6 0 2.5 2 3 4 3 1.5 0 3-0.5 4-0.5s2.5 0.5 4 0.5c2 0 4-0.5 4-3 0-4-2.5-6-5-6-1.5 0-2.5 0.5-3 0.5S10.5 12 9 12z"/></svg>
             </div>
             <p class="feature-title">Cat Profiles</p>
-            <p class="feature-desc">Store everything — breed, diet, medications, vet contact, and care instructions — in one place. Accessible by guardians when it matters most.</p>
+            <p class="feature-desc">Store everything — breed, diet, medications, vet contact, and care instructions — in one place, ready the moment it's needed.</p>
         </div>
 
         <div class="feature-card">
@@ -272,7 +406,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <p class="feature-title">Trusted Guardians</p>
-            <p class="feature-desc">Assign people you trust in priority order. When you mark yourself unavailable, they're notified automatically — one by one, with a 10-minute window each.</p>
+            <p class="feature-desc">Assign people you trust in priority order. They step in automatically whenever your cat needs someone and you can't be reached.</p>
         </div>
 
         <div class="feature-card">
@@ -280,43 +414,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <p class="feature-title">Auto-Escalation</p>
-            <p class="feature-desc">Powered by durable Temporal workflows. If a guardian doesn't respond, the next one is contacted automatically — no manual follow-up needed.</p>
-        </div>
-    </div>
-
-    <hr class="landing-divider">
-
-    <div class="landing-how">
-        <h2>How it works</h2>
-        <div class="how-steps">
-            <div class="how-step">
-                <div class="step-num">1</div>
-                <div>
-                    <p class="step-label">Register your cats</p>
-                    <p class="step-desc">Add profiles with care details, diet, and medical info.</p>
-                </div>
-            </div>
-            <div class="how-step">
-                <div class="step-num">2</div>
-                <div>
-                    <p class="step-label">Add guardians</p>
-                    <p class="step-desc">Assign trusted contacts in priority order.</p>
-                </div>
-            </div>
-            <div class="how-step">
-                <div class="step-num">3</div>
-                <div>
-                    <p class="step-label">Mark unavailable</p>
-                    <p class="step-desc">When you can't be there, trigger the care chain.</p>
-                </div>
-            </div>
-            <div class="how-step">
-                <div class="step-num">4</div>
-                <div>
-                    <p class="step-label">Guardians respond</p>
-                    <p class="step-desc">They get a magic link with your cat's full care instructions.</p>
-                </div>
-            </div>
+            <p class="feature-desc">Powered by durable Temporal workflows. Both flows keep running reliably in the background until someone responds.</p>
         </div>
     </div>
 
