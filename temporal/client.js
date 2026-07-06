@@ -39,6 +39,28 @@ export async function startEscalationWorkflow(eventId, totalGuardians) {
     console.log(`[Temporal] Started escalation workflow for event ${eventId}`);
 }
 
+export async function startFoundCatWorkflow(eventId, totalGuardians) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    await client.workflow.start('foundCatWorkflow', {
+        taskQueue: 'meow-escalation',
+        workflowId: `found-cat-${eventId}`,
+        args: [{ eventId: eventId.toString(), totalGuardians }],
+    });
+    console.log(`[Temporal] Started found-cat workflow for event ${eventId}`);
+}
+
+export async function signalOwnerAcknowledgedScan(eventId) {
+    const client = await getTemporalClient();
+    if (!client) return;
+    try {
+        const handle = client.workflow.getHandle(`found-cat-${eventId}`);
+        await handle.signal('ownerAcknowledgedScan');
+    } catch (err) {
+        console.warn('[Temporal] signalOwnerAcknowledgedScan — workflow may have already completed:', err.message);
+    }
+}
+
 export async function startOwnerUnavailableWorkflow(unavailabilityId, ownerId, ownerName, guardians, catNames) {
     const client = await getTemporalClient();
     if (!client) return;

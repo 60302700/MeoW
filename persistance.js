@@ -205,17 +205,34 @@ async function getGuardiansByOwner(ownerId) {
 
 // ---- Emergency Events ----
 
-async function createEmergencyEvent({ qrCodeId, catId, responderGeo }) {
+async function createEmergencyEvent({ qrCodeId, catId, finderName, finderPhone, finderLocation, finderNotes, ownerAckToken }) {
   const { EmergencyEvents } = collections();
   const result = await EmergencyEvents.insertOne({
     qrCodeId,
     catId: new ObjectId(catId),
     triggeredAt: new Date(),
-    responderGeo: responderGeo || null,
     status: "ALERTED",
     assignedGuardianId: null,
+    finderName: finderName || null,
+    finderPhone: finderPhone || null,
+    finderLocation: finderLocation || null,
+    finderNotes: finderNotes || null,
+    ownerAckToken: ownerAckToken || null,
+    ownerAcked: false,
+    escalationLog: [],
+    currentEscalationPriority: 0,
   });
   return result.insertedId;
+}
+
+async function acknowledgeOwnerScan(eventId, token) {
+  const { EmergencyEvents } = collections();
+  const result = await EmergencyEvents.findOneAndUpdate(
+    { _id: new ObjectId(eventId), ownerAckToken: token, ownerAcked: false },
+    { $set: { ownerAcked: true, ownerAckedAt: new Date() } },
+    { returnDocument: "after" },
+  );
+  return result;
 }
 
 async function getEmergencyEventById(eventId) {
@@ -397,6 +414,7 @@ export {
   getGuardiansByOwner,
   updateGuardianByObjectId,
   createEmergencyEvent,
+  acknowledgeOwnerScan,
   getEmergencyEventById,
   assignGuardianToEvent,
   updateUserProfile,

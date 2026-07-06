@@ -1,13 +1,21 @@
 import { sleep, proxyActivities, setHandler, defineSignal, condition } from '@temporalio/workflow';
 
-const { checkEventClaimed, escalateToNextGuardian, sendGuardianMagicLink, checkUnavailabilityAcknowledged } = proxyActivities({
+const {
+    checkEventClaimed,
+    escalateToNextGuardian,
+    sendGuardianMagicLink,
+    checkUnavailabilityAcknowledged,
+    notifyGuardianOfFoundCat,
+    checkOwnerAcknowledgedEmergency,
+} = proxyActivities({
     startToCloseTimeout: '1 minute',
     retry: { maximumAttempts: 3 },
 });
 
-const ownerAvailableSignal   = defineSignal('ownerAvailable');
-const guardianAckedSignal    = defineSignal('guardianAcknowledged');
-const guardianDeclinedSignal = defineSignal('guardianDeclined');
+const ownerAvailableSignal       = defineSignal('ownerAvailable');
+const guardianAckedSignal        = defineSignal('guardianAcknowledged');
+const guardianDeclinedSignal     = defineSignal('guardianDeclined');
+const ownerAcknowledgedScanSignal = defineSignal('ownerAcknowledgedScan');
 
 // Runs after an emergency event is created.
 // Every 10 minutes it checks if any guardian has claimed the event.
@@ -21,6 +29,28 @@ export async function guardianEscalationWorkflow({ eventId, totalGuardians }) {
     }
     // Final wait after last guardian notified
     await sleep('10 minutes');
+}
+
+// Runs when a QR code is scanned and a finder submits their info.
+// Waits 10 minutes for the owner to acknowledge via email link.
+// If no response, notifies each guardian in priority order with 10-minute windows.
+export async function foundCatWorkflow({ eventId, totalGuardians }) {
+    let ownerAcked = false;
+    setHandler(ownerAcknowledgedScanSignal, () => { ownerAcked = true; });
+
+    await condition(() => ownerAcked, '10 minutes');
+    if (ownerAcked) return;
+
+    for (let priority = 1; priority <= totalGuardians; priority++) {
+        const claimed = await checkEventClaimed(eventId);
+        if (claimed) return;
+
+        await notifyGuardianOfFoundCat(eventId, priority);
+        await sleep('10 minutes');
+
+        const claimedAfter = await checkEventClaimed(eventId);
+        if (claimedAfter) return;
+    }
 }
 
 // Runs when owner marks themselves unavailable.

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { connectDB } from '../persistance.js';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
-import { sendGuardianMagicLinkEmail } from '../mailer.js';
+import { sendGuardianMagicLinkEmail, sendGuardianFoundAlert } from '../mailer.js';
 
 async function getDB() {
     return await connectDB();
@@ -62,6 +62,58 @@ export async function sendGuardianMagicLink(unavailabilityId, ownerId, guardian,
     const magicLink = `${baseUrl}/guardian-access?token=${token}`;
     await sendGuardianMagicLinkEmail(guardian.email, guardian.name, ownerName, catNames, magicLink, ownerLocation);
     console.log(`[Temporal] Sent guardian magic link to ${guardian.email} for unavailability ${unavailabilityId}`);
+}
+
+export async function notifyGuardianOfFoundCat(eventId, priority) {
+    const db = await getDB();
+    const event = await db.collection('EmergencyEvents').findOne({ _id: new ObjectId(eventId) });
+    if (!event || event.status !== 'ALERTED') return;
+
+    const cat = await db.collection('Cats').findOne({ _id: event.catId });
+    if (!cat) return;
+
+    const guardian = await db.collection('Guardians').findOne({
+        ownerId: cat.ownerId,
+        priorityOrder: priority,
+    });
+    if (!guardian?.email) return;
+
+    const owner = await db.collection('Users').findOne({ _id: cat.ownerId });
+    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    const claimLink = `${baseUrl}/scan/${eventId}`;
+
+    await sendGuardianFoundAlert(
+        guardian.email,
+        guardian.name,
+        owner?.name || 'the owner',
+        cat.name,
+        event.finderName,
+        event.finderPhone,
+        event.finderLocation,
+        claimLink,
+    );
+
+    await db.collection('EmergencyEvents').updateOne(
+        { _id: new ObjectId(eventId) },
+        {
+            $push: {
+                escalationLog: {
+                    priority,
+                    guardianName: guardian.name,
+                    escalatedAt: new Date(),
+                },
+            },
+            $set: { currentEscalationPriority: priority },
+        },
+    );
+
+    console.log(`[Temporal] Notified guardian priority #${priority} (${guardian.name}) of found cat for event ${eventId}`);
+}
+
+export async function checkOwnerAcknowledgedEmergency(eventId) {
+    const db = await getDB();
+    const event = await db.collection('EmergencyEvents').findOne({ _id: new ObjectId(eventId) });
+    return !!(event?.ownerAcked);
 }
 
 export async function checkUnavailabilityAcknowledged(unavailabilityId) {

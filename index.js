@@ -5,13 +5,15 @@ import { doubleCsrf } from "csrf-csrf";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import Groq from "groq-sdk";
-import { startEscalationWorkflow } from "./temporal/client.js";
+import { startEscalationWorkflow, startFoundCatWorkflow, signalOwnerAcknowledgedScan } from "./temporal/client.js";
 import {
   connectDB,
   logoutUser,
   registerUser,
   authenticateUser,
+  getCatInfoForScan,
   handleScan,
+  acknowledgeOwnerScanBusiness,
   getEmergencyView,
   claimGuardian,
   engine,
@@ -327,46 +329,125 @@ app.get("/", async (req, res) => {
   res.render("landing", { title: "MeoW — Cat Safety Network", isLoggedIn: false });
 });
 
-app.get("/scan", (req, res) => {
-  res.render("scan", { title: "MeoW Safety Gateway" });
-});
+// ── Scan / QR routes ────────────────────────────────────────────────────────
 
-app.post("/scan", async (req, res) => {
-  const { qrCodeId } = req.body;
+// GET /scan          → "Enter QR code" form
+// GET /scan?qr=XXXX  → Cat info + owner contact + finder details form
+const QR_CODE_RE = /^[0-9a-zA-Z_-]{4,64}$/;
+
+app.get("/scan", async (req, res) => {
+  const qr = req.query.qr ? String(req.query.qr).trim() : null;
+  if (!qr) {
+    return res.render("scan", { title: "MeoW Safety Gateway" });
+  }
+  if (!QR_CODE_RE.test(qr)) {
+    return res.render("scan", { title: "MeoW Safety Gateway", error: "Invalid QR code format." });
+  }
   try {
-    const { eventId, guardianCount } = await handleScan(qrCodeId);
-    console.log(`[Scan] eventId=${eventId} guardianCount=${guardianCount}`);
-    startEscalationWorkflow(eventId.toString(), guardianCount)
-      .then(() => console.log("[Temporal] Workflow started successfully"))
-      .catch((err) => console.error("[Temporal] Failed:", err.message));
-    res.redirect(`/scan/${eventId}`);
+    const lookup = await getCatInfoForScan(qr);
+    if (!lookup) {
+      return res.render("scan", { title: "MeoW Safety Gateway", error: "Cat not found. Please check the ID and try again." });
+    }
+    return res.render("scan", {
+      title: "MeoW Safety Gateway",
+      catLookup: true,
+      cat: lookup.cat,
+      owner: lookup.owner,
+      qrCodeId: qr,
+      lookupError: req.query.error || null,
+    });
   } catch (err) {
-    res.render("scan", { title: "MeoW Safety Gateway", error: err.message });
+    return res.render("scan", { title: "MeoW Safety Gateway", error: "Something went wrong. Please try again." });
   }
 });
 
-app.get("/scan/:eventId", async (req, res) => {
+// POST /scan — finder submits their info
+app.post("/scan", doubleCsrfProtection, async (req, res) => {
+  const qrCodeId = String(req.body.qrCodeId || "").trim();
+  const finderName     = String(req.body.finderName     || "").trim().slice(0, 100);
+  const finderPhone    = String(req.body.finderPhone    || "").trim().slice(0, 30);
+  const finderLocation = String(req.body.finderLocation || "").trim().slice(0, 200);
+  const finderNotes    = String(req.body.finderNotes    || "").trim().slice(0, 500);
+
+  if (!qrCodeId || !QR_CODE_RE.test(qrCodeId)) {
+    return res.render("scan", { title: "MeoW Safety Gateway", error: "Invalid QR code." });
+  }
+  if (!finderName || !finderPhone) {
+    const lookup = await getCatInfoForScan(qrCodeId).catch(() => null);
+    return res.render("scan", {
+      title: "MeoW Safety Gateway",
+      catLookup: true,
+      cat: lookup?.cat,
+      owner: lookup?.owner,
+      qrCodeId,
+      lookupError: "Please enter your name and phone number.",
+    });
+  }
+
   try {
-    const { event, cat, guardians } = await getEmergencyView(
-      req.params.eventId,
-    );
-    res.render("scan", {
+    const { eventId, guardianCount } = await handleScan(qrCodeId, { name: finderName, phone: finderPhone, location: finderLocation, notes: finderNotes });
+    startFoundCatWorkflow(eventId.toString(), guardianCount)
+      .then(() => console.log("[Temporal] Found-cat workflow started"))
+      .catch((err) => console.error("[Temporal] Failed to start found-cat workflow:", err.message));
+    res.redirect(`/scan/${eventId}`);
+  } catch (err) {
+    const lookup = await getCatInfoForScan(qrCodeId).catch(() => null);
+    return res.render("scan", {
+      title: "MeoW Safety Gateway",
+      catLookup: true,
+      cat: lookup?.cat,
+      owner: lookup?.owner,
+      qrCodeId,
+      lookupError: err.message,
+    });
+  }
+});
+
+// GET /scan/:eventId/owner-ack — owner clicks link to stop guardian escalation
+app.get("/scan/:eventId/owner-ack", async (req, res) => {
+  const { eventId } = req.params;
+  const token = String(req.query.token || "").trim();
+  if (!/^[0-9a-fA-F]{24}$/.test(eventId) || !token) {
+    return res.render("scan", { title: "MeoW Safety Gateway", error: "Invalid acknowledgment link." });
+  }
+  try {
+    await acknowledgeOwnerScanBusiness(eventId, token);
+    signalOwnerAcknowledgedScan(eventId)
+      .catch((err) => console.warn("[Temporal] Could not signal owner ack:", err.message));
+    return res.render("scan", { title: "MeoW Safety Gateway", ownerAckSuccess: true });
+  } catch (err) {
+    return res.render("scan", { title: "MeoW Safety Gateway", error: err.message });
+  }
+});
+
+// GET /scan/:eventId — event status page
+app.get("/scan/:eventId", async (req, res) => {
+  const { eventId } = req.params;
+  if (!/^[0-9a-fA-F]{24}$/.test(eventId)) {
+    return res.render("scan", { title: "MeoW Safety Gateway", error: "Invalid event ID." });
+  }
+  try {
+    const { event, cat, owner, guardians } = await getEmergencyView(eventId);
+    return res.render("scan", {
       title: "MeoW Safety Gateway",
       emergency: true,
       event,
       cat,
+      owner,
       guardians,
       claimed: event.status !== "ALERTED",
+      ownerAcked: !!event.ownerAcked,
     });
   } catch (err) {
-    res.render("scan", { title: "MeoW Safety Gateway", error: err.message });
+    return res.render("scan", { title: "MeoW Safety Gateway", error: err.message });
   }
 });
 
-app.post("/scan/:eventId/claim", async (req, res) => {
+// POST /scan/:eventId/claim — guardian claims responsibility
+app.post("/scan/:eventId/claim", doubleCsrfProtection, async (req, res) => {
   const { guardianId } = req.body;
   const eventId = req.params.eventId;
-  if (!guardianId || !/^[0-9a-fA-F]{24}$/.test(guardianId)) {
+  if (!guardianId || !/^[0-9a-fA-F]{24}$/.test(guardianId) || !/^[0-9a-fA-F]{24}$/.test(eventId)) {
     return res.redirect(`/scan/${eventId}`);
   }
   try {
@@ -375,6 +456,8 @@ app.post("/scan/:eventId/claim", async (req, res) => {
     res.redirect(`/scan/${eventId}`);
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.get("/homepage", requireAuth, async (req, res) => {
   const userId = getSessionCookie(req);

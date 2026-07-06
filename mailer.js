@@ -182,6 +182,94 @@ function buildWalletCardSvg(guardianName, owner, cats, qrDataUri) {
 </svg>`;
 }
 
+export async function sendOwnerFoundAlert(ownerEmail, ownerName, catName, finderName, finderPhone, finderLocation, ackLink) {
+    const t = getTransporter();
+    if (!t) {
+        console.warn(`[Mailer] Would send owner found-alert to ${ownerEmail} — mailer disabled`);
+        return;
+    }
+    await t.sendMail({
+        from: `"MeoW Safety" <${process.env.GMAIL_USER}>`,
+        to: ownerEmail,
+        subject: `Your cat ${xmlEsc(catName)} was found`,
+        html: `
+<div style="font-family:ui-sans-serif,system-ui,sans-serif;background:#f5f3ff;padding:32px 16px;">
+  <div style="max-width:460px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+    <div style="background:linear-gradient(135deg,#9d174d,#ec4899);padding:24px 28px 20px;">
+      <p style="margin:0;color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">MeoW Safety Network</p>
+      <h1 style="margin:6px 0 0;color:#ffffff;font-size:1.4rem;font-weight:800;">Your cat was found</h1>
+    </div>
+    <div style="padding:28px 28px 20px;">
+      <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${xmlEsc(ownerName)},</p>
+      <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
+        Someone found <strong style="color:#9d174d;">${xmlEsc(catName)}</strong> and submitted an alert through MeoW.
+        Their contact details are below. Please reach out to them directly.
+      </p>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Finder Details</p>
+        <p style="margin:0 0 4px;font-size:0.9rem;font-weight:700;color:#0f172a;">${xmlEsc(finderName || 'Not provided')}</p>
+        ${finderPhone ? `<p style="margin:0 0 4px;font-size:0.85rem;color:#475569;">${xmlEsc(finderPhone)}</p>` : ''}
+        ${finderLocation ? `<p style="margin:0;font-size:0.85rem;color:#475569;">Found near: ${xmlEsc(finderLocation)}</p>` : ''}
+      </div>
+      <p style="margin:0 0 16px;font-size:0.85rem;color:#475569;line-height:1.5;">
+        If you are aware and will handle this yourself, click below to stop guardian alerts from being sent.
+      </p>
+      <a href="${ackLink}"
+         style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
+        I am aware — stop guardian alerts
+      </a>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">
+      <p style="margin:0;font-size:0.72rem;color:#94a3b8;">If you don't click this within 10 minutes, your guardians will be notified automatically.</p>
+    </div>
+  </div>
+</div>`,
+    });
+}
+
+export async function sendGuardianFoundAlert(guardianEmail, guardianName, ownerName, catName, finderName, finderPhone, finderLocation, claimLink) {
+    const t = getTransporter();
+    if (!t) {
+        console.warn(`[Mailer] Would send guardian found-alert to ${guardianEmail} — mailer disabled`);
+        return;
+    }
+    await t.sendMail({
+        from: `"MeoW Safety" <${process.env.GMAIL_USER}>`,
+        to: guardianEmail,
+        subject: `Action needed: ${xmlEsc(ownerName)}'s cat ${xmlEsc(catName)} was found`,
+        html: `
+<div style="font-family:ui-sans-serif,system-ui,sans-serif;background:#f5f3ff;padding:32px 16px;">
+  <div style="max-width:460px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);">
+    <div style="background:linear-gradient(135deg,#9d174d,#ec4899);padding:24px 28px 20px;">
+      <p style="margin:0;color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">MeoW Safety Network</p>
+      <h1 style="margin:6px 0 0;color:#ffffff;font-size:1.4rem;font-weight:800;">Guardian Alert</h1>
+    </div>
+    <div style="padding:28px 28px 20px;">
+      <p style="margin:0 0 6px;font-size:1rem;font-weight:700;color:#0f172a;">Hi ${xmlEsc(guardianName)},</p>
+      <p style="margin:0 0 20px;font-size:0.9rem;color:#475569;line-height:1.6;">
+        <strong style="color:#0f172a;">${xmlEsc(ownerName)}</strong> did not respond to the alert.
+        Their cat <strong style="color:#9d174d;">${xmlEsc(catName)}</strong> was found and needs someone to help.
+        Please respond within <strong>10 minutes</strong> or the next guardian will be contacted.
+      </p>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">Finder Details</p>
+        <p style="margin:0 0 4px;font-size:0.9rem;font-weight:700;color:#0f172a;">${xmlEsc(finderName || 'Not provided')}</p>
+        ${finderPhone ? `<p style="margin:0 0 4px;font-size:0.85rem;color:#475569;">${xmlEsc(finderPhone)}</p>` : ''}
+        ${finderLocation ? `<p style="margin:0;font-size:0.85rem;color:#475569;">Found near: ${xmlEsc(finderLocation)}</p>` : ''}
+      </div>
+      <a href="${claimLink}"
+         style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,#9d174d,#ec4899);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.95rem;">
+        View details &amp; respond
+      </a>
+    </div>
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 28px;">
+      <p style="margin:0;font-size:0.72rem;color:#94a3b8;">MeoW — Cat Safety Network</p>
+    </div>
+  </div>
+</div>`,
+    });
+}
+
 export async function sendWalletCardEmail(toEmail, guardianName, owner, cats, magicLink) {
     const t = getTransporter();
     if (!t) {

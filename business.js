@@ -15,6 +15,7 @@ import {
   getCatsByOwner,
   getCatByName,
   createEmergencyEvent,
+  acknowledgeOwnerScan,
   getEmergencyEventById,
   getGuardiansByOwner,
   assignGuardianToEvent,
@@ -37,7 +38,7 @@ import {
   deleteCatById,
   deleteGuardianById,
 } from "./persistance.js";
-import { sendWalletCardEmail } from "./mailer.js";
+import { sendWalletCardEmail, sendOwnerFoundAlert } from "./mailer.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
@@ -243,13 +244,48 @@ async function getCatByNameBusinessLayer(catName, ownerId) {
   return withCatAge(await getCatByName(catName, ownerId));
 }
 
-async function handleScan(qrCodeId) {
+async function getCatInfoForScan(qrCodeId) {
+  const cat = await getCatByQrCode(qrCodeId);
+  if (!cat) return null;
+  const owner = await findUserById(cat.ownerId.toString());
+  return { cat: withCatAge(cat), owner };
+}
+
+async function handleScan(qrCodeId, finderInfo = {}) {
   const cat = await getCatByQrCode(qrCodeId);
   if (!cat) {
     throw new Error("Invalid Emergency ID. Please try again.");
   }
-  const eventId = await createEmergencyEvent({ qrCodeId, catId: cat._id });
+  const owner = await findUserById(cat.ownerId.toString());
   const guardians = await getGuardiansByOwner(cat.ownerId);
+
+  const { v4: uuidv4 } = await import("uuid");
+  const ownerAckToken = uuidv4();
+
+  const eventId = await createEmergencyEvent({
+    qrCodeId,
+    catId: cat._id,
+    finderName: finderInfo.name,
+    finderPhone: finderInfo.phone,
+    finderLocation: finderInfo.location,
+    finderNotes: finderInfo.notes,
+    ownerAckToken,
+  });
+
+  if (owner?.email) {
+    const baseUrl = process.env.APP_URL || "http://localhost:3000";
+    const ackLink = `${baseUrl}/scan/${eventId}/owner-ack?token=${ownerAckToken}`;
+    sendOwnerFoundAlert(
+      owner.email,
+      owner.name,
+      cat.name,
+      finderInfo.name || "Someone",
+      finderInfo.phone || "",
+      finderInfo.location || "",
+      ackLink,
+    ).catch((err) => console.error("[Mailer] Failed to send owner alert:", err.message));
+  }
+
   return { cat: withCatAge(cat), eventId, guardianCount: guardians.length };
 }
 
@@ -259,8 +295,15 @@ async function getEmergencyView(eventId) {
     throw new Error("Emergency event not found.");
   }
   const cat = await getCatById(event.catId);
+  const owner = await findUserById(cat.ownerId.toString());
   const guardians = await getGuardiansByOwner(cat.ownerId);
-  return { event, cat: withCatAge(cat), guardians };
+  return { event, cat: withCatAge(cat), owner, guardians };
+}
+
+async function acknowledgeOwnerScanBusiness(eventId, token) {
+  const result = await acknowledgeOwnerScan(eventId, token);
+  if (!result) throw new Error("Acknowledgment failed — link may have already been used or is invalid.");
+  return result;
 }
 
 async function claimGuardian(eventId, guardianId) {
@@ -605,7 +648,9 @@ export {
   checkSession,
   logout,
   requestPasswordReset,
+  getCatInfoForScan,
   handleScan,
+  acknowledgeOwnerScanBusiness,
   getEmergencyView,
   claimGuardian,
   getUserHomepage,
