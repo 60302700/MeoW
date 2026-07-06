@@ -90,7 +90,8 @@ not a surface-level skin.
 
 The application follows a strict **three-layer separation**, with a separate
 **Temporal worker** process running the durable workflows, and several external
-services.
+services. All application code lives under `src/` (`src/index.js`,
+`src/business.js`, `src/temporal/`, `src/views/`, `src/public/`, etc.).
 
 ```
                          ┌──────────────────────────────┐
@@ -231,5 +232,5 @@ Temporal Cloud). Re-confirm on your environment before final submission.
 - ☐ Video demo (HD or at least 720p)
 - ☑ `README.md` (prerequisites, run instructions, configuration)
 - ☑ Project report (this document, in `documentation/`)
-- ☐ Source code in `src/` — _note: this repo keeps source at the root; move into `src/` if the checklist is enforced strictly_
+- ☑ Source code in `src/`
 - ☑ No committed `node_modules/`, build output, or unrelated files

@@ -14,14 +14,14 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "worker": "node temporal/worker.js",
-    "start": "node index.js",
-    "migrate:images": "node migrate-images-to-cloudinary.js",
-    "migrate:users": "node migrate-users-to-auth0.js",
-    "migrate:cats": "node migrate-cats-age-to-dob.js"
+    "worker": "node src/temporal/worker.js",
+    "start": "node src/index.js",
+    "migrate:images": "node src/migrate-images-to-cloudinary.js",
+    "migrate:users": "node src/migrate-users-to-auth0.js",
+    "migrate:cats": "node src/migrate-cats-age-to-dob.js"
   },
   "dependencies": {
     "@temporalio/activity": "^1.19.0",

@@ -44,24 +44,25 @@ running reliably in the background until someone responds — even across restar
 
 ## Architecture
 
-A clean three-layer separation:
+All application code lives under `src/`. A clean three-layer separation:
 
 ```
-index.js          HTTP routes, middleware, CSP, CSRF, rate limiting
+src/index.js          HTTP routes, middleware, CSP, CSRF, rate limiting
    |
-presentation.js   thin pass-through / request shaping
+src/presentation.js   thin pass-through / request shaping
    |
-business.js       domain logic, ownership checks, workflow triggers
+src/business.js       domain logic, ownership checks, workflow triggers
    |
-persistance.js    MongoDB access (the only layer that talks to the DB)
+src/persistance.js    MongoDB access (the only layer that talks to the DB)
 ```
 
 Supporting modules:
 
-- `temporal/` — durable workflow definitions, activities, client, and worker
-- `mailer.js` — all transactional email
-- `cloudinary.js` — image upload helpers
-- `views/` — Handlebars templates and layouts
+- `src/temporal/` — durable workflow definitions, activities, client, and worker
+- `src/mailer.js` — all transactional email
+- `src/cloudinary.js` — image upload helpers
+- `src/views/` — Handlebars templates and layouts
+- `src/public/` — static assets (client JS)
 
 ### Temporal workflows
 
@@ -157,7 +158,7 @@ You can't scan a screen with the same laptop, so a demo tool is built in:
    page exactly as if someone scanned the physical tag.
 
 To watch the guardian escalation without waiting the full window, temporarily
-lower the timers in `temporal/workflows.js` (e.g. `'10 minutes'` -> `'30 seconds'`),
+lower the timers in `src/temporal/workflows.js` (e.g. `'10 minutes'` -> `'30 seconds'`),
 restart the worker, and revert when done.
 
 ---
