@@ -654,6 +654,18 @@
             text-transform: uppercase;
         }
 
+        /* The phone field's label isn't an adjacent sibling of the input (the
+           input sits inside the country-code wrapper), so its float is driven
+           by JS toggling this class instead of the :placeholder-shown trick. */
+        .phone-fancy-wrap label.floated {
+            top: 0.25rem;
+            font-size: 0.7rem;
+            color: #ec4899;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-6px) scale(1.01); }
