@@ -39,6 +39,7 @@ import {
   deleteGuardianById,
 } from "./persistance.js";
 import { sendWalletCardEmail, sendOwnerFoundAlert } from "./mailer.js";
+import { deleteAuth0User } from "./auth0Management.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
@@ -545,6 +546,10 @@ async function deleteGuardian(sessionId, guardianId) {
 async function deleteAccount(sessionId) {
   const user = await resolveUserFromSession(sessionId);
   if (!user) throw new Error("Unauthorized");
+  // Delete the Auth0 identity first: if this fails, the account stays intact
+  // and deletable again later, instead of leaving a login-able Auth0 user
+  // whose next sign-in would have getOrCreateUser recreate a blank profile.
+  if (user.authSub) await deleteAuth0User(user.authSub);
   await deleteUserAccount(user._id.toString());
 }
 
