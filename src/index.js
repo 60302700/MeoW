@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { doubleCsrf } from "csrf-csrf";
@@ -72,7 +74,10 @@ const hbsEngine = engine({
 });
 app.engine("hbs", hbsEngine);
 app.set("view engine", "hbs");
-app.set("views", "./views");
+// Resolve views/static relative to this file, not the working directory, so the
+// app runs correctly no matter where `node` is invoked from.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.set("views", path.join(__dirname, "views"));
 
 app.use((req, res, next) => {
   res.locals.nonce = crypto.randomBytes(16).toString("base64");
@@ -107,7 +112,7 @@ app.use((req, res, next) =>
   })(req, res, next),
 );
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 

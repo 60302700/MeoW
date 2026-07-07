@@ -25,13 +25,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const phoneCC = document.getElementById('phone-cc');
     if (phoneCC) phoneCC.addEventListener('change', updatePreview);
 
+    /* Normalize autofilled / pasted international numbers so the country code
+       isn't duplicated */
+    const phoneNum = document.getElementById('phone');
+    if (phoneNum) {
+        phoneNum.addEventListener('blur', normalizePhoneInput);
+        phoneNum.addEventListener('change', normalizePhoneInput);
+    }
+
     /* Combine country code + number into hidden field on submit */
     document.getElementById('register-form').addEventListener('submit', () => {
         const cc  = document.getElementById('phone-cc');
         const num = document.getElementById('phone');
         const hid = document.getElementById('phone-combined');
         if (cc && num && hid) {
-            hid.value = num.value.trim() ? cc.value + ' ' + num.value.trim() : '';
+            hid.value = buildFullPhone(cc.value, num.value);
         }
     });
 
@@ -112,13 +120,56 @@ function shakeField(id) {
     return false;
 }
 
+// Combine the country-code dropdown with the number field WITHOUT duplicating
+// the code. If the number already includes a country code (e.g. autofilled as
+// "+92 327 720 2382" or "0092..."), use it as-is instead of prepending again.
+function buildFullPhone(ccVal, numRaw) {
+    let num = (numRaw || '').trim();
+    if (!num) return '';
+    if (num.startsWith('00')) num = '+' + num.slice(2);
+    if (num.startsWith('+')) {
+        return '+' + num.replace(/[^\d]/g, '');
+    }
+    const ccDigits = (ccVal || '').replace(/\D/g, '');
+    let numDigits = num.replace(/\D/g, '');
+    if (ccDigits && numDigits.startsWith(ccDigits)) {
+        numDigits = numDigits.slice(ccDigits.length);
+    }
+    return (ccVal ? ccVal + ' ' : '') + numDigits;
+}
+
+// If the number field holds a full international number, move the country code
+// into the dropdown and leave just the national part in the input.
+function normalizePhoneInput() {
+    const cc  = document.getElementById('phone-cc');
+    const num = document.getElementById('phone');
+    if (!cc || !num) return;
+    let v = num.value.trim();
+    if (!v) return;
+    if (v.startsWith('00')) v = '+' + v.slice(2);
+    if (!v.startsWith('+')) return;
+    const digits = v.replace(/[^\d]/g, '');
+    const codes = Array.from(cc.options)
+        .map(o => o.value.replace('+', ''))
+        .sort((a, b) => b.length - a.length);
+    for (const code of codes) {
+        if (digits.startsWith(code)) {
+            cc.value = '+' + code;
+            num.value = digits.slice(code.length);
+            updatePreview();
+            return;
+        }
+    }
+    num.value = digits;
+    updatePreview();
+}
+
 function getFullPhone() {
     const cc  = document.getElementById('phone-cc');
     const num = document.getElementById('phone');
     if (!num) return '—';
-    const numVal = num.value.trim();
-    if (!numVal) return '—';
-    return cc ? cc.value + ' ' + numVal : numVal;
+    const full = buildFullPhone(cc ? cc.value : '', num.value);
+    return full || '—';
 }
 
 /* ── Review summary ── */

@@ -50,6 +50,8 @@ import {
 const AUTH0_ISSUER = process.env.AUTH0_ISSUER_BASE_URL;
 const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
+const AUTH0_M2M_CLIENT_ID = process.env.AUTH0_M2M_CLIENT_ID;
+const AUTH0_M2M_CLIENT_SECRET = process.env.AUTH0_M2M_CLIENT_SECRET;
 const AUTH0_CONNECTION = "Username-Password-Authentication";
 
 function decodeIdToken(idToken) {
@@ -284,7 +286,9 @@ async function handleScan(qrCodeId, finderInfo = {}) {
       finderInfo.phone || "",
       finderInfo.location || "",
       ackLink,
-    ).catch((err) => console.error("[Mailer] Failed to send owner alert:", err.message));
+    ).catch((err) =>
+      console.error("[Mailer] Failed to send owner alert:", err.message),
+    );
   }
 
   return { cat: withCatAge(cat), eventId, guardianCount: guardians.length };
@@ -303,7 +307,10 @@ async function getEmergencyView(eventId) {
 
 async function acknowledgeOwnerScanBusiness(eventId, token) {
   const result = await acknowledgeOwnerScan(eventId, token);
-  if (!result) throw new Error("Acknowledgment failed — link may have already been used or is invalid.");
+  if (!result)
+    throw new Error(
+      "Acknowledgment failed — link may have already been used or is invalid.",
+    );
   return result;
 }
 
@@ -319,7 +326,8 @@ async function claimGuardian(eventId, guardianId) {
   const isValidGuardian = guardians.some(
     (g) => g._id.toString() === guardianId,
   );
-  if (!isValidGuardian) throw new Error("Not an authorized guardian for this cat.");
+  if (!isValidGuardian)
+    throw new Error("Not an authorized guardian for this cat.");
   return assignGuardianToEvent(eventId, guardianId);
 }
 
@@ -543,13 +551,56 @@ async function deleteGuardian(sessionId, guardianId) {
   await deleteGuardianById(guardianId, user._id.toString());
 }
 
+// Auth0 Management API token (client-credentials) for deleting identities.
+async function getAuth0ManagementToken() {
+  const res = await fetch(`${AUTH0_ISSUER}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      client_id: AUTH0_M2M_CLIENT_ID,
+      client_secret: AUTH0_M2M_CLIENT_SECRET,
+      audience: `${AUTH0_ISSUER}/api/v2/`,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      data.error_description ||
+        data.error ||
+        "Auth0 management token request failed.",
+    );
+  }
+  return data.access_token;
+}
+
+// Deletes the user's Auth0 identity so a later login can't re-authenticate and
+// recreate the local account. Called before local data is removed.
+async function deleteAuth0User(authSub) {
+  if (!authSub) return; // no linked Auth0 identity — nothing to delete
+  if (!AUTH0_M2M_CLIENT_ID || !AUTH0_M2M_CLIENT_SECRET) {
+    throw new Error(
+      "Account deletion is not fully configured (missing Auth0 management credentials).",
+    );
+  }
+  const token = await getAuth0ManagementToken();
+  const res = await fetch(
+    `${AUTH0_ISSUER}/api/v2/users/${encodeURIComponent(authSub)}`,
+    { method: "DELETE", headers: { Authorization: `Bearer ${token}` } },
+  );
+  // 204 = deleted, 404 = already gone; both are fine.
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Failed to delete Auth0 identity (status ${res.status}).`);
+  }
+}
+
 async function deleteAccount(sessionId) {
   const user = await resolveUserFromSession(sessionId);
   if (!user) throw new Error("Unauthorized");
-  // Delete the Auth0 identity first: if this fails, the account stays intact
-  // and deletable again later, instead of leaving a login-able Auth0 user
-  // whose next sign-in would have getOrCreateUser recreate a blank profile.
-  if (user.authSub) await deleteAuth0User(user.authSub);
+  // Remove the Auth0 identity first — if this fails we abort and keep the
+  // local data intact, so the account is never left in a half-deleted state
+  // where login could still succeed.
+  await deleteAuth0User(user.authSub);
   await deleteUserAccount(user._id.toString());
 }
 
