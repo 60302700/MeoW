@@ -182,6 +182,16 @@ restart the worker, and revert when done.
 
 ---
 
+## Documentation
+
+Full project documentation is in [`documentation/`](documentation/) as PDFs:
+
+- **Project-Report.pdf** — overview, architecture, tech stack, and testing matrix
+- **Security-Report.pdf** — controls, and the Aikido scan findings (all resolved)
+- **Threat-Model.pdf** — trust boundaries and applicative threat scenarios
+
+---
+
 ## License
 
 ISC
