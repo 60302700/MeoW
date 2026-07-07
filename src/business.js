@@ -581,6 +581,10 @@ async function deleteAuth0User(authSub) {
   );
   // 204 = deleted, 404 = already gone; both are fine.
   if (!res.ok && res.status !== 404) {
+    const body = await res.text().catch(() => "");
+    console.error(
+      `[Auth0] DELETE user failed — status ${res.status}, body: ${body}`,
+    );
     throw new Error(`Failed to delete Auth0 identity (status ${res.status}).`);
   }
 }
