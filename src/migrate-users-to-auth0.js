@@ -2,8 +2,8 @@ import "dotenv/config";
 import { MongoClient } from "mongodb";
 
 const AUTH0_ISSUER = process.env.AUTH0_ISSUER_BASE_URL;
-const M2M_CLIENT_ID = process.env.AUTH0_M2M_CLIENT_ID;
-const M2M_CLIENT_SECRET = process.env.AUTH0_M2M_CLIENT_SECRET;
+const AUTH0_M2M_CLIENT_ID = process.env.AUTH0_M2M_CLIENT_ID;
+const AUTH0_M2M_CLIENT_SECRET = process.env.AUTH0_M2M_CLIENT_SECRET;
 const CONNECTION_NAME = "Username-Password-Authentication";
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -15,8 +15,8 @@ async function getManagementToken() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       grant_type: "client_credentials",
-      client_id: M2M_CLIENT_ID,
-      client_secret: M2M_CLIENT_SECRET,
+      client_id: AUTH0_M2M_CLIENT_ID,
+      client_secret: AUTH0_M2M_CLIENT_SECRET,
       audience: `${AUTH0_ISSUER}/api/v2/`,
     }),
   });
@@ -90,7 +90,11 @@ async function getAuth0UserIdByEmail(token, email) {
 }
 
 async function main() {
-  if (!AUTH0_ISSUER || !M2M_CLIENT_ID || !M2M_CLIENT_SECRET) {
+  if (
+    !AUTH0_ISSUER ||
+    !process.env.AUTH0_M2M_CLIENT_ID ||
+    !process.env.AUTH0_M2M_CLIENT_SECRET
+  ) {
     console.error(
       "Missing AUTH0_ISSUER_BASE_URL / AUTH0_M2M_CLIENT_ID / AUTH0_M2M_CLIENT_SECRET in .env",
     );

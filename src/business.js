@@ -285,7 +285,9 @@ async function handleScan(qrCodeId, finderInfo = {}) {
       finderInfo.phone || "",
       finderInfo.location || "",
       ackLink,
-    ).catch((err) => console.error("[Mailer] Failed to send owner alert:", err.message));
+    ).catch((err) =>
+      console.error("[Mailer] Failed to send owner alert:", err.message),
+    );
   }
 
   return { cat: withCatAge(cat), eventId, guardianCount: guardians.length };
@@ -304,7 +306,10 @@ async function getEmergencyView(eventId) {
 
 async function acknowledgeOwnerScanBusiness(eventId, token) {
   const result = await acknowledgeOwnerScan(eventId, token);
-  if (!result) throw new Error("Acknowledgment failed — link may have already been used or is invalid.");
+  if (!result)
+    throw new Error(
+      "Acknowledgment failed — link may have already been used or is invalid.",
+    );
   return result;
 }
 
@@ -320,7 +325,8 @@ async function claimGuardian(eventId, guardianId) {
   const isValidGuardian = guardians.some(
     (g) => g._id.toString() === guardianId,
   );
-  if (!isValidGuardian) throw new Error("Not an authorized guardian for this cat.");
+  if (!isValidGuardian)
+    throw new Error("Not an authorized guardian for this cat.");
   return assignGuardianToEvent(eventId, guardianId);
 }
 
@@ -559,7 +565,9 @@ async function getAuth0ManagementToken() {
   const data = await res.json();
   if (!res.ok) {
     throw new Error(
-      data.error_description || data.error || "Auth0 management token request failed.",
+      data.error_description ||
+        data.error ||
+        "Auth0 management token request failed.",
     );
   }
   // Diagnostic: decode the access token's payload (not the signature) to confirm

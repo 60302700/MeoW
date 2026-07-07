@@ -234,7 +234,7 @@ async function createEmergencyEvent({ qrCodeId, catId, finderName, finderPhone, 
 async function acknowledgeOwnerScan(eventId, token) {
   const { EmergencyEvents } = collections();
   const result = await EmergencyEvents.findOneAndUpdate(
-    { _id: new ObjectId(eventId), ownerAckToken: token, ownerAcked: false },
+    { _id: new ObjectId(eventId), ownerAckToken: eq(token), ownerAcked: false },
     { $set: { ownerAcked: true, ownerAckedAt: new Date() } },
     { returnDocument: "after" },
   );
@@ -333,7 +333,9 @@ async function getGuardianAccessToken(token) {
 async function invalidateGuardianTokensByUnavailability(unavailabilityId, excludeToken = null) {
   const { GuardianAccessTokens } = collections();
   const filter = { unavailabilityId: new ObjectId(unavailabilityId) };
-  if (excludeToken) filter.token = { $ne: excludeToken };
+  if (typeof excludeToken === "string" && excludeToken) {
+    filter.token = { $ne: excludeToken };
+  }
   await GuardianAccessTokens.updateMany(filter, { $set: { invalidated: true } });
 }
 
