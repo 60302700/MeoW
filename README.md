@@ -161,6 +161,14 @@ To watch the guardian escalation without waiting the full window, temporarily
 lower the timers in `src/temporal/workflows.js` (e.g. `'10 minutes'` -> `'30 seconds'`),
 restart the worker, and revert when done.
 
+> **Opening a guardian magic link:** open it in a **private / incognito window**
+> (or a browser where no owner is signed in). The session cookie uses
+> `sameSite=strict` for stronger CSRF protection, which means that if an owner is
+> already logged in in the same browser, their session identifier collides with
+> the guardian request's CSRF token and the action is rejected. A clean
+> (incognito) session avoids this. This is a deliberate security trade-off, not a
+> bug — a real guardian on their own device would never hit it.
+
 ---
 
 ## Security
