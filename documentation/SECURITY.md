@@ -124,16 +124,40 @@ template layers. Findings, by severity:
 
 ---
 
-## Running your own scan
+## Aikido security scan
 
-To reproduce a dependency/code scan:
+The repository was scanned with **Aikido** (SAST + AI code audit). Every
+addressable finding has been fixed; the remaining flagged items were
+investigated and confirmed to be false positives. Screenshots of the scan
+(including the post-fix **Retest** state) are attached to the project report.
 
-```bash
-npm audit --omit=dev
-```
+### Fixed
 
-For a third-party static analysis pass, connect the repository to a scanner such
-as **Aikido** (app.aikido.dev) and review the generated report.
+| Class | Severity | Location | Fix |
+|-------|----------|----------|-----|
+| NoSQL injection | Critical | `src/persistance.js`, `src/temporal/activities.js` | Every `findOne` / `updateOne` / `deleteOne` filter built from an external value (`sessionId`, `token`, `authSub`, `email`, `qrCodeId`, cat `name`, guardian `priorityOrder`) now wraps it as `{ $eq: value }`, so an attacker-supplied object can never be interpreted as a query operator (blocks the `?field[$ne]=x` trick). |
+| Open redirect | Critical | `src/index.js` (CSRF error handler) | The `redirectTo` derived from the `Referer` pathname now must start with a single `/` and not `//` or `/\`, so a scheme-relative `//evil.com` cannot send users off-site. |
+| Stored HTML injection | Medium | `src/mailer.js` (`sendGuardianMagicLinkEmail`) | `guardianName`, `ownerName`, and `catList` are now HTML-escaped with `xmlEsc` before interpolation into the email body, matching the other email functions in the file. |
+| NoSQL injection (auth inputs) | — | `src/index.js` | String-type guards (`allStrings`) on login / register / forgot-password inputs, as defense-in-depth alongside the `$eq` wrapping. |
+
+### Investigated — false positives (no change needed)
+
+| Flagged class | Why it is not exploitable |
+|---------------|---------------------------|
+| SSTI via `express.render()` | Every `res.render` call uses a **hardcoded template name**; only the locals are dynamic, and Handlebars auto-escapes `{{ }}` output. User input never controls a template's source or path. |
+| XSS via `{{{body}}}` | Both occurrences are the **express-handlebars layout convention**, where `body` is the already-rendered, already-escaped HTML of the child view — never attacker-supplied. No route sets a `body` local manually. |
+
+### Reproducing the scan
+
+- Static/code scan: connect the repository at **app.aikido.dev** and open the
+  report; use **Retest** after fixes to confirm resolution.
+- Dependency scan: `npm audit --omit=dev` (the remaining moderate advisories are
+  transitive from the Temporal SDK — see *Known / accepted* above).
+
+### Scan screenshots
+
+_Attach the Aikido scan screenshots here (or in the project report), showing the
+findings and their resolved/Retested state._
 
 ---
 

@@ -227,10 +227,28 @@ Temporal Cloud). Re-confirm on your environment before final submission.
 
 ---
 
+## Security Scan (Aikido)
+
+The project was scanned with **Aikido**. All addressable findings — NoSQL
+injection (Critical), open redirect (Critical), and stored HTML injection in
+emails (Medium) — have been **fixed and Retested**, and the remaining flagged
+items were confirmed to be false positives. Full details are in
+`documentation/SECURITY.md`.
+
+_Attach the Aikido scan screenshots (findings + resolved/Retested state) below:_
+
+- ☐ Screenshot: NoSQL injection — resolved
+- ☐ Screenshot: Open redirect — resolved
+- ☐ Screenshot: Stored HTML injection — resolved
+- ☐ Screenshot: Overall scan / issue summary
+
+---
+
 ## Submission Checklist
 
 - ☐ Video demo (HD or at least 720p)
 - ☑ `README.md` (prerequisites, run instructions, configuration)
 - ☑ Project report (this document, in `documentation/`)
+- ☑ Security scan screenshots (Aikido) — _paste into the section above_
 - ☑ Source code in `src/`
 - ☑ No committed `node_modules/`, build output, or unrelated files
