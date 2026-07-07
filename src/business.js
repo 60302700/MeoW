@@ -562,6 +562,22 @@ async function getAuth0ManagementToken() {
       data.error_description || data.error || "Auth0 management token request failed.",
     );
   }
+  // Diagnostic: decode the access token's payload (not the signature) to confirm
+  // its audience and granted scopes. An opaque (non-JWT) token here means the
+  // M2M app isn't properly authorized for the Management API.
+  try {
+    const parts = (data.access_token || "").split(".");
+    if (parts.length === 3) {
+      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+      console.log(
+        `[Auth0] mgmt token aud=${JSON.stringify(payload.aud)} scope="${payload.scope || ""}"`,
+      );
+    } else {
+      console.log("[Auth0] mgmt token is OPAQUE (not a JWT) — M2M app is not authorized for the Management API audience.");
+    }
+  } catch (e) {
+    console.log("[Auth0] could not decode mgmt token payload:", e.message);
+  }
   return data.access_token;
 }
 
