@@ -2186,29 +2186,49 @@
     {{{body}}}
 
     <script nonce="{{nonce}}">
-      var btnCancelAlert = document.getElementById('btnCancelAlert'); if
-      (btnCancelAlert) btnCancelAlert.form.addEventListener('submit',
-      function(e) { if (!confirm('Mark yourself as available? This will stop the
-      guardian alert chain.')) e.preventDefault(); }); var btnAlertGuardians =
-      document.getElementById('btnAlertGuardians'); if (btnAlertGuardians)
-      btnAlertGuardians.form.addEventListener('submit', function(e) { if
-      (!confirm('This will send emergency alerts to your guardians in priority
-      order. Continue?')) e.preventDefault(); }); function closeProfileMenu() {
-      const wrap = document.getElementById('profileMenuWrap'); if (wrap)
-      wrap.classList.remove('open'); } (function () { const btn =
-      document.getElementById('profileMenuBtn'); if (btn) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); const
-      wrap = document.getElementById('profileMenuWrap'); if (wrap)
-      wrap.classList.toggle('open'); }); } const ep =
-      document.getElementById('dropdownEditProfile'); if (ep)
-      ep.addEventListener('click', function () { openEditProfile();
-      closeProfileMenu(); }); const lo =
-      document.getElementById('dropdownLogout'); if (lo)
-      lo.addEventListener('click', function () {
-      document.getElementById('logoutForm').submit(); });
-      document.addEventListener('click', function (e) { const wrap =
-      document.getElementById('profileMenuWrap'); if (wrap &&
-      !wrap.contains(e.target)) wrap.classList.remove('open'); }); })();
+      var btnCancelAlert = document.getElementById('btnCancelAlert');
+      if (btnCancelAlert) {
+        btnCancelAlert.form.addEventListener('submit', function (e) {
+          if (!confirm('Mark yourself as available? This will stop the guardian alert chain.')) e.preventDefault();
+        });
+      }
+      var btnAlertGuardians = document.getElementById('btnAlertGuardians');
+      if (btnAlertGuardians) {
+        btnAlertGuardians.form.addEventListener('submit', function (e) {
+          if (!confirm('This will send emergency alerts to your guardians in priority order. Continue?')) e.preventDefault();
+        });
+      }
+      function closeProfileMenu() {
+        const wrap = document.getElementById('profileMenuWrap');
+        if (wrap) wrap.classList.remove('open');
+      }
+      (function () {
+        const btn = document.getElementById('profileMenuBtn');
+        if (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const wrap = document.getElementById('profileMenuWrap');
+            if (wrap) wrap.classList.toggle('open');
+          });
+        }
+        const ep = document.getElementById('dropdownEditProfile');
+        if (ep) {
+          ep.addEventListener('click', function () {
+            openEditProfile();
+            closeProfileMenu();
+          });
+        }
+        const lo = document.getElementById('dropdownLogout');
+        if (lo) {
+          lo.addEventListener('click', function () {
+            document.getElementById('logoutForm').submit();
+          });
+        }
+        document.addEventListener('click', function (e) {
+          const wrap = document.getElementById('profileMenuWrap');
+          if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+        });
+      })();
     </script>
 
   </body>

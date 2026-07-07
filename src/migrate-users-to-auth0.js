@@ -1,12 +1,33 @@
 import "dotenv/config";
 import { MongoClient } from "mongodb";
-import { getManagementToken } from "./auth0Management.js";
 
 const AUTH0_ISSUER = process.env.AUTH0_ISSUER_BASE_URL;
+const AUTH0_M2M_CLIENT_ID = process.env.AUTH0_M2M_CLIENT_ID;
+const AUTH0_M2M_CLIENT_SECRET = process.env.AUTH0_M2M_CLIENT_SECRET;
 const CONNECTION_NAME = "Username-Password-Authentication";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "Meow";
+
+async function getManagementToken() {
+  const res = await fetch(`${AUTH0_ISSUER}/oauth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      client_id: AUTH0_M2M_CLIENT_ID,
+      client_secret: AUTH0_M2M_CLIENT_SECRET,
+      audience: `${AUTH0_ISSUER}/api/v2/`,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      `Failed to get Management API token: ${data.error_description || data.error}`,
+    );
+  }
+  return data.access_token;
+}
 
 async function getConnectionId(token) {
   const res = await fetch(

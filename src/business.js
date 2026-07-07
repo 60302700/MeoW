@@ -39,7 +39,6 @@ import {
   deleteGuardianById,
 } from "./persistance.js";
 import { sendWalletCardEmail, sendOwnerFoundAlert } from "./mailer.js";
-import { deleteAuth0User } from "./auth0Management.js";
 import {
   startOwnerUnavailableWorkflow,
   signalOwnerAvailable,
