@@ -24,7 +24,7 @@ export async function escalateToNextGuardian(eventId, priority) {
 
     const guardian = await db.collection('Guardians').findOne({
         ownerId: cat.ownerId,
-        priorityOrder: priority,
+        priorityOrder: { $eq: priority },
     });
 
     // Log the escalation into the event so the scan page can show it
@@ -74,7 +74,7 @@ export async function notifyGuardianOfFoundCat(eventId, priority) {
 
     const guardian = await db.collection('Guardians').findOne({
         ownerId: cat.ownerId,
-        priorityOrder: priority,
+        priorityOrder: { $eq: priority },
     });
     if (!guardian?.email) return;
 
