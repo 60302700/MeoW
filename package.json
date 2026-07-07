@@ -1,15 +1,15 @@
 {
-  "name": "kitty",
+  "name": "meow",
   "version": "1.0.0",
-  "description": "",
+  "description": "MeoW — a cat safety network with QR-tag recovery and auto-escalating guardian care, built on durable Temporal workflows.",
   "keywords": [],
-  "homepage": "https://github.com/60302700/Kitty#readme",
+  "homepage": "https://github.com/60302700/MeoW#readme",
   "bugs": {
-    "url": "https://github.com/60302700/Kitty/issues"
+    "url": "https://github.com/60302700/MeoW/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/60302700/Kitty.git"
+    "url": "git+https://github.com/60302700/MeoW.git"
   },
   "license": "ISC",
   "author": "",
